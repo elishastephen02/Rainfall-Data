@@ -1,0 +1,352 @@
+﻿@model RainfallThree.Models.SearchRainfallViewModel
+
+<h2>Rainfall Data</h2>
+
+<style>
+    form.rainfall-form {
+        max-width: 800px;
+        margin: 0 auto;
+        font-family: Arial, sans-serif;
+        background: #f7f7f7;
+        padding: 25px 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+        form.rainfall-form fieldset {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        form.rainfall-form legend {
+            font-weight: bold;
+            padding: 0 10px;
+            font-size: 1.1em;
+        }
+
+        form.rainfall-form .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px 30px;
+            margin-top: 15px;
+        }
+
+        form.rainfall-form .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+            form.rainfall-form .form-group label {
+                margin-bottom: 5px;
+                font-weight: 500;
+            }
+
+            form.rainfall-form .form-group input,
+            form.rainfall-form .form-group select {
+                padding: 8px 10px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                font-size: 14px;
+                transition: border 0.2s;
+            }
+
+                form.rainfall-form .form-group input:focus,
+                form.rainfall-form .form-group select:focus {
+                    border-color: #007bff;
+                    outline: none;
+                }
+
+        form.rainfall-form button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            margin: 0 auto;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+            form.rainfall-form button:hover {
+                background-color: #0056b3;
+            }
+
+        form.rainfall-form table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 25px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        form.rainfall-form th,
+        form.rainfall-form td {
+            padding: 12px 15px;
+            text-align: center;
+        }
+
+        form.rainfall-form th {
+            background-color: #007bff;
+            color: white;
+            font-weight: 600;
+        }
+
+        form.rainfall-form tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        form.rainfall-form tbody tr:hover {
+            background-color: #d6e4ff;
+            transition: background 0.2s;
+        }
+
+    .results-container {
+        width: 100%;
+        margin-top: 30px;
+        padding: 0 20px;
+    }
+
+        .results-container table {
+            width: 100%;
+            min-width: 1200px;
+        }
+
+        .results-container th,
+        .results-container td {
+            padding: 12px 14px;
+            text-align: center;
+        }
+
+        .results-container thead th {
+            background-color: #007bff;
+            color: white;
+            z-index: 4;
+        }
+</style>
+
+<form class="rainfall-form" method="post">
+
+    <h3>Select Location on Durban Map</h3>
+    <div id="map" style="height: 400px; width: 100%; margin-bottom: 20px;"></div>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        var durbanCenter = [-29.8587, 31.0218];
+        var map = L.map('map').setView(durbanCenter, 12);
+
+        var southWest = L.latLng(-30.2, 30.6);
+        var northEast = L.latLng(-29.5, 31.5);
+        var durbanBounds = L.latLngBounds(southWest, northEast);
+        map.setMaxBounds(durbanBounds);
+        map.on('drag', function() {
+            map.panInsideBounds(durbanBounds, { animate: false });
+        });
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        var marker;
+
+        function placeMarker(lat, lng) {
+            if(marker) map.removeLayer(marker);
+            marker = L.marker([lat, lng]).addTo(map);
+            map.setView([lat, lng], 14);
+        }
+
+        function degMinToDecimal(deg, min) {
+            if(deg === "" || deg === null) return null;
+            return parseFloat(deg) + (parseFloat(min) || 0) / 60;
+        }
+
+        function updateMarkerFromInputs() {
+            var latDeg = document.getElementById("LATDEG").value;
+            var latMin = document.getElementById("LATMIN").value;
+            var lngDeg = document.getElementById("LONGDEG").value;
+            var lngMin = document.getElementById("LONGMIN").value;
+
+            if(latDeg !== "" && lngDeg !== "") {
+                var lat = -degMinToDecimal(latDeg, latMin);
+                var lng = degMinToDecimal(lngDeg, lngMin);
+                placeMarker(lat, lng);
+            }
+        }
+
+        // Preload marker from model (works after POST or manual input)
+        window.addEventListener('DOMContentLoaded', function() {
+            var latDeg = "@Model.LATDEG";
+            var latMin = "@Model.LATMIN";
+            var lngDeg = "@Model.LONGDEG";
+            var lngMin = "@Model.LONGMIN";
+
+            if(latDeg && lngDeg) {
+                var lat = -degMinToDecimal(latDeg, latMin);
+                var lng = degMinToDecimal(lngDeg, lngMin);
+                placeMarker(lat, lng);
+            }
+        });
+
+        // Map click updates inputs + marker
+        map.on('click', function(e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+
+            placeMarker(lat, lng);
+
+            document.getElementById("LATDEG").value = Math.floor(Math.abs(lat));
+            document.getElementById("LATMIN").value = Math.round((Math.abs(lat) - Math.floor(Math.abs(lat))) * 60);
+            document.getElementById("LONGDEG").value = Math.floor(Math.abs(lng));
+            document.getElementById("LONGMIN").value = Math.round((Math.abs(lng) - Math.floor(Math.abs(lng))) * 60);
+        });
+
+        // Manual input changes update marker
+        ["LATDEG","LATMIN","LONGDEG","LONGMIN"].forEach(function(id) {
+            document.getElementById(id).addEventListener("change", updateMarkerFromInputs);
+        });
+    </script>
+
+    <fieldset>
+        <legend>Location & Index</legend>
+        <div class="form-grid">
+            <div class="form-group">
+                <label asp-for="Index">Index Number</label>
+                <input asp-for="Index" id="Index" />
+            </div>
+            <div class="form-group">
+                <label asp-for="ReturnPeriod">Return Period</label>
+                <select asp-for="ReturnPeriod" asp-items="Model.ReturnPeriodOptions" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="LATDEG">Latitude Degree</label>
+                <input asp-for="LATDEG" id="LATDEG" />
+            </div>
+            <div class="form-group">
+                <label asp-for="LATMIN">Latitude Minute</label>
+                <input asp-for="LATMIN" id="LATMIN" />
+            </div>
+            <div class="form-group">
+                <label asp-for="LONGDEG">Longitude Degree</label>
+                <input asp-for="LONGDEG" id="LONGDEG" />
+            </div>
+            <div class="form-group">
+                <label asp-for="LONGMIN">Longitude Minute</label>
+                <input asp-for="LONGMIN" id="LONGMIN" />
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Rainfall Duration</legend>
+        <div class="form-group" style="margin-top: 10px;">
+            <label asp-for="SelectedDuration">Select Duration</label>
+            <select asp-for="SelectedDuration" asp-items="Model.DurationOptions"></select>
+        </div>
+    </fieldset>
+
+    <button type="submit">Search</button>
+</form>
+
+@if (Model.Results != null && Model.Results.Any())
+{
+    <div class="results-container">
+        <h3>Results (@Model.Results.Count)</h3>
+        <div style="text-align:right; margin-bottom:10px;">
+            <form method="post" asp-action="Download">
+                <input type="hidden" name="Index" value="@Model.Index" />
+                <input type="hidden" name="LATDEG" value="@Model.LATDEG" />
+                <input type="hidden" name="LATMIN" value="@Model.LATMIN" />
+                <input type="hidden" name="LONGDEG" value="@Model.LONGDEG" />
+                <input type="hidden" name="LONGMIN" value="@Model.LONGMIN" />
+                <input type="hidden" name="ReturnPeriod" value="@Model.ReturnPeriod" />
+                <input type="hidden" name="SelectedDuration" value="@Model.SelectedDuration" />
+                <button type="submit" style="background-color:#28a745;">Download Data</button>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Index</th>
+                    <th>Lat Deg</th>
+                    <th>Lat Min</th>
+                    <th>Long Deg</th>
+                    <th>Long Min</th>
+                    <th>Return Period</th>
+                    @if (string.IsNullOrEmpty(Model.SelectedDuration))
+                    {
+                        <th>5 Min</th>
+                        <th>10 Min</th>
+                        <th>15 Min</th>
+                        <th>30 Min</th>
+                        <th>60 Min</th>
+                        <th>120 Min</th>
+                        <th>1440 Min</th>
+                        <th>4320 Min</th>
+                        <th>10080 Min</th>
+                    }
+                    else
+                    {
+                        <th>@Model.SelectedDuration Min</th>
+                    }
+                    <th>Source Sheet</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Results)
+                {
+                    <tr>
+                        <td>@item.Index</td>
+                        <td>@item.Latdeg</td>
+                        <td>@item.Latmin</td>
+                        <td>@item.Longdeg</td>
+                        <td>@item.Longmin</td>
+                        <td>@item.ReturnPeriod</td>
+                        @if (string.IsNullOrEmpty(Model.SelectedDuration))
+                        {
+                            <td>@item._5Min?.ToString("0.00")</td>
+                            <td>@item._10Min?.ToString("0.00")</td>
+                            <td>@item._15Min?.ToString("0.00")</td>
+                            <td>@item._30Min?.ToString("0.00")</td>
+                            <td>@item._60Min?.ToString("0.00")</td>
+                            <td>@item._120Min?.ToString("0.00")</td>
+                            <td>@item._1440Min?.ToString("0.00")</td>
+                            <td>@item._4320Min?.ToString("0.00")</td>
+                            <td>@item._10080Min?.ToString("0.00")</td>
+                        }
+                        else
+                        {
+                            <td>
+                                @{
+                                    var val = Model.SelectedDuration switch
+                                    {
+                                                            "5" => item._5Min?.ToString("0.00"),
+                                                            "10" => item._10Min?.ToString("0.00"),
+                                                            "15" => item._15Min?.ToString("0.00"),
+                                                            "30" => item._30Min?.ToString("0.00"),
+                                                            "60" => item._60Min?.ToString("0.00"),
+                                                            "120" => item._120Min?.ToString("0.00"),
+                                                            "1440" => item._1440Min?.ToString("0.00"),
+                                                            "4320" => item._4320Min?.ToString("0.00"),
+                                                            "10080" => item._10080Min?.ToString("0.00"),
+                                        _ => ""
+                                    };
+                                }
+                                @val
+                            </td>
+                        }
+                        <td>@item.SourceSheet</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
