@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\RainfallThree",
+    "\\RainfallThree\\Areas",
+    "\\RainfallThree\\Areas\\Identity",
+    "\\RainfallThree\\Areas\\Identity\\Pages",
+    "\\RainfallThree\\Areas\\Identity\\Pages\\Account",
+    "\\RainfallThree\\Views",
+    "\\RainfallThree\\Views\\Shared"
+  ],
+  "SelectedNode": "\\RainfallThree\\Views\\Shared\\_Layout.cshtml",
+  "PreviewInSolutionExplorer": false
+}

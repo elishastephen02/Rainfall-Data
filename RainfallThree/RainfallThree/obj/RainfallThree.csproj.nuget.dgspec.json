@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\elishastephen\\Downloads\\Visual Studio\\RainfallThree\\RainfallThree\\RainfallThree\\RainfallThree.csproj": {}
+    "C:\\Users\\elishastephen\\Downloads\\Visual Studio\\Rainfall Web App\\Rainfall-Data\\RainfallThree\\RainfallThree\\RainfallThree.csproj": {}
   },
   "projects": {
-    "C:\\Users\\elishastephen\\Downloads\\Visual Studio\\RainfallThree\\RainfallThree\\RainfallThree\\RainfallThree.csproj": {
+    "C:\\Users\\elishastephen\\Downloads\\Visual Studio\\Rainfall Web App\\Rainfall-Data\\RainfallThree\\RainfallThree\\RainfallThree.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\elishastephen\\Downloads\\Visual Studio\\RainfallThree\\RainfallThree\\RainfallThree\\RainfallThree.csproj",
+        "projectUniqueName": "C:\\Users\\elishastephen\\Downloads\\Visual Studio\\Rainfall Web App\\Rainfall-Data\\RainfallThree\\RainfallThree\\RainfallThree.csproj",
         "projectName": "RainfallThree",
-        "projectPath": "C:\\Users\\elishastephen\\Downloads\\Visual Studio\\RainfallThree\\RainfallThree\\RainfallThree\\RainfallThree.csproj",
+        "projectPath": "C:\\Users\\elishastephen\\Downloads\\Visual Studio\\Rainfall Web App\\Rainfall-Data\\RainfallThree\\RainfallThree\\RainfallThree.csproj",
         "packagesPath": "C:\\Users\\elishastephen\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\elishastephen\\Downloads\\Visual Studio\\RainfallThree\\RainfallThree\\RainfallThree\\obj\\",
+        "outputPath": "C:\\Users\\elishastephen\\Downloads\\Visual Studio\\Rainfall Web App\\Rainfall-Data\\RainfallThree\\RainfallThree\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
