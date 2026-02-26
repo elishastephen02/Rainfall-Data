@@ -23,13 +23,15 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        <li class="nav-item">
-                            @if (User.Identity.IsAuthenticated)
-                                {
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Rainfall" asp-action="Search">Rainfall Data</a>
-
-                                }
-                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Rainfall" asp-action="Search">Rainfall Data</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Storm" asp-action="Index">Rainfall Events</a>
+                            </li>
+                        }
                         @if (User.IsInRole("PrimaryUser"))
                         {
                             <li class="nav-item">

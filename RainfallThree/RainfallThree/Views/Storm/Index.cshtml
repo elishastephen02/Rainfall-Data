@@ -1,0 +1,183 @@
+﻿@model StormViewModel
+
+<div class="container mt-5">
+    <div class="card shadow-lg p-4 rounded-4">
+        <h2 class="text-center mb-4">🌧 Storm Event Finder</h2>
+        <form asp-action="Index" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Upload Rainfall CSV</label>
+                <input type="file" asp-for="UploadedFile" class="form-control" />
+                <span asp-validation-for="UploadedFile" class="text-danger"></span>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Rainfall Depth (mm)</label>
+                    <input asp-for="Depth" type="number" step="0.1" class="form-control" placeholder="e.g. 100" />
+                    <span asp-validation-for="Depth" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Duration (minutes)</label>
+                    <input asp-for="DurationMinutes" type="number" class="form-control" placeholder="e.g. 30" />
+                    <span asp-validation-for="DurationMinutes" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary btn-lg rounded-3">
+                    🔍 Find Storm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<br />
+
+@if (!string.IsNullOrEmpty(Model.Message))
+{
+    <div id="tempMessage" class="alert alert-success text-center">
+        @Model.Message
+    </div>
+
+    <script>
+        // Hide the message after 3 seconds (3000ms)
+        setTimeout(function () {
+            var msg = document.getElementById('tempMessage');
+            if (msg) {
+                msg.style.transition = "opacity 0.5s";
+                msg.style.opacity = "0";
+                setTimeout(function () { msg.remove(); }, 500);
+            }
+        }, 3000);
+    </script>
+}
+
+@if (Model.Results != null && Model.Results.Count > 0)
+{
+    var storm = Model.Results.First();
+    <div class="mt-4">
+        <h4 class="mb-4 text-center">
+            🌧 Storm Found: @Math.Round(storm.TotalRainfall, 2) mm over
+            @(Math.Round((storm.EndTime - storm.StartTime).TotalMinutes)) minutes
+        </h4>
+
+        <div class="card shadow-sm p-4 rounded-4 mb-4">
+            <h5 class="text-primary">
+                Storm from @storm.StartTime to @storm.EndTime
+            </h5>
+
+            <p>
+                <strong>Total Rainfall:</strong>
+                <span class="badge bg-success fs-6">
+                    @Math.Round(storm.TotalRainfall, 2) mm
+                </span>
+            </p>
+
+            <hr />
+
+            <h6>Rainfall Graph</h6>
+            <div style="max-width:500px; margin:0 auto;">
+                <canvas id="rainChart" style="width:100%; height:250px;"></canvas>
+            </div>
+
+            <h6>Event Data</h6>
+            <div style="max-height:250px; overflow-y:auto;">
+                <table class="table table-sm table-striped table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Time</th>
+                            <th>Rainfall (mm)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in storm.EventData)
+                        {
+                            <tr>
+                                <td>@item.Time</td>
+                                <td>@Math.Round(item.Rainfall, 2)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    @if (Model.Results != null && Model.Results.Count > 0)
+    {
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            var ctx = document.getElementById('rainChart').getContext('2d');
+
+            var duration = @Model.DurationMinutes;
+
+            var points = [];
+
+            @for (int i = 0; i < Model.Results.First().EventData.Count; i++)
+            {
+                    var minutes = (Model.Results.First().EventData[i].Time - Model.Results.First().StartTime).TotalMinutes;
+                    var rainfall = Model.Results.First().EventData[i].Rainfall;
+
+                    <text>
+                    points.push({
+                        x: @Math.Round(minutes),
+                        y: @Math.Round(rainfall, 2)
+                    });
+                    </text>
+            }
+
+            @* interval determination *@
+            var tickInterval;
+
+            if (duration <= 30)
+                tickInterval = 5;
+            else if (duration <= 60)
+                tickInterval = 10;
+            else if (duration <= 180)
+                tickInterval = 30;
+            else if (duration <= 720)
+                tickInterval = 60;
+            else
+                tickInterval = Math.ceil(duration / 10);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    datasets: [{
+                        label: 'Rainfall (mm)',
+                        data: points,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    parsing: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            min: 0,
+                            max: duration,
+                            ticks: {
+                                stepSize: tickInterval,
+                                callback: function(value) {
+                                    return value + " min";
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        </script>
+    }
+}
