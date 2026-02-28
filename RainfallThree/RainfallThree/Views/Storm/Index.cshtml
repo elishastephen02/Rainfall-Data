@@ -50,56 +50,60 @@
         }, 3000);
     </script>
 }
-
 @if (Model.Results != null && Model.Results.Count > 0)
 {
-    var storm = Model.Results.First();
     <div class="mt-4">
         <h4 class="mb-4 text-center">
-            🌧 Storm Found: @Math.Round(storm.TotalRainfall, 2) mm over
-            @(Math.Round((storm.EndTime - storm.StartTime).TotalMinutes)) minutes
+            🌧 Storm Found: @Model.Results.Count storm(s) matching criteria
         </h4>
 
+        @* Graph for the first storm *@
         <div class="card shadow-sm p-4 rounded-4 mb-4">
-            <h5 class="text-primary">
-                Storm from @storm.StartTime to @storm.EndTime
+            <h5 class="text-primary text-center mb-3">
+                Rainfall Graph for First Storm
             </h5>
-
-            <p>
-                <strong>Total Rainfall:</strong>
-                <span class="badge bg-success fs-6">
-                    @Math.Round(storm.TotalRainfall, 2) mm
-                </span>
-            </p>
-
-            <hr />
-
-            <h6>Rainfall Graph</h6>
             <div style="max-width:500px; margin:0 auto;">
                 <canvas id="rainChart" style="width:100%; height:250px;"></canvas>
             </div>
-
-            <h6>Event Data</h6>
-            <div style="max-height:250px; overflow-y:auto;">
-                <table class="table table-sm table-striped table-bordered">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Time</th>
-                            <th>Rainfall (mm)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in storm.EventData)
-                        {
-                            <tr>
-                                <td>@item.Time</td>
-                                <td>@Math.Round(item.Rainfall, 2)</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
         </div>
+
+        @* Table for all storms *@
+        @for (int i = 0; i < Model.Results.Count; i++)
+        {
+            var storm = Model.Results[i];
+            <div class="card shadow-sm p-4 rounded-4 mb-4">
+                <h5 class="text-primary">
+                    Storm @(@i + 1): @storm.StartTime to @storm.EndTime
+                </h5>
+
+                <p>
+                    <strong>Total Rainfall:</strong>
+                    <span class="badge bg-success fs-6">
+                        @Math.Round(storm.TotalRainfall, 2) mm
+                    </span>
+                </p>
+
+                <div style="max-height:250px; overflow-y:auto;">
+                    <table class="table table-sm table-striped table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Time</th>
+                                <th>Rainfall (mm)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in storm.EventData)
+                            {
+                                <tr>
+                                    <td>@item.Time</td>
+                                    <td>@Math.Round(item.Rainfall, 2)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
     </div>
 }
 
