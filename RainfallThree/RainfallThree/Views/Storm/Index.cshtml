@@ -54,6 +54,56 @@
 @if (Model.Results != null && Model.Results.Count > 0)
 {
     <div class="mt-4">
+        @if (!string.IsNullOrEmpty(Model.StationName) || Model.Latitude.HasValue || Model.Longitude.HasValue)
+        {
+            <div class="card border-0 shadow-lg rounded-4 mb-4">
+                <div class="card-body">
+
+                    <!-- Heading centered at the top -->
+                    <h5 class="fw-bold text-primary text-center mb-3">
+                        📍 Station Information
+                    </h5>
+
+                    <!-- Station Details -->
+                    <div class="row text-start">
+
+                        <div class="col-md-4">
+                            <div class="p-2">
+                                <div class="fw-bold text-secondary">Rainfall Monitoring Station: </div>
+                                <div class="fs-6">
+                                    @(Model.StationName ?? "N/A")
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="p-2">
+                                <div class="fw-bold text-secondary">Latitude: </div>
+                                <div class="fs-6">
+                                    @(Model.Latitude.HasValue 
+                                        ? Model.Latitude.Value.ToString("F6") 
+                                        : "N/A")
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="p-2">
+                                <div class="fw-bold text-secondary">Longitude: </div>
+                                <div class="fs-6">
+                                    @(Model.Longitude.HasValue 
+                                        ? Model.Longitude.Value.ToString("F6") 
+                                        : "N/A")
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        }
+
         <h4 class="mb-4 text-center">
             🌧 Storm Found: @Model.Results.Count storm(s) matching criteria
         </h4>
@@ -133,11 +183,8 @@
         <script>
             const storms = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
                 Model.Results.Select(storm => new {
-                    duration = Model.DurationMinutes,
-                    data = storm.EventData.Select(d => new {
-                        minutes = (d.Time - storm.StartTime).TotalMinutes,
-                        rainfall = Math.Round(d.Rainfall, 2)
-                    })
+                    labels = storm.EventData.Select(d => d.Time.ToString("HH:mm")),
+                    values = storm.EventData.Select(d => Math.Round(d.Rainfall, 2))
                 })
             ));
 
@@ -145,7 +192,7 @@
 
             function createChart(index) {
 
-                if (charts[index]) return; // already created
+                if (charts[index]) return;
 
                 const storm = storms[index];
                 const canvas = document.getElementById(`rainChart_${index}`);
@@ -153,32 +200,25 @@
 
                 const ctx = canvas.getContext('2d');
 
-                const points = storm.data.map(p => ({
-                    x: Math.round(p.minutes),
-                    y: p.rainfall
-                }));
-
                 charts[index] = new Chart(ctx, {
                     type: 'bar',
                     data: {
+                        labels: storm.labels,
                         datasets: [{
                             label: 'Rainfall (mm)',
-                            data: points,
+                            data: storm.values,
                             borderWidth: 1
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        parsing: false,
                         scales: {
                             x: {
-                                type: 'linear',
-                                min: 0,
-                                max: storm.duration,
                                 ticks: {
-                                    maxTicksLimit: 10,
-                                    callback: value => value + " min"
+                                    autoSkip: true,
+                                    maxRotation: 45,
+                                    minRotation: 45
                                 }
                             },
                             y: {
@@ -200,8 +240,7 @@
 
             if (carousel) {
                 carousel.addEventListener('slid.bs.carousel', function (event) {
-                    const activeIndex = event.to;
-                    createChart(activeIndex);
+                    createChart(event.to);
                 });
             }
         </script>

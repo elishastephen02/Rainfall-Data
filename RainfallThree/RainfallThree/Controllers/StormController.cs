@@ -35,8 +35,36 @@ public class StormController : Controller
                 if (string.IsNullOrWhiteSpace(line))
                     continue;
 
+                // Extract station info from header lines
                 if (line.StartsWith("#"))
+                {
+                    if (line.Contains("Station name"))
+                    {
+                        // Get text after '=' and trim whitespace
+                        var stationValue = line.Split('=').Last().Trim();
+
+                        // Remove any trailing commas
+                        stationValue = stationValue.TrimEnd(',');
+
+                        model.StationName = stationValue;
+                    }
+
+                    if (line.Contains("Latitude"))
+                    {
+                        var latPart = line.Split('=').Last().Trim().TrimEnd(',');
+                        if (double.TryParse(latPart, NumberStyles.Any, CultureInfo.InvariantCulture, out double lat))
+                            model.Latitude = lat;
+                    }
+
+                    if (line.Contains("Longitude"))
+                    {
+                        var lonPart = line.Split('=').Last().Trim().TrimEnd(',');
+                        if (double.TryParse(lonPart, NumberStyles.Any, CultureInfo.InvariantCulture, out double lon))
+                            model.Longitude = lon;
+                    }
+
                     continue;
+                }
 
                 var parts = line.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
@@ -72,18 +100,6 @@ public class StormController : Controller
         // Find storms matching user-entered depth and duration
         var results = FindAllStorms(rainfallData, model.Depth, model.DurationMinutes);
 
-        // Optional: downsample each storm if too many points (>50)
-        foreach (var storm in results)
-        {
-            if (storm.EventData.Count > 50)
-            {
-                int step = storm.EventData.Count / 50;
-                storm.EventData = storm.EventData
-                    .Where((x, idx) => idx % step == 0)
-                    .ToList();
-            }
-        }
-
         if (results.Count == 0)
         {
             model.Message = $"File loaded ({rainfallData.Count} records). No storm events found matching your criteria.";
@@ -103,39 +119,53 @@ public class StormController : Controller
         if (data == null || data.Count == 0)
             return storms;
 
-        int left = 0;
-        double cumulative = 0;
+        // 15% buffer rounded to 2 decimal places
+        double minDepth = Math.Round(targetDepth * 0.85, 2);
+        double maxDepth = Math.Round(targetDepth * 1.15, 2);
 
-        for (int right = 0; right < data.Count; right++)
+        for (int i = 0; i < data.Count; i++)
         {
-            cumulative += data[right].Rainfall;
+            double cumulative = data[i].Rainfall;
+            int totalMinutes = 0;
 
-            while (left < right &&
-                  (data[right].Time - data[left].Time).TotalMinutes > targetDurationMinutes)
+            var eventData = new List<RainfallRecord> { data[i] };
+
+            for (int j = i + 1; j < data.Count; j++)
             {
-                cumulative -= data[left].Rainfall;
-                left++;
-            }
+                var diff = (data[j].Time - data[j - 1].Time).TotalMinutes;
 
-            double duration = (data[right].Time - data[left].Time).TotalMinutes;
+                // gap is not exactly 5 minutes → stop this storm
+                if (diff != 5)
+                    break;
 
-            if (Math.Abs(duration - targetDurationMinutes) <= 1 &&
-                Math.Abs(cumulative - targetDepth) < 0.01)
-            {
-                var eventData = data.Skip(left).Take(right - left + 1).ToList();
+                totalMinutes += 5;
+                cumulative += data[j].Rainfall;
+                eventData.Add(data[j]);
 
-                storms.Add(new StormResult
+                // Stop if duration exceeds target
+                if (totalMinutes > targetDurationMinutes)
+                    break;
+
+                double roundedCumulative = Math.Round(cumulative, 2);
+
+                // Duration must match EXACTLY
+                if (totalMinutes == targetDurationMinutes &&
+                    roundedCumulative >= minDepth &&
+                    roundedCumulative <= maxDepth)
                 {
-                    StartTime = data[left].Time,
-                    EndTime = data[right].Time,
-                    TotalRainfall = cumulative,
-                    EventData = eventData
-                });
+                    storms.Add(new StormResult
+                    {
+                        StartTime = data[i].Time,
+                        EndTime = data[j].Time,
+                        TotalRainfall = roundedCumulative,
+                        EventData = new List<RainfallRecord>(eventData)
+                    });
+
+                    break; // move to next starting point
+                }
             }
         }
 
-        return storms
-            .OrderBy(s => s.StartTime)
-            .ToList();
+        return storms.OrderBy(s => s.StartTime).ToList();
     }
 }

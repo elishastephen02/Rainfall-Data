@@ -3,24 +3,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RainfallThree.Models
 {
-    public class StormViewModel
+    public class FileUploadViewModel
     {
-        [Required]
+        [Required(ErrorMessage = "Please upload a CSV file.")]
         public IFormFile UploadedFile { get; set; }
-
-        [Required]
-        public double Depth { get; set; }
-
-        [Required]
-        public int DurationMinutes { get; set; }
-
-        public List<StormResult> Results { get; set; } = new();
 
         public string? StationName { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
 
         public string? Message { get; set; }
-
+        public bool FileLoaded { get; set; }
     }
 }

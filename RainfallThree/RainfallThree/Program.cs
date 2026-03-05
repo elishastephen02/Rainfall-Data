@@ -22,6 +22,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddSession();
 
 var app = builder.Build();
 
@@ -40,6 +41,7 @@ else
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 

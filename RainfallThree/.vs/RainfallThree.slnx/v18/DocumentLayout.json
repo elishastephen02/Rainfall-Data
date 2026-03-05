@@ -11,6 +11,10 @@
       "RelativeMoniker": "D:0:0:{BBCA6316-0452-6B60-0D5B-BF4612F84493}|RainfallThree\\RainfallThree.csproj|solutionrelative:rainfallthree\\controllers\\stormcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{BBCA6316-0452-6B60-0D5B-BF4612F84493}|RainfallThree\\RainfallThree.csproj|c:\\users\\elishastephen\\downloads\\visual studio\\rainfall web app\\rainfall-data\\rainfallthree\\rainfallthree\\models\\stormviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BBCA6316-0452-6B60-0D5B-BF4612F84493}|RainfallThree\\RainfallThree.csproj|solutionrelative:rainfallthree\\models\\stormviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{BBCA6316-0452-6B60-0D5B-BF4612F84493}|RainfallThree\\RainfallThree.csproj|c:\\users\\elishastephen\\downloads\\visual studio\\rainfall web app\\rainfall-data\\rainfallthree\\rainfallthree\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{BBCA6316-0452-6B60-0D5B-BF4612F84493}|RainfallThree\\RainfallThree.csproj|solutionrelative:rainfallthree\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
@@ -22,11 +26,23 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
               "DocumentIndex": 2,
+              "Title": "StormViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\elishastephen\\Downloads\\Visual Studio\\Rainfall Web App\\Rainfall-Data\\RainfallThree\\RainfallThree\\Models\\StormViewModel.cs",
+              "RelativeDocumentMoniker": "RainfallThree\\Models\\StormViewModel.cs",
+              "ToolTip": "C:\\Users\\elishastephen\\Downloads\\Visual Studio\\Rainfall Web App\\Rainfall-Data\\RainfallThree\\RainfallThree\\Models\\StormViewModel.cs",
+              "RelativeToolTip": "RainfallThree\\Models\\StormViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-03T12:56:44.412Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "_Layout.cshtml",
               "DocumentMoniker": "C:\\Users\\elishastephen\\Downloads\\Visual Studio\\Rainfall Web App\\Rainfall-Data\\RainfallThree\\RainfallThree\\Views\\Shared\\_Layout.cshtml",
               "RelativeDocumentMoniker": "RainfallThree\\Views\\Shared\\_Layout.cshtml",
@@ -44,7 +60,7 @@
               "RelativeDocumentMoniker": "RainfallThree\\Views\\Storm\\Index.cshtml",
               "ToolTip": "C:\\Users\\elishastephen\\Downloads\\Visual Studio\\Rainfall Web App\\Rainfall-Data\\RainfallThree\\RainfallThree\\Views\\Storm\\Index.cshtml",
               "RelativeToolTip": "RainfallThree\\Views\\Storm\\Index.cshtml",
-              "ViewState": "AgIAALQAAAAAAAAAAAAcwNsAAAAIAAAAAAAAAA==",
+              "ViewState": "AgIAABwAAABA//////8iwFsAAABPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-02-24T10:22:19.991Z",
               "EditorCaption": ""
@@ -57,9 +73,10 @@
               "RelativeDocumentMoniker": "RainfallThree\\Controllers\\StormController.cs",
               "ToolTip": "C:\\Users\\elishastephen\\Downloads\\Visual Studio\\Rainfall Web App\\Rainfall-Data\\RainfallThree\\RainfallThree\\Controllers\\StormController.cs",
               "RelativeToolTip": "RainfallThree\\Controllers\\StormController.cs",
-              "ViewState": "AgIAAFsAAAAAAAAAAAAmwGAAAAAbAAAAAAAAAA==",
+              "ViewState": "AgIAAB4AAADgJzMzMzMfwC8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-24T10:10:30.922Z"
+              "WhenOpened": "2026-02-24T10:10:30.922Z",
+              "EditorCaption": ""
             }
           ]
         }
