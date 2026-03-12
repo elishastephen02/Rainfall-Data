@@ -119,22 +119,26 @@ public class StormController : Controller
         if (data == null || data.Count == 0)
             return storms;
 
-        // 15% buffer rounded to 2 decimal places
         double minDepth = Math.Round(targetDepth * 0.85, 2);
         double maxDepth = Math.Round(targetDepth * 1.15, 2);
 
+        DateTime? nextAvailableStart = null; // earliest time next storm can start
+
         for (int i = 0; i < data.Count; i++)
         {
+            // Skip any record that occurs before the previous storm has ended
+            if (nextAvailableStart.HasValue && data[i].Time <= nextAvailableStart.Value)
+                continue;
+
             double cumulative = data[i].Rainfall;
             int totalMinutes = 0;
-
             var eventData = new List<RainfallRecord> { data[i] };
 
             for (int j = i + 1; j < data.Count; j++)
             {
                 var diff = (data[j].Time - data[j - 1].Time).TotalMinutes;
 
-                // gap is not exactly 5 minutes → stop this storm
+                // Stop if gap between measurements is not 5 min
                 if (diff != 5)
                     break;
 
@@ -142,13 +146,12 @@ public class StormController : Controller
                 cumulative += data[j].Rainfall;
                 eventData.Add(data[j]);
 
-                // Stop if duration exceeds target
                 if (totalMinutes > targetDurationMinutes)
                     break;
 
                 double roundedCumulative = Math.Round(cumulative, 2);
 
-                // Duration must match EXACTLY
+                // Duration must match exactly
                 if (totalMinutes == targetDurationMinutes &&
                     roundedCumulative >= minDepth &&
                     roundedCumulative <= maxDepth)
@@ -161,6 +164,8 @@ public class StormController : Controller
                         EventData = new List<RainfallRecord>(eventData)
                     });
 
+                    // Next storm can only start after this storm ends
+                    nextAvailableStart = data[j].Time;
                     break; // move to next starting point
                 }
             }

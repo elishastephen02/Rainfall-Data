@@ -431,6 +431,17 @@ C:\Users\elishastephen\Downloads\Visual Studio\RainfallThree\RainfallThree\Rainf
 C:\Users\elishastephen\Downloads\Visual Studio\RainfallThree\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.pdb
 C:\Users\elishastephen\Downloads\Visual Studio\RainfallThree\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.genruntimeconfig.cache
 C:\Users\elishastephen\Downloads\Visual Studio\RainfallThree\RainfallThree\RainfallThree\obj\Debug\net10.0\ref\RainfallThree.dll
+C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.csproj.AssemblyReference.cache
+C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\rpswa.dswa.cache.json
+C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.AssemblyInfoInputs.cache
+C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.AssemblyInfo.cs
+C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.csproj.CoreCompileInputs.cache
+C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.RazorAssemblyInfo.cache
+C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.RazorAssemblyInfo.cs
+C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.sourcelink.json
 C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\bin\Debug\net10.0\appsettings.Development.json
 C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\bin\Debug\net10.0\appsettings.json
 C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\bin\Debug\net10.0\RainfallThree.staticwebassets.runtime.json
@@ -710,17 +721,6 @@ C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\Ra
 C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\bin\Debug\net10.0\runtimes\win-arm64\native\e_sqlite3.dll
 C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\bin\Debug\net10.0\runtimes\win-x64\native\e_sqlite3.dll
 C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\bin\Debug\net10.0\runtimes\win-x86\native\e_sqlite3.dll
-C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.csproj.AssemblyReference.cache
-C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\rpswa.dswa.cache.json
-C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.AssemblyInfoInputs.cache
-C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.AssemblyInfo.cs
-C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.csproj.CoreCompileInputs.cache
-C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.MvcApplicationPartsAssemblyInfo.cs
-C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.RazorAssemblyInfo.cache
-C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.RazorAssemblyInfo.cs
-C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\RainfallThree.sourcelink.json
 C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\rjimswa.dswa.cache.json
 C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
