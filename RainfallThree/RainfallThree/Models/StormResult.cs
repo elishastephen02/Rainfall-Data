@@ -6,5 +6,8 @@
         public DateTime EndTime { get; set; }
         public double TotalRainfall { get; set; }
         public List<RainfallRecord> EventData { get; set; }
+
+        // midpoint of storm
+        public DateTime MidTime => StartTime + TimeSpan.FromTicks((EndTime - StartTime).Ticks / 2);
     }
 }
