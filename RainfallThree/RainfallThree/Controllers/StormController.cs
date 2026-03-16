@@ -20,7 +20,13 @@ public class StormController : Controller
 
         if (model.UploadedFile == null || model.UploadedFile.Length == 0)
         {
-            model.Message = "Please upload a valid CSV file.";
+            model.Message = "Please upload a file.";
+            return View(model);
+        }
+
+        if (!model.UploadedFile.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+        {
+            model.Message = "Please upload a CSV file.";
             return View(model);
         }
 
