@@ -2,136 +2,6 @@
 
 <h2>Rainfall Data</h2>
 
-<style>
-    form.rainfall-form {
-        max-width: 800px;
-        margin: 0 auto;
-        font-family: Arial, sans-serif;
-        background: #f7f7f7;
-        padding: 25px 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-
-        form.rainfall-form fieldset {
-            border: 1px solid #ccc;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            background: #fff;
-        }
-
-        form.rainfall-form legend {
-            font-weight: bold;
-            padding: 0 10px;
-            font-size: 1.1em;
-        }
-
-        form.rainfall-form .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px 30px;
-            margin-top: 15px;
-        }
-
-        form.rainfall-form .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-            form.rainfall-form .form-group label {
-                margin-bottom: 5px;
-                font-weight: 500;
-            }
-
-            form.rainfall-form .form-group input,
-            form.rainfall-form .form-group select {
-                padding: 8px 10px;
-                border: 1px solid #ccc;
-                border-radius: 6px;
-                font-size: 14px;
-                transition: border 0.2s;
-            }
-
-                form.rainfall-form .form-group input:focus,
-                form.rainfall-form .form-group select:focus {
-                    border-color: #007bff;
-                    outline: none;
-                }
-
-        form.rainfall-form button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            display: block;
-            margin: 0 auto;
-            margin-top: 10px;
-            transition: background 0.2s;
-        }
-
-            form.rainfall-form button:hover {
-                background-color: #0056b3;
-            }
-
-        form.rainfall-form table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin-top: 25px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-
-        form.rainfall-form th,
-        form.rainfall-form td {
-            padding: 12px 15px;
-            text-align: center;
-        }
-
-        form.rainfall-form th {
-            background-color: #007bff;
-            color: white;
-            font-weight: 600;
-        }
-
-        form.rainfall-form tbody tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-
-        form.rainfall-form tbody tr:hover {
-            background-color: #d6e4ff;
-            transition: background 0.2s;
-        }
-
-    .results-container {
-        width: 100%;
-        margin-top: 30px;
-        padding: 0 20px;
-    }
-
-        .results-container table {
-            width: 100%;
-            min-width: 1200px;
-        }
-
-        .results-container th,
-        .results-container td {
-            padding: 12px 14px;
-            text-align: center;
-        }
-
-        .results-container thead th {
-            background-color: #007bff;
-            color: white;
-            z-index: 4;
-        }
-</style>
-
 <form class="rainfall-form" method="post">
 
     <h3>Select Location on Durban Map</h3>
@@ -164,38 +34,38 @@
         }
 
         function degMinToDecimal(deg, min) {
-            if(deg === "" || deg === null) return null;
+            if(deg === null || deg === "" || isNaN(deg)) return null;
             return parseFloat(deg) + (parseFloat(min) || 0) / 60;
         }
 
         function updateMarkerFromInputs() {
-            var latDeg = document.getElementById("LATDEG").value;
-            var latMin = document.getElementById("LATMIN").value;
-            var lngDeg = document.getElementById("LONGDEG").value;
-            var lngMin = document.getElementById("LONGMIN").value;
+            var latDeg = parseFloat(document.getElementById("LATDEG").value);
+            var latMin = parseFloat(document.getElementById("LATMIN").value);
+            var lngDeg = parseFloat(document.getElementById("LONGDEG").value);
+            var lngMin = parseFloat(document.getElementById("LONGMIN").value);
 
-            if(latDeg !== "" && lngDeg !== "") {
+            if(!isNaN(latDeg) && !isNaN(lngDeg)) {
                 var lat = -degMinToDecimal(latDeg, latMin);
                 var lng = degMinToDecimal(lngDeg, lngMin);
                 placeMarker(lat, lng);
             }
         }
 
-        // Preload marker from model (works after POST or manual input)
-        window.addEventListener('DOMContentLoaded', function() {
-            var latDeg = "@Model.LATDEG";
-            var latMin = "@Model.LATMIN";
-            var lngDeg = "@Model.LONGDEG";
-            var lngMin = "@Model.LONGMIN";
+        // Preload marker from model values after page load
+        window.addEventListener('load', function () {
+            var latDeg = @(Model.LATDEG.HasValue? Model.LATDEG.Value.ToString() : "NaN");
+            var latMin = @(Model.LATMIN.HasValue? Model.LATMIN.Value.ToString() : "0");
+            var lngDeg = @(Model.LONGDEG.HasValue? Model.LONGDEG.Value.ToString() : "NaN");
+            var lngMin = @(Model.LONGMIN.HasValue? Model.LONGMIN.Value.ToString() : "0");
 
-            if(latDeg && lngDeg) {
+            if(!isNaN(latDeg) && !isNaN(lngDeg)) {
                 var lat = -degMinToDecimal(latDeg, latMin);
                 var lng = degMinToDecimal(lngDeg, lngMin);
                 placeMarker(lat, lng);
             }
         });
 
-        // Map click updates inputs + marker
+        // Click map to drop marker and update inputs
         map.on('click', function(e) {
             var lat = e.latlng.lat;
             var lng = e.latlng.lng;
@@ -208,7 +78,7 @@
             document.getElementById("LONGMIN").value = Math.round((Math.abs(lng) - Math.floor(Math.abs(lng))) * 60);
         });
 
-        // Manual input changes update marker
+        // Update marker when manual inputs change
         ["LATDEG","LATMIN","LONGDEG","LONGMIN"].forEach(function(id) {
             document.getElementById(id).addEventListener("change", updateMarkerFromInputs);
         });
@@ -350,3 +220,133 @@
         </table>
     </div>
 }
+
+<style>
+    form.rainfall-form {
+        max-width: 800px;
+        margin: 0 auto;
+        font-family: Arial, sans-serif;
+        background: #f7f7f7;
+        padding: 25px 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+        form.rainfall-form fieldset {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        form.rainfall-form legend {
+            font-weight: bold;
+            padding: 0 10px;
+            font-size: 1.1em;
+        }
+
+        form.rainfall-form .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px 30px;
+            margin-top: 15px;
+        }
+
+        form.rainfall-form .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+            form.rainfall-form .form-group label {
+                margin-bottom: 5px;
+                font-weight: 500;
+            }
+
+            form.rainfall-form .form-group input,
+            form.rainfall-form .form-group select {
+                padding: 8px 10px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                font-size: 14px;
+                transition: border 0.2s;
+            }
+
+                form.rainfall-form .form-group input:focus,
+                form.rainfall-form .form-group select:focus {
+                    border-color: #007bff;
+                    outline: none;
+                }
+
+        form.rainfall-form button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            margin: 0 auto;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+            form.rainfall-form button:hover {
+                background-color: #0056b3;
+            }
+
+        form.rainfall-form table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 25px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        form.rainfall-form th,
+        form.rainfall-form td {
+            padding: 12px 15px;
+            text-align: center;
+        }
+
+        form.rainfall-form th {
+            background-color: #007bff;
+            color: white;
+            font-weight: 600;
+        }
+
+        form.rainfall-form tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        form.rainfall-form tbody tr:hover {
+            background-color: #d6e4ff;
+            transition: background 0.2s;
+        }
+
+    .results-container {
+        width: 100%;
+        margin-top: 30px;
+        padding: 0 20px;
+    }
+
+        .results-container table {
+            width: 100%;
+            min-width: 1200px;
+        }
+
+        .results-container th,
+        .results-container td {
+            padding: 12px 14px;
+            text-align: center;
+        }
+
+        .results-container thead th {
+            background-color: #007bff;
+            color: white;
+            z-index: 4;
+        }
+</style>
