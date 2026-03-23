@@ -137,17 +137,19 @@
                                     var lat = Model.Latitude.Value;
                                     var lon = Model.Longitude.Value;
 
-                                    // Create bounding box around station
-                                    var minLat = lat - 3;
-                                    var maxLat = lat + 3;
-                                    var minLon = lon - 3;
-                                    var maxLon = lon + 3;
+                                    // Zoom offset: smaller = closer zoom
+                                    //var zoomOffset = 0.15; // area around station and storm midpoint
+
+                                    // Create bounding box around station/storm midpoint
+                                    var minLat = lat - 20;
+                                    var maxLat = lat + 20;
+                                    var minLon = lon - 20;
+                                    var maxLon = lon + 20;
 
                                     var dt = storm.MidTime;
 
                                     // Round to nearest 10 minutes safely
                                     int roundedMinutes = (int)(Math.Round(dt.Minute / 10.0) * 10);
-
                                     if (roundedMinutes == 60)
                                     {
                                         dt = dt.AddHours(1);
@@ -157,7 +159,7 @@
                                     var roundedMid = new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, 0, 0)
                                                         .AddMinutes(roundedMinutes);
 
-                                  // Check if date is before NASA GIBS
+                                    // Check if date is before NASA GIBS
                                     var gibsStartDate = new DateTime(2000, 2, 24);
                                     if (roundedMid < gibsStartDate)
                                     {

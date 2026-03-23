@@ -1,11 +1,8 @@
 wwwroot\css\site.css
 wwwroot\favicon.ico
-wwwroot\Images\EDRE.png
-wwwroot\Images\EDREIcon.png
 wwwroot\Images\ethekweniLogo.png
-wwwroot\Images\StormInsight.png
-wwwroot\Images\StormInsightIcon.png
-wwwroot\Images\stormOne.png
+wwwroot\Images\logo.png
+wwwroot\Images\logoicon.png
 wwwroot\js\site.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
