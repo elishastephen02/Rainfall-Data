@@ -1,5 +1,11 @@
 wwwroot\css\site.css
 wwwroot\favicon.ico
+wwwroot\Images\EDRE.png
+wwwroot\Images\EDREIcon.png
+wwwroot\Images\ethekweniLogo.png
+wwwroot\Images\StormInsight.png
+wwwroot\Images\StormInsightIcon.png
+wwwroot\Images\stormOne.png
 wwwroot\js\site.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
@@ -61,7 +67,6 @@ wwwroot\lib\jquery\dist\jquery.slim.js
 wwwroot\lib\jquery\dist\jquery.slim.min.js
 wwwroot\lib\jquery\dist\jquery.slim.min.map
 wwwroot\lib\jquery\LICENSE.txt
-C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\lib\jquery\LICENSE.txt
 C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\lib\jquery\dist\jquery.slim.min.map
 C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\lib\jquery\dist\jquery.slim.min.js
 C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\lib\jquery\dist\jquery.slim.js
@@ -123,3 +128,4 @@ C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\Ra
 C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\js\site.js
 C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\favicon.ico
 C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\css\site.css
+C:\Users\elishastephen\Downloads\Visual Studio\Rainfall Web App\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\lib\jquery\LICENSE.txt

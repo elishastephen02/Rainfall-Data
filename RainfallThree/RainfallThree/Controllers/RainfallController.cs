@@ -127,7 +127,7 @@ public class RainfallController : Controller
 
         var builder = new System.Text.StringBuilder();
 
-        // ===== HEADER =====
+        // HEADER
         if (string.IsNullOrEmpty(model.SelectedDuration))
         {
             builder.AppendLine("Index,LatDeg,LatMin,LongDeg,LongMin,ReturnPeriod,5Min,10Min,15Min,30Min,60Min,120Min,1440Min,4320Min,10080Min,SourceSheet");
@@ -137,7 +137,7 @@ public class RainfallController : Controller
             builder.AppendLine($"Index,LatDeg,LatMin,LongDeg,LongMin,ReturnPeriod,{model.SelectedDuration}Min,SourceSheet");
         }
 
-     // ===== DATA =====
+         // DATA 
         foreach (var item in results)
         {
             if (string.IsNullOrEmpty(model.SelectedDuration))

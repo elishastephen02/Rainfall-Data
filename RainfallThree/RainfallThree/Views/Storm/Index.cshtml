@@ -2,7 +2,7 @@
 
 <div class="container mt-5">
     <div class="card shadow-lg p-4 rounded-4">
-        <h2 class="text-center mb-4">🌧 Storm Event Finder</h2>
+        <h2 class="text-center mb-4" style="color:#005E83">🌧 Storm Event Finder</h2>
         <form asp-action="Index" method="post" enctype="multipart/form-data">
             <div class="mb-3">
                 <label class="form-label fw-bold">Upload Rainfall CSV</label>
@@ -157,7 +157,7 @@
                                     var roundedMid = new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, 0, 0)
                                                         .AddMinutes(roundedMinutes);
 
-                                  // Check if date is before NASA GIBS availability
+                                  // Check if date is before NASA GIBS
                                     var gibsStartDate = new DateTime(2000, 2, 24);
                                     if (roundedMid < gibsStartDate)
                                     {
@@ -193,7 +193,7 @@
 
                     </div>
 
-                    <!-- TABLE (NOW INSIDE CAROUSEL) -->
+                    <!-- TABLE -->
                     <div class="storm-table-container mt-3">
                         <table class="table table-sm table-striped table-bordered">
                             <thead class="table-dark">
@@ -321,10 +321,10 @@
                 });
             }
 
-            // Create first chart immediately
+            @* Create first chart immediately *@
             createChart(0);
 
-            // Create chart when slide changes
+            @* Create chart when slide changes *@
             const carousel = document.getElementById('stormCarousel');
 
             if (carousel) {
@@ -345,18 +345,17 @@
                 nextBtn.style.display = (activeIndex === total - 1) ? 'none' : 'flex';
             }
 
-            // Initial check
+            @* Initial check *@
             updateCarouselArrows();
 
-            // Update arrows after slide changes
+            @* Update arrows after slide changes *@
             carouselEl.addEventListener('slid.bs.carousel', updateCarouselArrows);
         </script>
     }
 }
 
 <style>
-    /* Make carousel arrows black and identical style */
-
+    @* Make carousel arrows black and identical style *@ 
     .carousel-control-prev-icon {
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='black' viewBox='0 0 16 16'%3E%3Cpath d='M11 1 3 8l8 7' stroke='black' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     }
@@ -372,44 +371,40 @@
     .carousel-control-prev,
     .carousel-control-next {
         width: 5%;
-        top: 35%; /* center vertically relative to the graph */
-        transform: translateY(-50%); /* truly center on the graph */
+        top: 35%;
+        transform: translateY(-50%);
         position: absolute;
         z-index: 20;
     }
 
     .carousel-control-prev {
-        left: 10px; /* bring closer to graph */
+        left: 10px;
     }
 
     .carousel-control-next {
-        right: 10px; /* bring closer to graph */
+        right: 10px; 
     }
 
-    /* Ensure arrows don't block table scroll */
     .storm-table-container {
         max-height: 400px;
         overflow-y: auto;
         overflow-x: hidden;
         padding-right: 10px;
         position: relative;
-        pointer-events: auto; /* table scroll works */
+        pointer-events: auto;
         z-index: 10;
     }
 
-    /* Optional: make arrows bigger for easier click */
     .carousel-control-prev-icon,
     .carousel-control-next-icon {
         width: 35px;
         height: 35px;
     }
 
-    /* Smooth scrolling */
     .storm-table-container {
         scroll-behavior: smooth;
     }
 
-    /* Scrollbar styling */
     .storm-table-container::-webkit-scrollbar {
         width: 10px;
     }

@@ -18,7 +18,7 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
@@ -30,9 +30,39 @@ body {
   text-align: start;
 }
 
-.app-title {
-    color: black !important;
-    font-weight: 700;
-    font-size: 1.5rem;
-    letter-spacing: 0.5px;
+.custom-navbar {
+    background-color: #333386;
 }
+
+    .custom-navbar .nav-link,
+    .custom-navbar .navbar-brand {
+        color: white;
+    }
+
+        .custom-navbar .nav-link:hover {
+            color: blue !important;
+        }
+
+    .custom-navbar .app-title {
+        color: white;
+        font-weight: 700;
+        font-size: 1.5rem;
+        letter-spacing: 0.5px;
+    }
+
+footer {
+    background-color: #333386;
+    color: white !important;
+}
+
+    footer .container {
+        text-align: left;
+    }
+
+    footer .text-white {
+        color: white !important;
+    }
+
+    footer img {
+        margin-left: 15px;
+    }

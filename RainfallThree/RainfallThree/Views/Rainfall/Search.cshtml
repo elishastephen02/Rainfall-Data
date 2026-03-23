@@ -1,6 +1,6 @@
 ﻿@model RainfallThree.Models.SearchRainfallViewModel
 
-<h2 class="text-center">☔ Rainfall Data</h2>
+<h2 class="text-center" style="color:#005E83">☔ Rainfall Data</h2>
 
 <form class="rainfall-form" method="post">
 
@@ -85,16 +85,8 @@
     </script>
 
     <fieldset>
-        <legend>Location & Index</legend>
+        <legend>Location</legend>
         <div class="form-grid">
-            <div class="form-group">
-                <label asp-for="Index">Index Number</label>
-                <input asp-for="Index" id="Index" />
-            </div>
-            <div class="form-group">
-                <label asp-for="ReturnPeriod">Return Period</label>
-                <select asp-for="ReturnPeriod" asp-items="Model.ReturnPeriodOptions" class="form-control"></select>
-            </div>
             <div class="form-group">
                 <label asp-for="LATDEG">Latitude Degree</label>
                 <input asp-for="LATDEG" id="LATDEG" />
@@ -110,6 +102,10 @@
             <div class="form-group">
                 <label asp-for="LONGMIN">Longitude Minute</label>
                 <input asp-for="LONGMIN" id="LONGMIN" />
+            </div>
+            <div class="form-group return-period-center">
+                <label asp-for="ReturnPeriod">Return Period</label>
+                <select asp-for="ReturnPeriod" asp-items="Model.ReturnPeriodOptions" class="form-control"></select>
             </div>
         </div>
     </fieldset>
@@ -138,7 +134,9 @@
                 <input type="hidden" name="LONGMIN" value="@Model.LONGMIN" />
                 <input type="hidden" name="ReturnPeriod" value="@Model.ReturnPeriod" />
                 <input type="hidden" name="SelectedDuration" value="@Model.SelectedDuration" />
-                <button type="submit" style="background-color:#28a745;">Download Data</button>
+                <button type="submit" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">
+                    Download Data
+                </button>
             </form>
         </div>
 
@@ -232,100 +230,110 @@
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
 
-        form.rainfall-form fieldset {
-            border: 1px solid #ccc;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            background: #fff;
-        }
+    form.rainfall-form fieldset {
+        border: 1px solid #ccc;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        background: #fff;
+    }
 
-        form.rainfall-form legend {
-            font-weight: bold;
-            padding: 0 10px;
-            font-size: 1.1em;
-        }
+    form.rainfall-form legend {
+        font-weight: bold;
+        padding: 0 10px;
+        font-size: 1.1em;
+    }
 
-        form.rainfall-form .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px 30px;
-            margin-top: 15px;
-        }
+    form.rainfall-form .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px 30px;
+        margin-top: 15px;
+    }
 
-        form.rainfall-form .form-group {
-            display: flex;
-            flex-direction: column;
-        }
+    form.rainfall-form .form-group {
+        display: flex;
+        flex-direction: column;
+    }
 
-            form.rainfall-form .form-group label {
-                margin-bottom: 5px;
-                font-weight: 500;
-            }
+    form.rainfall-form .form-group label {
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
 
-            form.rainfall-form .form-group input,
-            form.rainfall-form .form-group select {
-                padding: 8px 10px;
-                border: 1px solid #ccc;
-                border-radius: 6px;
-                font-size: 14px;
-                transition: border 0.2s;
-            }
+    form.rainfall-form .form-group input,
+    form.rainfall-form .form-group select {
+        padding: 8px 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border 0.2s;
+    }
 
-                form.rainfall-form .form-group input:focus,
-                form.rainfall-form .form-group select:focus {
-                    border-color: #007bff;
-                    outline: none;
-                }
+    form.rainfall-form .form-group input:focus,
+    form.rainfall-form .form-group select:focus {
+        border-color: #007bff;
+        outline: none;
+    }
 
-        form.rainfall-form button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            display: block;
-            margin: 0 auto;
-            margin-top: 10px;
-            transition: background 0.2s;
-        }
+    form.rainfall-form button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        display: block;
+        margin: 0 auto;
+        margin-top: 10px;
+        transition: background 0.2s;
+    }
 
-            form.rainfall-form button:hover {
-                background-color: #0056b3;
-            }
+    form.rainfall-form button:hover {
+        background-color: #0056b3;
+    }
 
-        form.rainfall-form table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin-top: 25px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
+    form.rainfall-form table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 25px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
 
-        form.rainfall-form th,
-        form.rainfall-form td {
-            padding: 12px 15px;
-            text-align: center;
-        }
+    form.rainfall-form th,
+    form.rainfall-form td {
+        padding: 12px 15px;
+        text-align: center;
+    }
 
-        form.rainfall-form th {
-            background-color: #007bff;
-            color: white;
-            font-weight: 600;
-        }
+    form.rainfall-form th {
+        background-color: #007bff;
+        color: white;
+        font-weight: 600;
+    }
 
-        form.rainfall-form tbody tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
+    form.rainfall-form tbody tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
 
-        form.rainfall-form tbody tr:hover {
-            background-color: #d6e4ff;
-            transition: background 0.2s;
-        }
+    form.rainfall-form tbody tr:hover {
+        background-color: #d6e4ff;
+        transition: background 0.2s;
+    }
+
+    .return-period-center {
+        grid-column: 1 / -1; 
+        text-align: center;
+    }
+
+    .return-period-center select {
+        width: 250px;
+        margin: 0 auto; 
+    }
 
     .results-container {
         width: 100%;
@@ -333,20 +341,20 @@
         padding: 0 20px;
     }
 
-        .results-container table {
-            width: 100%;
-            min-width: 1200px;
-        }
+    .results-container table {
+        width: 100%;
+        min-width: 1200px;
+    }
 
-        .results-container th,
-        .results-container td {
-            padding: 12px 14px;
-            text-align: center;
-        }
+    .results-container th,
+    .results-container td {
+        padding: 12px 14px;
+        text-align: center;
+    }
 
-        .results-container thead th {
-            background-color: #007bff;
-            color: white;
-            z-index: 4;
-        }
+    .results-container thead th {
+        background-color: #007bff;
+        color: white;
+        z-index: 4;
+    }
 </style>

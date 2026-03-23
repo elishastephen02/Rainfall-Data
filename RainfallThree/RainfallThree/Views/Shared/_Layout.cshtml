@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Rainfall Tools</title>
+    <title>@ViewData["Title"] - EDRE</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -11,9 +11,11 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3 custom-navbar">
             <div class="container-fluid">
-                <span class="navbar-brand app-title">Rainfall Tools</span>
+                <span class="navbar-brand d-flex align-items-center app-title">
+                    EDRE
+                </span>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -21,21 +23,21 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Rainfall" asp-action="Search">Rainfall Data</a>
+                                <a class="nav-link text-light" asp-area="" asp-controller="Rainfall" asp-action="Search">Rainfall Data</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Storm" asp-action="Index">Rainfall Events</a>
+                                <a class="nav-link text-light" asp-area="" asp-controller="Storm" asp-action="Index">Rainfall Events</a>
                             </li>
                         }
                         @if (User.IsInRole("PrimaryUser"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="PendingUsers">User Approvals</a>
+                                <a class="nav-link text-light" asp-controller="Admin" asp-action="PendingUsers">User Approvals</a>
                             </li>
                         }
                     </ul>
@@ -50,9 +52,19 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Rainfall Tools
+    <footer class="border-top footer py-2">
+        <div class="container d-flex justify-content-between align-items-start flex-wrap">
+            <div class="small text-white pe-3" style="flex:1;">
+                &copy; 2026 E.D.R.E. All rights reserved. <span class="mx-1">|</span>
+                Commissioned by KC Sha. <span class="mx-1">|</span>
+                All intellectual property rights in this application, including its content, design, and functionality, are reserved.
+            </div>
+
+            <div class="text-end">
+                <img src="/Images/ethekweniLogo.png"
+                     alt="eThekwini Logo"
+                     style="height:55px; width:auto; display:block;" />
+            </div>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
