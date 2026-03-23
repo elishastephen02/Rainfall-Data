@@ -183,18 +183,18 @@ public class StormController : Controller
     }
 
     [HttpPost]
-    public IActionResult Download(string resultsJson)
+    public IActionResult Download(string stormJson, int stormNumber)
     {
-        if (string.IsNullOrWhiteSpace(resultsJson))
+        if (string.IsNullOrWhiteSpace(stormJson))
         {
             return BadRequest("No storm data available to download.");
         }
 
-        List<StormResult>? results;
+        StormResult? storm;
 
         try
         {
-            results = JsonSerializer.Deserialize<List<StormResult>>(resultsJson, new JsonSerializerOptions
+            storm = JsonSerializer.Deserialize<StormResult>(stormJson, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
@@ -204,49 +204,43 @@ public class StormController : Controller
             return BadRequest("Invalid storm data.");
         }
 
-        if (results == null || results.Count == 0)
+        if (storm == null)
         {
             return BadRequest("No storm data available to download.");
         }
 
         var sb = new StringBuilder();
 
-        // Header row
         sb.AppendLine("Storm Number,Start Time,End Time,Total Rainfall (mm),Record Time,Rainfall (mm)");
 
-        for (int i = 0; i < results.Count; i++)
+        if (storm.EventData != null && storm.EventData.Count > 0)
         {
-            var storm = results[i];
-
-            if (storm.EventData != null && storm.EventData.Count > 0)
-            {
-                foreach (var item in storm.EventData)
-                {
-                    sb.AppendLine(string.Join(",",
-                        EscapeCsv((i + 1).ToString()),
-                        EscapeCsv(storm.StartTime.ToString("dd/MM/yyyy HH:mm")),
-                        EscapeCsv(storm.EndTime.ToString("dd/MM/yyyy HH:mm")),
-                        EscapeCsv(storm.TotalRainfall.ToString("F2", CultureInfo.InvariantCulture)),
-                        EscapeCsv(item.Time.ToString("dd/MM/yyyy HH:mm")),
-                        EscapeCsv(item.Rainfall.ToString("F2", CultureInfo.InvariantCulture))
-                    ));
-                }
-            }
-            else
+            foreach (var item in storm.EventData)
             {
                 sb.AppendLine(string.Join(",",
-                    EscapeCsv((i + 1).ToString()),
+                    EscapeCsv(stormNumber.ToString()),
                     EscapeCsv(storm.StartTime.ToString("dd/MM/yyyy HH:mm")),
                     EscapeCsv(storm.EndTime.ToString("dd/MM/yyyy HH:mm")),
                     EscapeCsv(storm.TotalRainfall.ToString("F2", CultureInfo.InvariantCulture)),
-                    "",
-                    ""
+                    EscapeCsv(item.Time.ToString("dd/MM/yyyy HH:mm")),
+                    EscapeCsv(item.Rainfall.ToString("F2", CultureInfo.InvariantCulture))
                 ));
             }
         }
+        else
+        {
+            sb.AppendLine(string.Join(",",
+                EscapeCsv(stormNumber.ToString()),
+                EscapeCsv(storm.StartTime.ToString("dd/MM/yyyy HH:mm")),
+                EscapeCsv(storm.EndTime.ToString("dd/MM/yyyy HH:mm")),
+                EscapeCsv(storm.TotalRainfall.ToString("F2", CultureInfo.InvariantCulture)),
+                "",
+                ""
+            ));
+        }
 
         var bytes = Encoding.UTF8.GetBytes(sb.ToString());
-        var fileName = $"StormResults_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+        var fileName = $"Storm_{stormNumber}_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
 
         return File(bytes, "text/csv", fileName);
     }

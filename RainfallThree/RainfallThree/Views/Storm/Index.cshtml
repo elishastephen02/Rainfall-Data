@@ -95,16 +95,6 @@
 
 @if (Model.Results != null && Model.Results.Count > 0)
 {
-    <div class="text-center mb-3">
-    <form asp-action="Download" method="post">
-        <input type="hidden" name="resultsJson"
-               value='@System.Text.Json.JsonSerializer.Serialize(Model.Results)' />
-        <button type="submit" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">
-            Download Data
-        </button>
-    </form>
-</div>
-
     <h4 class="mb-4 text-center">
         🌧 Storm Found: @Model.Results.Count storm(s) matching criteria
     </h4>
@@ -146,9 +136,6 @@
                                 {
                                     var lat = Model.Latitude.Value;
                                     var lon = Model.Longitude.Value;
-
-                                    // Zoom offset: smaller = closer zoom
-                                    //var zoomOffset = 0.15; // area around station and storm midpoint
 
                                     // Create bounding box around station/storm midpoint
                                     var minLat = lat - 20;
@@ -203,6 +190,17 @@
 
                         </div>
 
+                    </div>
+
+                    <div class="text-center mb-3">
+                        <form asp-action="Download" method="post">
+                            <input type="hidden" name="stormJson"
+                                   value='@System.Text.Json.JsonSerializer.Serialize(storm)' />
+                            <input type="hidden" name="stormNumber" value="@(i + 1)" />
+                            <button type="submit" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">
+                                Download Data
+                            </button>
+                        </form>
                     </div>
 
                     <!-- TABLE -->
