@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RainfallThree.Models;
 using System.Globalization;
+using System.Text;
+using System.Text.Json;
 
 public class StormController : Controller
 {
@@ -178,5 +180,87 @@ public class StormController : Controller
         }
 
         return storms.OrderBy(s => s.StartTime).ToList();
+    }
+
+    [HttpPost]
+    public IActionResult Download(string resultsJson)
+    {
+        if (string.IsNullOrWhiteSpace(resultsJson))
+        {
+            return BadRequest("No storm data available to download.");
+        }
+
+        List<StormResult>? results;
+
+        try
+        {
+            results = JsonSerializer.Deserialize<List<StormResult>>(resultsJson, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+        }
+        catch
+        {
+            return BadRequest("Invalid storm data.");
+        }
+
+        if (results == null || results.Count == 0)
+        {
+            return BadRequest("No storm data available to download.");
+        }
+
+        var sb = new StringBuilder();
+
+        // Header row
+        sb.AppendLine("Storm Number,Start Time,End Time,Total Rainfall (mm),Record Time,Rainfall (mm)");
+
+        for (int i = 0; i < results.Count; i++)
+        {
+            var storm = results[i];
+
+            if (storm.EventData != null && storm.EventData.Count > 0)
+            {
+                foreach (var item in storm.EventData)
+                {
+                    sb.AppendLine(string.Join(",",
+                        EscapeCsv((i + 1).ToString()),
+                        EscapeCsv(storm.StartTime.ToString("dd/MM/yyyy HH:mm")),
+                        EscapeCsv(storm.EndTime.ToString("dd/MM/yyyy HH:mm")),
+                        EscapeCsv(storm.TotalRainfall.ToString("F2", CultureInfo.InvariantCulture)),
+                        EscapeCsv(item.Time.ToString("dd/MM/yyyy HH:mm")),
+                        EscapeCsv(item.Rainfall.ToString("F2", CultureInfo.InvariantCulture))
+                    ));
+                }
+            }
+            else
+            {
+                sb.AppendLine(string.Join(",",
+                    EscapeCsv((i + 1).ToString()),
+                    EscapeCsv(storm.StartTime.ToString("dd/MM/yyyy HH:mm")),
+                    EscapeCsv(storm.EndTime.ToString("dd/MM/yyyy HH:mm")),
+                    EscapeCsv(storm.TotalRainfall.ToString("F2", CultureInfo.InvariantCulture)),
+                    "",
+                    ""
+                ));
+            }
+        }
+
+        var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+        var fileName = $"StormResults_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+
+        return File(bytes, "text/csv", fileName);
+    }
+
+    private string EscapeCsv(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return "";
+
+        if (value.Contains(",") || value.Contains("\"") || value.Contains("\n"))
+        {
+            value = "\"" + value.Replace("\"", "\"\"") + "\"";
+        }
+
+        return value;
     }
 }

@@ -4,14 +4,6 @@
 
 <div class="container text-center pt-2 pb-4">
     <div class="mb-4">
-        <h1 class="display-4 fw-bold mb-2" style="color:#333386;">
-            Welcome to E.D.R.E.
-        </h1>
-
-        <p class="lead text-muted mt-2 mb-1">
-            Advanced rainfall and storm analysis tools for smarter decisions.
-        </p>
-
         <img src="/Images/logo.png"
              style="max-width:400px; width:100%; height:auto; margin-top:20px; margin-bottom:10px" />
     </div>
@@ -32,19 +24,13 @@
                             Rainfall Data
                         </a>
                     }
-                    else
-                    {
-                        <a href="/Identity/Account/Login" class="btn btn-primary btn-lg px-4">
-                            Rainfall Data
-                        </a>
-                    }
                 </div>
             </div>
         </div>
 
         <div class="col-md-6 mb-4">
             <div class="p-4 shadow-sm rounded-4 h-100" style="background-color:#F0F8FF;">
-                <h5>🌧 Rainfall Event Detection</h5>
+                <h5>🌧 Storm Event Detection</h5>
                 <p class="text-muted">
                     Upload CSV datasets along with rainfall depth and duration parameters to identify storm events.
                     The application generates a visual bar chart of detected events and displays a satellite image
@@ -54,13 +40,7 @@
                     @if (User.Identity.IsAuthenticated)
                     {
                         <a href="/Storm/Index" class="btn btn-primary btn-lg px-4">
-                            Rainfall Events
-                        </a>
-                    }
-                    else
-                    {
-                        <a href="/Identity/Account/Login" class="btn btn-primary btn-lg px-4">
-                            Rainfall Events
+                            Storm Events
                         </a>
                     }
                 </div>

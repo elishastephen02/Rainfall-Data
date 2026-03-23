@@ -103,15 +103,15 @@
                 <label asp-for="LONGMIN">Longitude Minute</label>
                 <input asp-for="LONGMIN" id="LONGMIN" />
             </div>
-            <div class="form-group return-period-center">
-                <label asp-for="ReturnPeriod">Return Period</label>
-                <select asp-for="ReturnPeriod" asp-items="Model.ReturnPeriodOptions" class="form-control"></select>
-            </div>
         </div>
     </fieldset>
 
     <fieldset>
-        <legend>Rainfall Duration</legend>
+        <legend>Rainfall Return Period & Duration</legend>
+        <div class="form-group" style="margin-top: 10px">
+            <label asp-for="ReturnPeriod">Return Period</label>
+            <select asp-for="ReturnPeriod" asp-items="Model.ReturnPeriodOptions"></select>
+        </div>
         <div class="form-group" style="margin-top: 10px;">
             <label asp-for="SelectedDuration">Select Duration</label>
             <select asp-for="SelectedDuration" asp-items="Model.DurationOptions"></select>
