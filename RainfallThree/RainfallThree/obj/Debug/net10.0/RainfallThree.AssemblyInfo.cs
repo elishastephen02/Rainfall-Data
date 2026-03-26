@@ -16,7 +16,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RainfallThree")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ef201d402562ab4652026ec7ee4fde4744a7eece")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+22bb3605df99178f37dc1e13a22fb809eebb4768")]
 [assembly: System.Reflection.AssemblyProductAttribute("RainfallThree")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RainfallThree")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -84,7 +84,7 @@ public class RainfallController : Controller
         // Get results (limit to 500)
         model.Results = query.Take(500).ToList();
 
-        // ✅ Only preload marker if user didn't enter any coordinates
+        // Only preload marker if user didn't enter any coordinates
         if ((!model.LATDEG.HasValue || !model.LONGDEG.HasValue) && model.Results.Any())
         {
             var first = model.Results.First();

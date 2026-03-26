@@ -16,73 +16,184 @@
         var southWest = L.latLng(-30.2, 30.6);
         var northEast = L.latLng(-29.5, 31.5);
         var durbanBounds = L.latLngBounds(southWest, northEast);
+
         map.setMaxBounds(durbanBounds);
-        map.on('drag', function() {
+
+        map.on('drag', function () 
+        {
             map.panInsideBounds(durbanBounds, { animate: false });
         });
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', 
+        {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
         var marker;
 
-        function placeMarker(lat, lng) {
-            if(marker) map.removeLayer(marker);
+        function placeMarker(lat, lng) 
+        {
+            if (marker) map.removeLayer(marker);
             marker = L.marker([lat, lng]).addTo(map);
             map.setView([lat, lng], 14);
         }
 
-        function degMinToDecimal(deg, min) {
-            if(deg === null || deg === "" || isNaN(deg)) return null;
+        function degMinToDecimal(deg, min) 
+        {
+            if (deg === null || deg === "" || isNaN(deg)) return null;
             return parseFloat(deg) + (parseFloat(min) || 0) / 60;
         }
 
-        function updateMarkerFromInputs() {
+        function decimalToDegMin(value) 
+        {
+            var abs = Math.abs(value);
+            var deg = Math.floor(abs);
+            var min = Math.round((abs - deg) * 60);
+
+            if (min === 60) 
+            {
+                deg += 1;
+                min = 0;
+            }
+
+            return { deg: deg, min: min };
+        }
+
+        function updateInputsFromCoordinates(lat, lng) 
+        {
+            var latParts = decimalToDegMin(lat);
+            var lngParts = decimalToDegMin(lng);
+
+            document.getElementById("LATDEG").value = latParts.deg;
+            document.getElementById("LATMIN").value = latParts.min;
+            document.getElementById("LONGDEG").value = lngParts.deg;
+            document.getElementById("LONGMIN").value = lngParts.min;
+        }
+
+        function updateMarkerFromInputs() 
+        {
             var latDeg = parseFloat(document.getElementById("LATDEG").value);
             var latMin = parseFloat(document.getElementById("LATMIN").value);
             var lngDeg = parseFloat(document.getElementById("LONGDEG").value);
             var lngMin = parseFloat(document.getElementById("LONGMIN").value);
 
-            if(!isNaN(latDeg) && !isNaN(lngDeg)) {
+            if (!isNaN(latDeg) && !isNaN(lngDeg)) 
+            {
                 var lat = -degMinToDecimal(latDeg, latMin);
                 var lng = degMinToDecimal(lngDeg, lngMin);
                 placeMarker(lat, lng);
             }
         }
 
-        // Preload marker from model values after page load
-        window.addEventListener('load', function () {
+        function showMessage(msg, isError = true) 
+        {
+            var box = document.getElementById("addressMessage");
+            if (!box) return;
+            box.style.color = isError ? "red" : "green";
+            box.innerText = msg;
+        }
+
+        window.addEventListener('load', function () 
+        {
+
+            // preload marker
             var latDeg = @(Model.LATDEG.HasValue? Model.LATDEG.Value.ToString() : "NaN");
             var latMin = @(Model.LATMIN.HasValue? Model.LATMIN.Value.ToString() : "0");
             var lngDeg = @(Model.LONGDEG.HasValue? Model.LONGDEG.Value.ToString() : "NaN");
             var lngMin = @(Model.LONGMIN.HasValue? Model.LONGMIN.Value.ToString() : "0");
 
-            if(!isNaN(latDeg) && !isNaN(lngDeg)) {
+            if (!isNaN(latDeg) && !isNaN(lngDeg)) 
+            {
                 var lat = -degMinToDecimal(latDeg, latMin);
                 var lng = degMinToDecimal(lngDeg, lngMin);
                 placeMarker(lat, lng);
             }
-        });
 
-        // Click map to drop marker and update inputs
-        map.on('click', function(e) {
-            var lat = e.latlng.lat;
-            var lng = e.latlng.lng;
+            // input listeners
+            ["LATDEG", "LATMIN", "LONGDEG", "LONGMIN"].forEach(function (id) 
+            {
+                var el = document.getElementById(id);
+                if (el) el.addEventListener("change", updateMarkerFromInputs);
+            });
 
-            placeMarker(lat, lng);
+            // map click
+            map.on('click', function (e) 
+            {
+                var lat = e.latlng.lat;
+                var lng = e.latlng.lng;
 
-            document.getElementById("LATDEG").value = Math.floor(Math.abs(lat));
-            document.getElementById("LATMIN").value = Math.round((Math.abs(lat) - Math.floor(Math.abs(lat))) * 60);
-            document.getElementById("LONGDEG").value = Math.floor(Math.abs(lng));
-            document.getElementById("LONGMIN").value = Math.round((Math.abs(lng) - Math.floor(Math.abs(lng))) * 60);
-        });
+                placeMarker(lat, lng);
+                updateInputsFromCoordinates(lat, lng);
+            });
 
-        // Update marker when manual inputs change
-        ["LATDEG","LATMIN","LONGDEG","LONGMIN"].forEach(function(id) {
-            document.getElementById(id).addEventListener("change", updateMarkerFromInputs);
+            // address search
+            var btn = document.getElementById("searchAddressBtn");
+
+            if (btn) 
+            {
+                btn.addEventListener("click", async function () 
+                {
+
+                    showMessage("");
+
+                    var address = document.getElementById("Address").value;
+
+                    if (!address || address.trim() === "") 
+                    {
+                        showMessage("Please enter an address.");
+                        return;
+                    }
+
+                    try 
+                    {
+                        var apiKey = "AIzaSyC688eU0nYXp4K6Qx_HV3dj4dLLaWJPBNM";
+
+                        var url =
+                        "https://maps.googleapis.com/maps/api/geocode/json?address="
+                        + encodeURIComponent(address)
+                        + "&key=" + apiKey;
+
+                        var response = await fetch(url);
+                        var data = await response.json();
+
+                        console.log("Google API response:", data);
+                        if (!data.results || data.results.length === 0) 
+                        {
+                            showMessage("Address not found.");
+                            return;
+                        }
+
+                        var location = data.results[0].geometry.location;
+
+                        var lat = location.lat;
+                        var lng = location.lng;
+
+                        placeMarker(lat, lng);
+                        updateInputsFromCoordinates(lat, lng);
+
+                        showMessage("Address found!", false);
+
+                    } catch (error) 
+                    {
+                        console.error(error);
+                        showMessage("Error finding address.");
+                    }
+                });
+            }
         });
     </script>
+
+    <fieldset>
+        <legend>Search by Address</legend>
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label asp-for="Address">Address</label>
+            <div style="display:flex; gap:10px;">
+                <div id="addressMessage" style="margin-bottom:10px; color:red; font-weight:500;"></div>
+                <input asp-for="Address" id="Address" placeholder="Enter in your address" style="flex:1;" />
+                <button type="button" id="searchAddressBtn">Find Address</button>
+            </div>
+        </div>
+    </fieldset>
 
     <fieldset>
         <legend>Location</legend>

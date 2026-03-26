@@ -31,6 +31,10 @@ namespace RainfallThree.Models
             new SelectListItem { Value = "10080", Text = "10080 min (7 days)" }
         };
 
+        public string? Address { get; set; }
+        public double? Lat { get; set; }
+        public double? Long { get; set; }
+
         public List<RainfallSheet>? Results { get; set; }
     }
 }
