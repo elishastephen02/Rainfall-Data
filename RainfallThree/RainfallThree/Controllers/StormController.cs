@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RainfallThree.Data;
 using RainfallThree.Models;
 using System.Globalization;
 using System.Text;
@@ -6,6 +7,13 @@ using System.Text.Json;
 
 public class StormController : Controller
 {
+    private readonly ApplicationDbContext _context;
+
+    public StormController(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
     public IActionResult Index()
     {
         return View(new StormViewModel());
@@ -115,6 +123,17 @@ public class StormController : Controller
         else
         {
             model.Results = results;
+
+            foreach (var storm in model.Results)
+            {
+                storm.ReturnPeriod = GetReturnPeriod(
+                    storm.TotalRainfall,
+                    model.DurationMinutes,
+                    model.Latitude,
+                    model.Longitude
+                );
+            }
+
             model.Message = $"File loaded ({rainfallData.Count} records).";
         }
 
@@ -257,4 +276,145 @@ public class StormController : Controller
 
         return value;
     }
+
+    // uses step-wise logic 
+    private int? GetReturnPeriod(double rainfall, int duration, double? lat, double? lon)
+    {
+        if (!lat.HasValue || !lon.HasValue)
+            return null;
+
+        var (latDeg, latMin, lonDeg, lonMin) = ConvertToDegMin(lat.Value, lon.Value);
+
+        var exactData = _context.RainfallSheets
+            .Where(r =>
+                r.Latdeg == latDeg &&
+                r.Latmin == latMin &&
+                r.Longdeg == lonDeg &&
+                r.Longmin == lonMin)
+            .AsEnumerable()
+            .Select(r => new ReturnPeriodData
+            {
+                ReturnPeriod = r.ReturnPeriod,
+                Value = GetValueByDuration(r, duration)
+            })
+            .Where(x => x.Value > 0)
+            .OrderBy(x => x.Value)
+            .ToList();
+
+        if (exactData.Any())
+        {
+            return CalculateStepWiseReturnPeriod(exactData, rainfall);
+        }
+
+        var nearestStation = _context.RainfallSheets
+            .AsEnumerable()
+            .GroupBy(r => new { r.Latdeg, r.Latmin, r.Longdeg, r.Longmin })
+            .Select(g =>
+            {
+                double dbLat = -(g.Key.Latdeg + g.Key.Latmin / 60.0);
+                double dbLon = (g.Key.Longdeg + g.Key.Longmin / 60.0);
+
+                return new
+                {
+                    Rows = g.ToList(),
+                    Distance = GetDistance(lat.Value, lon.Value, dbLat, dbLon)
+                };
+            })
+            .OrderBy(x => x.Distance)
+            .FirstOrDefault();
+
+        if (nearestStation == null)
+            return null;
+
+        var fallbackData = nearestStation.Rows
+            .Select(r => new ReturnPeriodData
+            {
+                ReturnPeriod = r.ReturnPeriod,
+                Value = GetValueByDuration(r, duration)
+            })
+            .Where(x => x.Value > 0)
+            .OrderBy(x => x.Value)
+            .ToList();
+
+        if (!fallbackData.Any())
+            return null;
+
+        return CalculateStepWiseReturnPeriod(fallbackData, rainfall);
+    }
+
+    private double GetValueByDuration(RainfallSheet row, int duration)
+    {
+        return duration switch
+        {
+            5 => row._5Min ?? 0,
+            10 => row._10Min ?? 0,
+            15 => row._15Min ?? 0,
+            30 => row._30Min ?? 0,
+            60 => row._60Min ?? 0,
+            120 => row._120Min ?? 0,
+            1440 => row._1440Min ?? 0,
+            4320 => row._4320Min ?? 0,
+            10080 => row._10080Min ?? 0,
+            _ => 0
+        };
+    }
+
+    private (int latDeg, int latMin, int lonDeg, int lonMin) ConvertToDegMin(double lat, double lon)
+    {
+        lat = Math.Abs(lat);
+        lon = Math.Abs(lon);
+
+        int latDeg = (int)Math.Floor(lat);
+        int latMin = (int)Math.Floor((lat - latDeg) * 60);
+
+        int lonDeg = (int)Math.Floor(lon);
+        int lonMin = (int)Math.Floor((lon - lonDeg) * 60);
+
+        Console.WriteLine($"CSV: {latDeg}°{latMin}, {lonDeg}°{lonMin}");
+
+        return (latDeg, latMin, lonDeg, lonMin);
+    }
+
+    private double GetDistance(double lat1, double lon1, double lat2, double lon2)
+    {
+        double R = 6371;
+
+        double dLat = ToRadians(lat2 - lat1);
+        double dLon = ToRadians(lon2 - lon1);
+
+        double a =
+            Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+            Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
+            Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+
+        double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+        return R * c;
+    }
+
+    private double ToRadians(double angle)
+    {
+        return angle * Math.PI / 180;
+    }
+
+    private int? CalculateStepWiseReturnPeriod(List<ReturnPeriodData> data, double rainfall)
+    {
+        int? returnPeriod = data.First().ReturnPeriod;
+
+        foreach (var row in data)
+        {
+            if (rainfall >= row.Value)
+                returnPeriod = row.ReturnPeriod;
+            else
+                break;
+        }
+
+        return returnPeriod;
+    }
+}
+
+public class ReturnPeriodData
+{
+    public int ReturnPeriod { get; set; }
+    public double Value { get; set; }
 }

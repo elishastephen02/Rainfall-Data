@@ -9,5 +9,8 @@
 
         // midpoint of storm
         public DateTime MidTime => StartTime + TimeSpan.FromTicks((EndTime - StartTime).Ticks / 2);
+
+        //return period
+        public int? ReturnPeriod { get; set; }
     }
 }
