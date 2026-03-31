@@ -278,7 +278,7 @@ public class StormController : Controller
     }
 
     // uses step-wise logic 
-    private int? GetReturnPeriod(double rainfall, int duration, double? lat, double? lon)
+    private string GetReturnPeriod(double rainfall, int duration, double? lat, double? lon)
     {
         if (!lat.HasValue || !lon.HasValue)
             return null;
@@ -397,19 +397,38 @@ public class StormController : Controller
         return angle * Math.PI / 180;
     }
 
-    private int? CalculateStepWiseReturnPeriod(List<ReturnPeriodData> data, double rainfall)
+    private string CalculateStepWiseReturnPeriod(List<ReturnPeriodData> data, double rainfall)
     {
-        int? returnPeriod = data.First().ReturnPeriod;
+        if (!data.Any())
+            return "Unknown";
 
-        foreach (var row in data)
+        // If below lowest threshold
+        if (rainfall < data.First().Value)
+            return $"Less than 1 in {data.First().ReturnPeriod} year storm";
+
+        for (int i = 0; i < data.Count - 1; i++)
         {
-            if (rainfall >= row.Value)
-                returnPeriod = row.ReturnPeriod;
-            else
-                break;
+            var lower = data[i];
+            var upper = data[i + 1];
+
+            if (rainfall >= lower.Value && rainfall <= upper.Value)
+            {
+                double diffLower = Math.Abs(rainfall - lower.Value);
+                double diffUpper = Math.Abs(rainfall - upper.Value);
+
+                // If closer to upper threshold → BETWEEN
+                if (diffUpper < diffLower)
+                {
+                    return $"Between 1 in {lower.ReturnPeriod} year and {upper.ReturnPeriod} year storm";
+                }
+
+                // Otherwise → stick to lower
+                return $"1 in {lower.ReturnPeriod} year storm";
+            }
         }
 
-        return returnPeriod;
+        // Above highest threshold
+        return $"Greater than 1 in {data.Last().ReturnPeriod} year storm";
     }
 }
 

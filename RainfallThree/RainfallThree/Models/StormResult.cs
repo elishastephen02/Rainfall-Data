@@ -11,6 +11,6 @@
         public DateTime MidTime => StartTime + TimeSpan.FromTicks((EndTime - StartTime).Ticks / 2);
 
         //return period
-        public int? ReturnPeriod { get; set; }
+        public string ReturnPeriod { get; set; }
     }
 }
