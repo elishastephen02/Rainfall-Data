@@ -402,7 +402,7 @@ public class StormController : Controller
         if (!data.Any())
             return "Unknown";
 
-        // If below lowest threshold
+        // Below lowest threshold
         if (rainfall < data.First().Value)
             return $"Less than 1 in {data.First().ReturnPeriod} year storm";
 
@@ -416,19 +416,28 @@ public class StormController : Controller
                 double diffLower = Math.Abs(rainfall - lower.Value);
                 double diffUpper = Math.Abs(rainfall - upper.Value);
 
-                // If closer to upper threshold → BETWEEN
+                // Linear interpolation of return period
+                double interpolatedReturnPeriod =
+                    lower.ReturnPeriod +
+                    (rainfall - lower.Value) *
+                    (upper.ReturnPeriod - lower.ReturnPeriod) /
+                    (upper.Value - lower.Value);
+
+                string interpolatedText = $"Interpolated return period: {interpolatedReturnPeriod:F1} years";
+
+                // If closer to upper threshold
                 if (diffUpper < diffLower)
                 {
-                    return $"Between 1 in {lower.ReturnPeriod} year and {upper.ReturnPeriod} year storm";
+                    return $"Between 1 in {lower.ReturnPeriod} year and 1 in {upper.ReturnPeriod} year storm ({interpolatedText})";
                 }
 
-                // Otherwise → stick to lower
-                return $"1 in {lower.ReturnPeriod} year storm";
+                return $"1 in {lower.ReturnPeriod} year storm ({interpolatedText})";
             }
         }
 
         // Above highest threshold
-        return $"Greater than 1 in {data.Last().ReturnPeriod} year storm";
+        var last = data.Last();
+        return $"Greater than 1 in {last.ReturnPeriod} year storm";
     }
 }
 
