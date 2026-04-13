@@ -75,8 +75,6 @@ namespace RainfallThree.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "rainfall_sheet");
 
             migrationBuilder.AlterColumn<string>(
                 name: "Name",

@@ -80,17 +80,31 @@ using (var scope = app.Services.CreateScope())
     var user = await userManager.FindByEmailAsync(primaryUserEmail);
     if (user == null)
     {
-        // User doesn't exist → create user
-        user = new ApplicationUser { UserName = primaryUserEmail, Email = primaryUserEmail };
+        user = new ApplicationUser
+        {
+            UserName = primaryUserEmail,
+            Email = primaryUserEmail,
+            IsApproved = true // Auto approve admin
+        };
+
         var result = await userManager.CreateAsync(user, primaryUserPassword);
         if (!result.Succeeded)
         {
             throw new Exception("Failed to create primary user: " +
-                                string.Join(", ", result.Errors.Select(e => e.Description)));
+                string.Join(", ", result.Errors.Select(e => e.Description)));
+        }
+    }
+    else
+    {
+        // Ensure existing admin is approved
+        if (!user.IsApproved)
+        {
+            user.IsApproved = true;
+            await userManager.UpdateAsync(user);
         }
     }
 
-    // Add PrimaryUser role if not already assigned
+    // Add role
     if (!await userManager.IsInRoleAsync(user, "PrimaryUser"))
     {
         await userManager.AddToRoleAsync(user, "PrimaryUser");
