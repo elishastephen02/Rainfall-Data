@@ -196,11 +196,12 @@ public class RainfallController : Controller
             var lon = model.LONGDEG.Value + (model.LONGMIN ?? 0) / 60.0;
 
             dataSet = allData
-                .OrderBy(r =>
-                    Math.Pow(((r.Latdeg + r.Latmin / 60.0) - lat), 2) +
-                    Math.Pow((r.Longdeg + r.Longmin / 60.0 - lon), 2)
+                .Where(r =>
+                    r.Latdeg == model.LATDEG &&
+                    r.Latmin == (model.LATMIN ?? 0) &&
+                    r.Longdeg == model.LONGDEG &&
+                    r.Longmin == (model.LONGMIN ?? 0)
                 )
-                .Take(50)
                 .ToList();
         }
         //default
