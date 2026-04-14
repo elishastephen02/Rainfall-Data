@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using RainfallThree.Data;
 using RainfallThree.Models;
 using System.Text.Json;
+using System.IO.Compression;
+using System.Xml.Linq;
 using static RainfallThree.Models.RainfallSummaryViewModel;
 
 public class RainfallController : Controller
@@ -85,11 +87,25 @@ public class RainfallController : Controller
 
         //results table
         var rawData = query.Take(500).ToList();
+
+        // default results
         model.Results = rawData;
 
         //area data -> summary table
         var allData = _context.RainfallSheets.ToList();
         List<RainfallSheet> dataSet = new();
+
+        if (model.AreaFile != null)
+        {
+            try
+            {
+                model.PolygonGeoJson = ConvertToGeoJson(model.AreaFile);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Invalid file: " + ex.Message);
+            }
+        }
 
         // polygon
         if (!string.IsNullOrEmpty(model.PolygonGeoJson))
@@ -97,34 +113,63 @@ public class RainfallController : Controller
             var geo = JsonDocument.Parse(model.PolygonGeoJson);
             var root = geo.RootElement;
 
-            JsonElement coords;
+            List<(double lat, double lon)> polygon = new();
 
-            if (root.TryGetProperty("geometry", out var geometry))
+            // FeatureCollection
+            if (root.TryGetProperty("features", out var features))
             {
-                coords = geometry.GetProperty("coordinates")[0];
+                var firstFeature = features[0];
+                var geometry = firstFeature.GetProperty("geometry");
+
+                if (geometry.GetProperty("type").GetString() != "Polygon")
+                    throw new Exception("Only Polygon is supported");
+
+                var coords = geometry.GetProperty("coordinates")[0];
+
+                polygon = coords.EnumerateArray()
+                    .Select(c => (
+                        lat: c[1].GetDouble(),
+                        lon: c[0].GetDouble()
+                    ))
+                    .ToList();
             }
-            else if (root.TryGetProperty("features", out var features))
+
+            // Single Feature
+            else if (root.TryGetProperty("geometry", out var geometry))
             {
-                coords = features[0]
-                    .GetProperty("geometry")
-                    .GetProperty("coordinates")[0];
+                var coords = geometry.GetProperty("coordinates")[0];
+
+                polygon = coords.EnumerateArray()
+                    .Select(c => (
+                        lat: c[1].GetDouble(),
+                        lon: c[0].GetDouble()
+                    ))
+                    .ToList();
+            }
+
+            //Raw Polygon
+            else if (root.GetProperty("type").GetString() == "Polygon")
+            {
+                var coords = root.GetProperty("coordinates")[0];
+
+                polygon = coords.EnumerateArray()
+                    .Select(c => (
+                        lat: c[1].GetDouble(),
+                        lon: c[0].GetDouble()
+                    ))
+                    .ToList();
             }
             else
             {
-                throw new Exception("Invalid GeoJSON");
+                throw new Exception("Invalid GeoJSON format");
             }
 
-            var polygon = coords.EnumerateArray()
-                .Select(c => (
-                    lat: c[1].GetDouble(),
-                    lon: c[0].GetDouble()
-                ))
-                .ToList();
+            if (polygon.Count == 0)
+                throw new Exception("Polygon has no coordinates");
 
-            var minLat = polygon.Min(p => p.lat);
-            var maxLat = polygon.Max(p => p.lat);
-            var minLon = polygon.Min(p => p.lon);
-            var maxLon = polygon.Max(p => p.lon);
+            Console.WriteLine("Polygon loaded successfully:");
+            foreach (var p in polygon.Take(5))
+                Console.WriteLine($"Lat: {p.lat}, Lon: {p.lon}");
 
             dataSet = allData
                 .Select(r =>
@@ -141,21 +186,6 @@ public class RainfallController : Controller
                 .Where(x => IsPointInPolygon(x.Lat, x.Lon, polygon))
                 .Select(x => x.Row)
                 .ToList();
-
-            Console.WriteLine("Polygon Points:");
-            foreach (var p in polygon)
-            {
-                Console.WriteLine($"Lat: {p.lat}, Lon: {p.lon}");
-            }
-
-            Console.WriteLine("Matched DB Points:");
-            foreach (var r in dataSet.Take(10))
-            {
-                var lat = r.Latdeg + (r.Latmin / 60.0);
-                var lon = r.Longdeg + (r.Longmin / 60.0);
-
-                Console.WriteLine($"DB -> Lat: {lat}, Lon: {lon}, RP: {r.ReturnPeriod}");
-            }
         }
         //point, address or manual input
         else if (model.LATDEG.HasValue && model.LONGDEG.HasValue)
@@ -175,6 +205,11 @@ public class RainfallController : Controller
         else
         {
             dataSet = allData.Take(500).ToList();
+        }
+
+        if(dataSet != null && dataSet.Any())
+{
+            model.Results = dataSet;
         }
 
         // total rainfall for area
@@ -404,5 +439,126 @@ public class RainfallController : Controller
         return (lat, lon);
     }
 
+    // conversion
+    private string ConvertToGeoJson(IFormFile file)
+    {
+        var ext = Path.GetExtension(file.FileName).ToLower();
 
+        using var stream = file.OpenReadStream();
+
+        //geojson
+        if (ext == ".geojson" || ext == ".json")
+        {
+            using var reader = new StreamReader(stream);
+            var text = reader.ReadToEnd();
+
+            var doc = JsonDocument.Parse(text);
+            var root = doc.RootElement;
+
+            // If already valid GeoJSON → return
+            if (root.TryGetProperty("type", out var typeProp))
+            {
+                var type = typeProp.GetString();
+
+                if (type == "Feature" || type == "FeatureCollection" || type == "Polygon")
+                {
+                    return text;
+                }
+            }
+
+            throw new Exception("Invalid GeoJSON structure");
+        }
+
+        //kml -> geojson
+        if (ext == ".kml")
+        {
+            var doc = XDocument.Load(stream);
+
+            XNamespace ns = "http://www.opengis.net/kml/2.2";
+
+            var coords = doc.Descendants(ns + "coordinates")
+                .FirstOrDefault()?.Value;
+
+            if (coords == null)
+                throw new Exception("Invalid KML file");
+
+            var points = coords.Trim()
+                .Split(' ')
+                .Where(x => x.Contains(","))
+                .Select(x =>
+                {
+                    var parts = x.Split(',');
+                    return new[] { double.Parse(parts[0]), double.Parse(parts[1]) };
+                })
+                .ToList();
+
+            var geoJson = new
+            {
+                type = "Feature",
+                geometry = new
+                {
+                    type = "Polygon",
+                    coordinates = new[] { points }
+                }
+            };
+
+            return JsonSerializer.Serialize(geoJson);
+        }
+
+        //kmz -> convert kml -> parse
+        if (ext == ".kmz")
+        {
+            using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+            var kmlEntry = archive.Entries.FirstOrDefault(e => e.Name.EndsWith(".kml"));
+
+            if (kmlEntry == null)
+                throw new Exception("KMZ does not contain a KML file");
+
+            using var kmlStream = kmlEntry.Open();
+            var doc = XDocument.Load(kmlStream);
+
+            XNamespace ns = "http://www.opengis.net/kml/2.2";
+
+            var coords = doc.Descendants(ns + "coordinates")
+                .FirstOrDefault()?.Value;
+
+            if (coords == null)
+                throw new Exception("Invalid KMZ/KML file");
+
+            var points = coords.Trim()
+                .Split(' ')
+                .Where(x => x.Contains(","))
+                .Select(x =>
+                {
+                    var parts = x.Split(',');
+                    return new[] { double.Parse(parts[0]), double.Parse(parts[1]) };
+                })
+                .ToList();
+
+            var geoJson = new
+            {
+                type = "Feature",
+                geometry = new
+                {
+                    type = "Polygon",
+                    coordinates = new[] { points }
+                }
+            };
+
+            return JsonSerializer.Serialize(geoJson);
+        }
+
+        throw new Exception("Unsupported file type");
+    }
+
+    [HttpPost]
+    public IActionResult UploadAreaFile(IFormFile file)
+    {
+        if (file == null)
+            return BadRequest("No file uploaded");
+
+        var geoJson = ConvertToGeoJson(file);
+
+        return Content(geoJson, "application/json");
+    }
 }

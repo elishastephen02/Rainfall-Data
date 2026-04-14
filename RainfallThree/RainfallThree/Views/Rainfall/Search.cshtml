@@ -43,6 +43,106 @@
         map.setView([lat, lng], 14);
         }
 
+        var uploadedLayer;
+
+        // Upload button click
+        document.getElementById("uploadAreaBtn").addEventListener("click", async function () {
+
+        var fileInput = document.getElementById("areaFileInput");
+
+        if (!fileInput.files || fileInput.files.length === 0) {
+        alert("Please select a file first.");
+        return;
+        }
+
+        var file = fileInput.files[0];
+        var formData = new FormData();
+        formData.append("file", file);
+
+        try {
+        const response = await fetch("/Rainfall/UploadAreaFile", {
+        method: "POST",
+        body: formData
+        });
+
+        if (!response.ok) {
+        alert("File upload failed.");
+        return;
+        }
+
+        const geojsonText = await response.text();
+        const geojson = JSON.parse(geojsonText);
+
+        // remove old layer
+        if (uploadedLayer) {
+        map.removeLayer(uploadedLayer);
+        }
+
+        // draw polygon
+        uploadedLayer = L.geoJSON(geojson, {
+        style: { color: "red", weight: 3 }
+        }).addTo(map);
+
+        drawnItems.clearLayers();
+
+        // add each layer individually
+        uploadedLayer.eachLayer(function (layer) {
+        drawnItems.addLayer(layer);
+        });
+
+        map.fitBounds(uploadedLayer.getBounds());
+
+        // store GeoJSON in hidden field
+        document.getElementById("PolygonGeoJson").value =
+        JSON.stringify(geojson);
+
+        // extract coordinates → fill inputs (optional centroid)
+        var coords;
+
+        function extractCoords(geojson) {
+        if (geojson.type === "FeatureCollection") {
+        return geojson.features[0].geometry.coordinates[0];
+        }
+
+        if (geojson.type === "Feature") {
+        return geojson.geometry.coordinates[0];
+        }
+
+        if (geojson.type === "Polygon") {
+        return geojson.coordinates[0];
+        }
+
+        if (geojson.type === "MultiPolygon") {
+        return geojson.coordinates[0][0];
+        }
+
+        throw "Unsupported GeoJSON format";
+        }
+
+        var coords = extractCoords(geojson);
+
+        var lats = coords.map(c => c[1]);
+        var lons = coords.map(c => c[0]);
+
+        var avgLat = lats.reduce((a,b)=>a+b,0) / lats.length;
+        var avgLon = lons.reduce((a,b)=>a+b,0) / lons.length;
+
+        if (!isNaN(avgLat) && !isNaN(avgLon)) {
+        updateInputsFromCoordinates(avgLat, avgLon);
+        console.log("Inputs updated:", avgLat, avgLon);
+        } else {
+        console.error("Invalid centroid values");
+        }
+
+        alert("Polygon loaded successfully. Now click Search.");
+
+        } catch (err) {
+        console.error(err);
+        alert("Error processing file: " + err.message);
+        console.error(err);
+        }
+        });
+
         // coordinate conversion
         function degMinToDecimal(deg, min) {
         if (deg === null || deg === "" || isNaN(deg)) return null;
@@ -211,6 +311,20 @@
         }
 
         });
+
+        document.querySelector("form").addEventListener("submit", function () {
+
+        // ALWAYS use drawnItems (this is what user sees)
+        var allLayers = drawnItems.toGeoJSON();
+
+        if (allLayers && allLayers.features && allLayers.features.length > 0) {
+        document.getElementById("PolygonGeoJson").value =
+        JSON.stringify(allLayers);
+        console.log("Submitting polygon:", allLayers);
+        } else {
+        console.log("No polygon to submit");
+        }
+        });
     </script>
 
     <fieldset>
@@ -249,9 +363,15 @@
 
     <fieldset>
         <legend>Upload Area File</legend>
+
         <div class="form-group">
-            <label>GeoJSON File</label>
-            <input type="file" asp-for="AreaFile" accept=".geojson,.json" />
+            <label>Upload Area File (GeoJSON, JSON, KML, KMZ)</label>
+
+            <input type="file" id="areaFileInput" accept=".geojson,.json,.kml,.kmz" />
+
+            <button type="button" id="uploadAreaBtn" style="margin-top:10px;">
+                Upload
+            </button>
         </div>
     </fieldset>
 
