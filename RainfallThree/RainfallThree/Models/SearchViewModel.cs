@@ -36,5 +36,11 @@ namespace RainfallThree.Models
         public double? Long { get; set; }
 
         public List<RainfallSheet>? Results { get; set; }
+
+        public string? PolygonGeoJson { get; set; }
+        public IFormFile? AreaFile { get; set; }
+        public List<RainfallSummaryViewModel>? Summary { get; set; }
+
+        public double? TotalRainfall { get; set; }
     }
 }

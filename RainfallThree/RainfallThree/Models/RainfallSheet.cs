@@ -7,13 +7,13 @@ public partial class RainfallSheet
 {
     public int Index { get; set; }
 
-    public byte Latdeg { get; set; }
+    public int Latdeg { get; set; }
 
-    public byte Latmin { get; set; }
+    public int Latmin { get; set; }
 
-    public byte Longdeg { get; set; }
+    public int Longdeg { get; set; }
 
-    public byte Longmin { get; set; }
+    public int Longmin { get; set; }
 
     public short ReturnPeriod { get; set; }
 
