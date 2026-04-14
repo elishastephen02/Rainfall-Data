@@ -2194,6 +2194,19 @@
           }
         }
       },
+      "ProjNET/2.1.0": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.1/ProjNET.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.1/ProjNET.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "SQLitePCLRaw.bundle_e_sqlite3/2.1.11": {
         "type": "package",
         "dependencies": {
@@ -6206,6 +6219,22 @@
         "nuget.versioning.nuspec"
       ]
     },
+    "ProjNET/2.1.0": {
+      "sha512": "4F0xEYe+cQCgWgnf1UaDlRPFm9RxTaSFt4C/axNnCgSCNWU1AFDNvTyVdN/RwNmTYoGEWxo4sOYMQrW9kQtwpg==",
+      "type": "package",
+      "path": "projnet/2.1.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "icon.png",
+        "lib/netstandard2.0/ProjNET.dll",
+        "lib/netstandard2.0/ProjNET.xml",
+        "lib/netstandard2.1/ProjNET.dll",
+        "lib/netstandard2.1/ProjNET.xml",
+        "projnet.2.1.0.nupkg.sha512",
+        "projnet.nuspec"
+      ]
+    },
     "SQLitePCLRaw.bundle_e_sqlite3/2.1.11": {
       "sha512": "DC4nA7yWnf4UZdgJDF+9Mus4/cb0Y3Sfgi3gDnAoKNAIBwzkskNAbNbyu+u4atT0ruVlZNJfwZmwiEwE5oz9LQ==",
       "type": "package",
@@ -6711,7 +6740,8 @@
       "Microsoft.EntityFrameworkCore.SqlServer >= 10.0.3",
       "Microsoft.EntityFrameworkCore.Sqlite >= 10.0.3",
       "Microsoft.EntityFrameworkCore.Tools >= 10.0.3",
-      "Microsoft.VisualStudio.Web.CodeGeneration.Design >= 10.0.2"
+      "Microsoft.VisualStudio.Web.CodeGeneration.Design >= 10.0.2",
+      "ProjNET >= 2.1.0"
     ]
   },
   "packageFolders": {
@@ -6793,6 +6823,10 @@
           "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
             "target": "Package",
             "version": "[10.0.2, )"
+          },
+          "ProjNET": {
+            "target": "Package",
+            "version": "[2.1.0, )"
           }
         },
         "imports": [

@@ -13,7 +13,8 @@
           "Microsoft.AspNetCore.Identity.UI": "10.0.3",
           "Microsoft.EntityFrameworkCore.SqlServer": "10.0.3",
           "Microsoft.EntityFrameworkCore.Sqlite": "10.0.3",
-          "Microsoft.VisualStudio.Web.CodeGeneration.Design": "10.0.2"
+          "Microsoft.VisualStudio.Web.CodeGeneration.Design": "10.0.2",
+          "ProjNET": "2.1.0"
         },
         "runtime": {
           "RainfallThree.dll": {}
@@ -1787,6 +1788,14 @@
           }
         }
       },
+      "ProjNET/2.1.0": {
+        "runtime": {
+          "lib/netstandard2.1/ProjNET.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.0"
+          }
+        }
+      },
       "SQLitePCLRaw.bundle_e_sqlite3/2.1.11": {
         "dependencies": {
           "SQLitePCLRaw.lib.e_sqlite3": "2.1.11",
@@ -2854,6 +2863,13 @@
       "sha512": "sha512-fJ6rFYANDnohFsdpaY79FvrJxI6murmoOxXz6nZlf819F48+IBKMnAIg3oIBRtZq5y498ObMtKnro5IitvizUg==",
       "path": "nuget.versioning/6.12.1",
       "hashPath": "nuget.versioning.6.12.1.nupkg.sha512"
+    },
+    "ProjNET/2.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-4F0xEYe+cQCgWgnf1UaDlRPFm9RxTaSFt4C/axNnCgSCNWU1AFDNvTyVdN/RwNmTYoGEWxo4sOYMQrW9kQtwpg==",
+      "path": "projnet/2.1.0",
+      "hashPath": "projnet.2.1.0.nupkg.sha512"
     },
     "SQLitePCLRaw.bundle_e_sqlite3/2.1.11": {
       "type": "package",

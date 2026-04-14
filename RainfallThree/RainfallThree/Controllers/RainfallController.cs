@@ -5,6 +5,8 @@ using RainfallThree.Models;
 using System.Text.Json;
 using System.IO.Compression;
 using System.Xml.Linq;
+using ProjNet.CoordinateSystems;
+using ProjNet.CoordinateSystems.Transformations;
 using static RainfallThree.Models.RainfallSummaryViewModel;
 
 public class RainfallController : Controller
@@ -447,6 +449,7 @@ public class RainfallController : Controller
         using var stream = file.OpenReadStream();
 
         //geojson
+        // geojson OR esri json
         if (ext == ".geojson" || ext == ".json")
         {
             using var reader = new StreamReader(stream);
@@ -455,7 +458,7 @@ public class RainfallController : Controller
             var doc = JsonDocument.Parse(text);
             var root = doc.RootElement;
 
-            // If already valid GeoJSON → return
+            // ✅ CASE 1: Valid GeoJSON (already correct)
             if (root.TryGetProperty("type", out var typeProp))
             {
                 var type = typeProp.GetString();
@@ -466,7 +469,42 @@ public class RainfallController : Controller
                 }
             }
 
-            throw new Exception("Invalid GeoJSON structure");
+            // ✅ CASE 2: ESRI JSON (YOUR FILE)
+            if (root.TryGetProperty("features", out var features))
+            {
+                var first = features[0];
+
+                if (first.TryGetProperty("geometry", out var geom) &&
+                    geom.TryGetProperty("rings", out var rings))
+                {
+                    var points = rings[0]
+                        .EnumerateArray()
+                        .Select(p =>
+                        {
+                            var x = p[0].GetDouble();
+                            var y = p[1].GetDouble();
+
+                            var (lat, lon) = ConvertToWGS84(x, y);
+
+                            return new[] { lon, lat }; // GeoJSON = [lon, lat]
+                        })
+                        .ToList();
+
+                    var geoJson = new
+                    {
+                        type = "Feature",
+                        geometry = new
+                        {
+                            type = "Polygon",
+                            coordinates = new[] { points }
+                        }
+                    };
+
+                    return JsonSerializer.Serialize(geoJson);
+                }
+            }
+
+            throw new Exception("Unsupported JSON format (not GeoJSON or ESRI)");
         }
 
         //kml -> geojson
@@ -560,5 +598,35 @@ public class RainfallController : Controller
         var geoJson = ConvertToGeoJson(file);
 
         return Content(geoJson, "application/json");
+    }
+    private (double lat, double lon) ConvertToWGS84(double x, double y)
+    {
+        // Source: South Africa WG31 (approx)
+        var csFactory = new CoordinateSystemFactory();
+        var ctFactory = new CoordinateTransformationFactory();
+
+        var source = csFactory.CreateFromWkt(
+            @"PROJCS[""South Africa WG31"",
+        GEOGCS[""GCS_WGS_1984"",
+        DATUM[""WGS_1984"",
+        SPHEROID[""WGS_1984"",6378137,298.257223563]],
+        PRIMEM[""Greenwich"",0],
+        UNIT[""Degree"",0.0174532925199433]],
+        PROJECTION[""Transverse_Mercator""],
+        PARAMETER[""latitude_of_origin"",0],
+        PARAMETER[""central_meridian"",31],
+        PARAMETER[""scale_factor"",1],
+        PARAMETER[""false_easting"",0],
+        PARAMETER[""false_northing"",0],
+        UNIT[""Meter"",1]]"
+        );
+
+        var target = GeographicCoordinateSystem.WGS84;
+
+        var transform = ctFactory.CreateFromCoordinateSystems(source, target);
+
+        var result = transform.MathTransform.Transform(new[] { x, y });
+
+        return (lat: result[1], lon: result[0]);
     }
 }

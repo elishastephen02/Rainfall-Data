@@ -51,7 +51,7 @@
         var fileInput = document.getElementById("areaFileInput");
 
         if (!fileInput.files || fileInput.files.length === 0) {
-        alert("Please select a file first.");
+        showMessage("Please select a file first.");
         return;
         }
 
@@ -66,7 +66,7 @@
         });
 
         if (!response.ok) {
-        alert("File upload failed.");
+        showMessage("File upload failed.");
         return;
         }
 
@@ -134,11 +134,11 @@
         console.error("Invalid centroid values");
         }
 
-        alert("Polygon loaded successfully. Now click Search.");
+        showMessage("Polygon loaded successfully. Now click Search.", true);
 
         } catch (err) {
         console.error(err);
-        alert("Error processing file: " + err.message);
+        showMessage("Error processing file: " + err.message);
         console.error(err);
         }
         });

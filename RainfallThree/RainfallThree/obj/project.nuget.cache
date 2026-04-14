@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "tECLxIZ0BeE=",
+  "dgSpecHash": "rhw8YSKb3Tc=",
   "success": true,
   "projectFilePath": "C:\\Users\\elishastephen\\Downloads\\Rainfall-Data\\RainfallThree\\RainfallThree\\RainfallThree.csproj",
   "expectedPackageFiles": [
@@ -120,6 +120,7 @@
     "C:\\Users\\elishastephen\\.nuget\\packages\\nuget.projectmodel\\6.12.1\\nuget.projectmodel.6.12.1.nupkg.sha512",
     "C:\\Users\\elishastephen\\.nuget\\packages\\nuget.protocol\\6.12.1\\nuget.protocol.6.12.1.nupkg.sha512",
     "C:\\Users\\elishastephen\\.nuget\\packages\\nuget.versioning\\6.12.1\\nuget.versioning.6.12.1.nupkg.sha512",
+    "C:\\Users\\elishastephen\\.nuget\\packages\\projnet\\2.1.0\\projnet.2.1.0.nupkg.sha512",
     "C:\\Users\\elishastephen\\.nuget\\packages\\sqlitepclraw.bundle_e_sqlite3\\2.1.11\\sqlitepclraw.bundle_e_sqlite3.2.1.11.nupkg.sha512",
     "C:\\Users\\elishastephen\\.nuget\\packages\\sqlitepclraw.core\\2.1.11\\sqlitepclraw.core.2.1.11.nupkg.sha512",
     "C:\\Users\\elishastephen\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.1.11\\sqlitepclraw.lib.e_sqlite3.2.1.11.nupkg.sha512",
