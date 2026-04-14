@@ -211,7 +211,7 @@ public class RainfallController : Controller
         }
 
         if(dataSet != null && dataSet.Any())
-{
+        {
             model.Results = dataSet;
         }
 
