@@ -447,7 +447,7 @@ public class RainfallController : Controller
             var doc = JsonDocument.Parse(text);
             var root = doc.RootElement;
 
-            // ✅ CASE 1: Valid GeoJSON (already correct)
+            // Valid GeoJSON (already correct)
             if (root.TryGetProperty("type", out var typeProp))
             {
                 var type = typeProp.GetString();
@@ -458,7 +458,7 @@ public class RainfallController : Controller
                 }
             }
 
-            // ✅ CASE 2: ESRI JSON (YOUR FILE)
+            // ESRI JSON (YOUR FILE)
             if (root.TryGetProperty("features", out var features))
             {
                 var first = features[0];

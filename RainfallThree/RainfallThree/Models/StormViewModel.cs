@@ -21,6 +21,5 @@ namespace RainfallThree.Models
         public double? Longitude { get; set; }
 
         public string? Message { get; set; }
-
     }
 }
