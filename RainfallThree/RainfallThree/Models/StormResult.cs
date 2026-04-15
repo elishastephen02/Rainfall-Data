@@ -12,5 +12,7 @@
 
         //return period
         public string ReturnPeriod { get; set; }
+
+        public string EumetsatTimeString { get; set; }
     }
 }
