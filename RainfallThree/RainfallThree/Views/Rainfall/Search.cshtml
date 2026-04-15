@@ -35,6 +35,9 @@
         attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
+        var drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
         var marker;
 
         function placeMarker(lat, lng) {
@@ -208,11 +211,17 @@
         //input listener
         ["LATDEG", "LATMIN", "LONGDEG", "LONGMIN"].forEach(function (id) {
         var el = document.getElementById(id);
-        if (el) el.addEventListener("change", updateMarkerFromInputs);
+        if (el) {
+        el.addEventListener("change", function () {
+        clearPolygon();
+        updateMarkerFromInputs();
+        });
+        }
         });
 
         //map click
         map.on('click', function (e) {
+        clearPolygon();
         placeMarker(e.latlng.lat, e.latlng.lng);
         updateInputsFromCoordinates(e.latlng.lat, e.latlng.lng);
         });
@@ -251,6 +260,8 @@
 
         var location = data.results[0].geometry.location;
 
+        clearPolygon();
+
         placeMarker(location.lat, location.lng);
         updateInputsFromCoordinates(location.lat, location.lng);
 
@@ -270,8 +281,9 @@
         var drawControl = new L.Control.Draw({
         draw: {
         polygon: true,
-        rectangle: true,
+        rectangle: false,
         circle: false,
+        circlemarker: false,
         marker: false,
         polyline: false
         },
@@ -310,6 +322,24 @@
         }
         }
 
+        function clearPolygon() {
+        // remove drawn shapes
+        if (drawnItems) {
+        drawnItems.clearLayers();
+        }
+
+        // remove uploaded polygon layer
+        if (uploadedLayer) {
+        map.removeLayer(uploadedLayer);
+        uploadedLayer = null;
+        }
+
+        // clear hidden field (VERY IMPORTANT)
+        document.getElementById("PolygonGeoJson").value = "";
+
+        console.log("Polygon cleared");
+        }
+
         });
 
         document.querySelector("form").addEventListener("submit", function () {
@@ -325,6 +355,12 @@
         console.log("No polygon to submit");
         }
         });
+
+        //download
+        function prepareDownload() {
+        var results = @Html.Raw(Json.Serialize(Model.Results));
+        document.getElementById("ResultsJson").value = JSON.stringify(results);
+        }
     </script>
 
     <fieldset>
@@ -398,7 +434,7 @@
         <h3>Results (@Model.Results.Count)</h3>
 
         <div style="text-align:right; margin-bottom:10px;">
-            <form method="post" asp-action="Download">
+            <form method="post" asp-action="Download" onsubmit="prepareDownload()">
                 <input type="hidden" name="Index" value="@Model.Index" />
                 <input type="hidden" name="LATDEG" value="@Model.LATDEG" />
                 <input type="hidden" name="LATMIN" value="@Model.LATMIN" />
@@ -406,13 +442,14 @@
                 <input type="hidden" name="LONGMIN" value="@Model.LONGMIN" />
                 <input type="hidden" name="ReturnPeriod" value="@Model.ReturnPeriod" />
                 <input type="hidden" name="SelectedDuration" value="@Model.SelectedDuration" />
+                <input type="hidden" name="ResultsJson" id="ResultsJson" />
                 <button type="submit" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">
                     Download Data
                 </button>
             </form>
         </div>
 
-        <div class="table-scroll">
+        <div class="table-scroll-xy">
             <table>
                 <thead>
                     <tr>
@@ -745,5 +782,34 @@
 
     .table-scroll::-webkit-scrollbar-track {
     background: #e6e6e6;
+    }
+
+    /* detail table scroll */
+    .table-scroll-xy {
+    width: 100%;
+    max-height: 400px; /* vertical scroll height */
+    overflow-x: auto;
+    overflow-y: auto;
+    border-radius: 10px;
+    }
+
+    /* keep header visible while scrolling */
+    .table-scroll-xy thead th {
+    position: sticky;
+    top: 0;
+    background-color: #007bff;
+    color: white;
+    z-index: 5;
+    }
+
+    /* optional nicer scrollbars */
+    .table-scroll-xy::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+    }
+
+    .table-scroll-xy::-webkit-scrollbar-thumb {
+    background: #007bff;
+    border-radius: 10px;
     }
 </style>

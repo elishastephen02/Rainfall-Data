@@ -42,5 +42,7 @@ namespace RainfallThree.Models
         public List<RainfallSummaryViewModel>? Summary { get; set; }
 
         public double? TotalRainfall { get; set; }
+
+        public string ResultsJson { get; set; }
     }
 }

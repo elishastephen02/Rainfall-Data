@@ -313,29 +313,15 @@ public class RainfallController : Controller
     [HttpPost]
     public IActionResult Download(SearchRainfallViewModel model)
     {
-        var query = _context.RainfallSheets.AsQueryable();
+        if (string.IsNullOrEmpty(model.ResultsJson))
+            return BadRequest("No data to download");
 
-        if (model.Index.HasValue)
-            query = query.Where(x => x.Index == model.Index);
-
-        if (model.LATDEG.HasValue)
-            query = query.Where(x => x.Latdeg == model.LATDEG);
-
-        if (model.LATMIN.HasValue)
-            query = query.Where(x => x.Latmin == model.LATMIN);
-
-        if (model.LONGDEG.HasValue)
-            query = query.Where(x => x.Longdeg == model.LONGDEG);
-
-        if (model.LONGMIN.HasValue)
-            query = query.Where(x => x.Longmin == model.LONGMIN);
-
-        if (model.ReturnPeriod.HasValue)
-        {
-            query = query.Where(x => x.ReturnPeriod == model.ReturnPeriod.Value);
-        }
-
-        var results = query.Take(500).ToList();
+        var dataSet = JsonSerializer.Deserialize<List<RainfallSheet>>(
+            model.ResultsJson,
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
 
         var builder = new System.Text.StringBuilder();
 
@@ -349,8 +335,8 @@ public class RainfallController : Controller
             builder.AppendLine($"Index,LatDeg,LatMin,LongDeg,LongMin,ReturnPeriod,{model.SelectedDuration}Min,SourceSheet");
         }
 
-        // DATA 
-        foreach (var item in results)
+        // DATA (EXACTLY what user saw)
+        foreach (var item in dataSet)
         {
             if (string.IsNullOrEmpty(model.SelectedDuration))
             {
@@ -375,17 +361,19 @@ public class RainfallController : Controller
             }
             else
             {
-                string durationValue = "";
-
-                if (model.SelectedDuration == "5") durationValue = item._5Min?.ToString("0.00");
-                else if (model.SelectedDuration == "10") durationValue = item._10Min?.ToString("0.00");
-                else if (model.SelectedDuration == "15") durationValue = item._15Min?.ToString("0.00");
-                else if (model.SelectedDuration == "30") durationValue = item._30Min?.ToString("0.00");
-                else if (model.SelectedDuration == "60") durationValue = item._60Min?.ToString("0.00");
-                else if (model.SelectedDuration == "120") durationValue = item._120Min?.ToString("0.00");
-                else if (model.SelectedDuration == "1440") durationValue = item._1440Min?.ToString("0.00");
-                else if (model.SelectedDuration == "4320") durationValue = item._4320Min?.ToString("0.00");
-                else if (model.SelectedDuration == "10080") durationValue = item._10080Min?.ToString("0.00");
+                string durationValue = model.SelectedDuration switch
+                {
+                    "5" => item._5Min?.ToString("0.00"),
+                    "10" => item._10Min?.ToString("0.00"),
+                    "15" => item._15Min?.ToString("0.00"),
+                    "30" => item._30Min?.ToString("0.00"),
+                    "60" => item._60Min?.ToString("0.00"),
+                    "120" => item._120Min?.ToString("0.00"),
+                    "1440" => item._1440Min?.ToString("0.00"),
+                    "4320" => item._4320Min?.ToString("0.00"),
+                    "10080" => item._10080Min?.ToString("0.00"),
+                    _ => ""
+                };
 
                 builder.AppendLine(
                     $"{item.Index}," +
