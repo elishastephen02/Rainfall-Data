@@ -546,75 +546,127 @@
 
         <hr>
 
-        <h4> Total Rainfall in Area: @(Model.TotalRainfall.HasValue? Model.TotalRainfall.Value.ToString("0.00") : "0.00") mm</h4>
-
         <div class="table-scroll">
             <table>
                 <thead>
-                    <tr>
-                        <th rowspan="2">Return Period</th>
-
-                        <th colspan="3">5 min</th>
-                        <th colspan="3">10 min</th>
-                        <th colspan="3">15 min</th>
-                        <th colspan="3">30 min</th>
-                        <th colspan="3">60 min</th>
-                        <th colspan="3">120 min</th>
-                        <th colspan="3">1440 min</th>
-                        <th colspan="3">4320 min</th>
-                        <th colspan="3">10080 min</th>
-                    </tr>
-                    <tr>
-                        @for (int i = 0; i < 9; i++)
-                        {
-                            <th>Min</th>
-                            <th>Max</th>
-                            <th>Avg</th>
-                        }
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach (var s in Model.Summary)
+                    @if (string.IsNullOrEmpty(Model.SelectedDuration))
                     {
                         <tr>
-                            <td>@s.ReturnPeriod</td>
+                            <th rowspan="2">Return Period</th>
 
-                            <td>@s.Min5?.ToString("0.00")</td>
-                            <td>@s.Max5?.ToString("0.00")</td>
-                            <td>@s.Avg5?.ToString("0.00")</td>
+                            <th colspan="3">5 min</th>
+                            <th colspan="3">10 min</th>
+                            <th colspan="3">15 min</th>
+                            <th colspan="3">30 min</th>
+                            <th colspan="3">60 min</th>
+                            <th colspan="3">120 min</th>
+                            <th colspan="3">1440 min</th>
+                            <th colspan="3">4320 min</th>
+                            <th colspan="3">10080 min</th>
+                        </tr>
+                        <tr>
+                            @for (int i = 0; i < 9; i++)
+                            {
+                                <th>Min</th>
+                                <th>Max</th>
+                                <th>Avg</th>
+                            }
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <th>Return Period</th>
+                            <th>Min @Model.SelectedDuration</th>
+                            <th>Max @Model.SelectedDuration</th>
+                            <th>Avg @Model.SelectedDuration</th>
+                        </tr>
+                    }
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Summary)
+                    {
+                        <tr>
+                            <td>@item.ReturnPeriod</td>
 
-                            <td>@s.Min10?.ToString("0.00")</td>
-                            <td>@s.Max10?.ToString("0.00")</td>
-                            <td>@s.Avg10?.ToString("0.00")</td>
+                            @if (string.IsNullOrEmpty(Model.SelectedDuration))
+                            {
+                                <td>@item.Min5?.ToString("0.00")</td>
+                                <td>@item.Max5?.ToString("0.00")</td>
+                                <td>@item.Avg5?.ToString("0.00")</td>
+                                <td>@item.Min10?.ToString("0.00")</td>
+                                <td>@item.Max10?.ToString("0.00")</td>
+                                <td>@item.Avg10?.ToString("0.00")</td>
+                                <td>@item.Min15?.ToString("0.00")</td>
+                                <td>@item.Max15?.ToString("0.00")</td>
+                                <td>@item.Avg15?.ToString("0.00")</td>
+                                <td>@item.Min30?.ToString("0.00")</td>
+                                <td>@item.Max30?.ToString("0.00")</td>
+                                <td>@item.Avg30?.ToString("0.00")</td>
+                                <td>@item.Min60?.ToString("0.00")</td>
+                                <td>@item.Max60?.ToString("0.00")</td>
+                                <td>@item.Avg60?.ToString("0.00")</td>
+                                <td>@item.Min120?.ToString("0.00")</td>
+                                <td>@item.Max120?.ToString("0.00")</td>
+                                <td>@item.Avg120?.ToString("0.00")</td>
+                                <td>@item.Min1440?.ToString("0.00")</td>
+                                <td>@item.Max1440?.ToString("0.00")</td>
+                                <td>@item.Avg1440?.ToString("0.00")</td>
+                                <td>@item.Min4320?.ToString("0.00")</td>
+                                <td>@item.Max4320?.ToString("0.00")</td>
+                                <td>@item.Avg4320?.ToString("0.00")</td>
+                                <td>@item.Min10080?.ToString("0.00")</td>
+                                <td>@item.Max10080?.ToString("0.00")</td>
+                                <td>@item.Avg10080?.ToString("0.00")</td>
+                            }
+                            else
+                            {
+                                double? min = Model.SelectedDuration switch
+                                {
+                                    "5" => item.Min5,
+                                    "10" => item.Min10,
+                                    "15" => item.Min15,
+                                    "30" => item.Min30,
+                                    "60" => item.Min60,
+                                    "120" => item.Min120,
+                                    "1440" => item.Min1440,
+                                    "4320" => item.Min4320,
+                                    "10080" => item.Min10080,
+                                    _ => null
+                                };
 
-                            <td>@s.Min15?.ToString("0.00")</td>
-                            <td>@s.Max15?.ToString("0.00")</td>
-                            <td>@s.Avg15?.ToString("0.00")</td>
+                                double? max = Model.SelectedDuration switch
+                                {
+                                    "5" => item.Max5,
+                                    "10" => item.Max10,
+                                    "15" => item.Max15,
+                                    "30" => item.Max30,
+                                    "60" => item.Max60,
+                                    "120" => item.Max120,
+                                    "1440" => item.Max1440,
+                                    "4320" => item.Max4320,
+                                    "10080" => item.Max10080,
+                                    _ => null
+                                };
 
-                            <td>@s.Min30?.ToString("0.00")</td>
-                            <td>@s.Max30?.ToString("0.00")</td>
-                            <td>@s.Avg30?.ToString("0.00")</td>
+                                double? avg = Model.SelectedDuration switch
+                                {
+                                    "5" => item.Avg5,
+                                    "10" => item.Avg10,
+                                    "15" => item.Avg15,
+                                    "30" => item.Avg30,
+                                    "60" => item.Avg60,
+                                    "120" => item.Avg120,
+                                    "1440" => item.Avg1440,
+                                    "4320" => item.Avg4320,
+                                    "10080" => item.Avg10080,
+                                    _ => null
+                                };
 
-                            <td>@s.Min60?.ToString("0.00")</td>
-                            <td>@s.Max60?.ToString("0.00")</td>
-                            <td>@s.Avg60?.ToString("0.00")</td>
-
-                            <td>@s.Min120?.ToString("0.00")</td>
-                            <td>@s.Max120?.ToString("0.00")</td>
-                            <td>@s.Avg120?.ToString("0.00")</td>
-
-                            <td>@s.Min1440?.ToString("0.00")</td>
-                            <td>@s.Max1440?.ToString("0.00")</td>
-                            <td>@s.Avg1440?.ToString("0.00")</td>
-
-                            <td>@s.Min4320?.ToString("0.00")</td>
-                            <td>@s.Max4320?.ToString("0.00")</td>
-                            <td>@s.Avg4320?.ToString("0.00")</td>
-
-                            <td>@s.Min10080?.ToString("0.00")</td>
-                            <td>@s.Max10080?.ToString("0.00")</td>
-                            <td>@s.Avg10080?.ToString("0.00")</td>
+                                <td>@min?.ToString("0.00")</td>
+                                <td>@max?.ToString("0.00")</td>
+                                <td>@avg?.ToString("0.00")</td>
+                            }
                         </tr>
                     }
                 </tbody>

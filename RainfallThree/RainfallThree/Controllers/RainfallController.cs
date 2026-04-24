@@ -7,7 +7,6 @@ using System.IO.Compression;
 using System.Xml.Linq;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
-using static RainfallThree.Models.RainfallSummaryViewModel;
 
 public class RainfallController : Controller
 {
@@ -49,14 +48,6 @@ public class RainfallController : Controller
 
         model.ReturnPeriodOptions.Insert(0, new SelectListItem { Value = "", Text = "All" });
         model.DurationOptions = BuildDurationOptions();
-
-        // -------------------------------------------------------
-        // Two base datasets:
-        //   allData      = NO ReturnPeriod filter
-        //                  → summary table always shows all return periods
-        //   filteredData = ReturnPeriod filter applied
-        //                  → results table respects the user's selection
-        // -------------------------------------------------------
         var allData = _context.RainfallSheets.ToList();
 
         var filteredDataQuery = _context.RainfallSheets.AsQueryable();
@@ -71,9 +62,6 @@ public class RainfallController : Controller
             catch (Exception ex) { ModelState.AddModelError("", "Invalid file: " + ex.Message); }
         }
 
-        // -------------------------------------------------------
-        // Parse polygon once — shared by both results and summary
-        // -------------------------------------------------------
         List<(double lat, double lon)> parsedPolygon = new();
 
         if (!string.IsNullOrEmpty(model.PolygonGeoJson))
@@ -118,9 +106,6 @@ public class RainfallController : Controller
                 Console.WriteLine($"Lat: {p.lat}, Lon: {p.lon}");
         }
 
-        // -------------------------------------------------------
-        // Results dataSet — respects ReturnPeriod + spatial filter
-        // -------------------------------------------------------
         List<RainfallSheet> dataSet;
 
         if (parsedPolygon.Any())
@@ -181,10 +166,6 @@ public class RainfallController : Controller
                 Console.WriteLine($"5min:{item._5Min} 10min:{item._10Min} 15min:{item._15Min} 30min:{item._30Min}");
         }
 
-        // -------------------------------------------------------
-        // Summary dataSet — NO ReturnPeriod filter, same spatial filter
-        // All return periods always appear regardless of selection.
-        // -------------------------------------------------------
         List<RainfallSheet> summarySet;
 
         if (parsedPolygon.Any())
@@ -208,6 +189,30 @@ public class RainfallController : Controller
         else
         {
             summarySet = allData.Take(500).ToList();
+        }
+
+        // Apply ReturnPeriod filter
+        if (model.ReturnPeriod.HasValue)
+        {
+            summarySet = summarySet.Where(r => r.ReturnPeriod == model.ReturnPeriod).ToList();
+        }
+
+        // Apply Duration filter (same logic as results)
+        if (!string.IsNullOrEmpty(model.SelectedDuration))
+        {
+            summarySet = model.SelectedDuration switch
+            {
+                "5" => summarySet.Where(x => x._5Min.HasValue).ToList(),
+                "10" => summarySet.Where(x => x._10Min.HasValue).ToList(),
+                "15" => summarySet.Where(x => x._15Min.HasValue).ToList(),
+                "30" => summarySet.Where(x => x._30Min.HasValue).ToList(),
+                "60" => summarySet.Where(x => x._60Min.HasValue).ToList(),
+                "120" => summarySet.Where(x => x._120Min.HasValue).ToList(),
+                "1440" => summarySet.Where(x => x._1440Min.HasValue).ToList(),
+                "4320" => summarySet.Where(x => x._4320Min.HasValue).ToList(),
+                "10080" => summarySet.Where(x => x._10080Min.HasValue).ToList(),
+                _ => summarySet
+            };
         }
 
         model.Summary = summarySet
