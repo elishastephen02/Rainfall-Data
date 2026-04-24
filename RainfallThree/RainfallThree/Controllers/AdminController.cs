@@ -13,13 +13,22 @@ public class AdminController : Controller
         _userManager = userManager;
     }
 
+    [HttpGet]
     public IActionResult PendingUsers()
     {
-        var users = _userManager.Users
+        var pendingUsers = _userManager.Users
             .Where(u => !u.IsApproved)
             .ToList();
 
-        return View(users);
+        var allUsers = _userManager.Users.ToList();
+
+        var vm = new UserViewModel
+        {
+            PendingUsers = pendingUsers,
+            AllUsers = allUsers
+        };
+
+        return View(vm); 
     }
 
     [HttpPost]

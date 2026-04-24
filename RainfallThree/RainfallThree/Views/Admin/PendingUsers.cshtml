@@ -1,8 +1,8 @@
-﻿@model List<RainfallThree.Models.ApplicationUser>
+﻿@model UserViewModel
 
 <h2>Pending User Approvals</h2>
 
-@if (!Model.Any())
+@if (!Model.PendingUsers.Any())
 {
     <p>No users awaiting approval.</p>
 }
@@ -16,7 +16,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var user in Model)
+            @foreach (var user in Model.PendingUsers)
             {
                 <tr>
                     <td>@user.Email</td>
@@ -28,6 +28,44 @@ else
                                 Approve
                             </button>
                         </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<hr />
+
+<h2>All Users</h2>
+
+@if (!Model.AllUsers.Any())
+{
+    <p>No users found.</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.AllUsers)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>
+                        @if (user.IsApproved)
+                        {
+                            <span class="badge bg-success">Approved</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        }
                     </td>
                 </tr>
             }
