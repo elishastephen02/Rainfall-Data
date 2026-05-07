@@ -3,6 +3,14 @@
   "WorkspaceRootPath": "C:\\Users\\elishastephen\\Downloads\\Rainfall-Data\\RainfallThree\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{BBCA6316-0452-6B60-0D5B-BF4612F84493}|RainfallThree\\RainfallThree.csproj|c:\\users\\elishastephen\\downloads\\rainfall-data\\rainfallthree\\rainfallthree\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{BBCA6316-0452-6B60-0D5B-BF4612F84493}|RainfallThree\\RainfallThree.csproj|solutionrelative:rainfallthree\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BBCA6316-0452-6B60-0D5B-BF4612F84493}|RainfallThree\\RainfallThree.csproj|c:\\users\\elishastephen\\downloads\\rainfall-data\\rainfallthree\\rainfallthree\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{BBCA6316-0452-6B60-0D5B-BF4612F84493}|RainfallThree\\RainfallThree.csproj|solutionrelative:rainfallthree\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{BBCA6316-0452-6B60-0D5B-BF4612F84493}|RainfallThree\\RainfallThree.csproj|c:\\users\\elishastephen\\downloads\\rainfall-data\\rainfallthree\\rainfallthree\\views\\rainfall\\search.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{BBCA6316-0452-6B60-0D5B-BF4612F84493}|RainfallThree\\RainfallThree.csproj|solutionrelative:rainfallthree\\views\\rainfall\\search.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
@@ -22,11 +30,50 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "C:\\Users\\elishastephen\\Downloads\\Rainfall-Data\\RainfallThree\\RainfallThree\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "RainfallThree\\Properties\\launchSettings.json",
+              "ToolTip": "C:\\Users\\elishastephen\\Downloads\\Rainfall-Data\\RainfallThree\\RainfallThree\\Properties\\launchSettings.json",
+              "RelativeToolTip": "RainfallThree\\Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-05-07T12:15:43.975Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\elishastephen\\Downloads\\Rainfall-Data\\RainfallThree\\RainfallThree\\appsettings.json",
+              "RelativeDocumentMoniker": "RainfallThree\\appsettings.json",
+              "ToolTip": "C:\\Users\\elishastephen\\Downloads\\Rainfall-Data\\RainfallThree\\RainfallThree\\appsettings.json",
+              "RelativeToolTip": "RainfallThree\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAMzMzMzPrvwwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-05-07T12:06:48.284Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Search.cshtml",
+              "DocumentMoniker": "C:\\Users\\elishastephen\\Downloads\\Rainfall-Data\\RainfallThree\\RainfallThree\\Views\\Rainfall\\Search.cshtml",
+              "RelativeDocumentMoniker": "RainfallThree\\Views\\Rainfall\\Search.cshtml",
+              "ToolTip": "C:\\Users\\elishastephen\\Downloads\\Rainfall-Data\\RainfallThree\\RainfallThree\\Views\\Rainfall\\Search.cshtml",
+              "RelativeToolTip": "RainfallThree\\Views\\Rainfall\\Search.cshtml",
+              "ViewState": "AgIAAJEBAAAAsJmZmRkcwC4DAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-24T08:42:39.113Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "RainfallController.cs",
               "DocumentMoniker": "C:\\Users\\elishastephen\\Downloads\\Rainfall-Data\\RainfallThree\\RainfallThree\\Controllers\\RainfallController.cs",
               "RelativeDocumentMoniker": "RainfallThree\\Controllers\\RainfallController.cs",
@@ -38,20 +85,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Search.cshtml",
-              "DocumentMoniker": "C:\\Users\\elishastephen\\Downloads\\Rainfall-Data\\RainfallThree\\RainfallThree\\Views\\Rainfall\\Search.cshtml",
-              "RelativeDocumentMoniker": "RainfallThree\\Views\\Rainfall\\Search.cshtml",
-              "ToolTip": "C:\\Users\\elishastephen\\Downloads\\Rainfall-Data\\RainfallThree\\RainfallThree\\Views\\Rainfall\\Search.cshtml",
-              "RelativeToolTip": "RainfallThree\\Views\\Rainfall\\Search.cshtml",
-              "ViewState": "AgIAACYCAAAAwJmZmZkJwC4DAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-24T08:42:39.113Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "_Layout.cshtml",
               "DocumentMoniker": "C:\\Users\\elishastephen\\Downloads\\Rainfall-Data\\RainfallThree\\RainfallThree\\Views\\Shared\\_Layout.cshtml",
               "RelativeDocumentMoniker": "RainfallThree\\Views\\Shared\\_Layout.cshtml",
