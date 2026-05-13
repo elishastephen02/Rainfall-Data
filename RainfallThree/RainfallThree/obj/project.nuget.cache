@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "aXap4tRKhlg=",
+  "dgSpecHash": "SY14KkYVFy4=",
   "success": true,
   "projectFilePath": "C:\\Users\\elishastephen\\Downloads\\Rainfall-Data\\RainfallThree\\RainfallThree\\RainfallThree.csproj",
   "expectedPackageFiles": [
@@ -121,10 +121,12 @@
     "C:\\Users\\elishastephen\\.nuget\\packages\\nuget.protocol\\7.3.1\\nuget.protocol.7.3.1.nupkg.sha512",
     "C:\\Users\\elishastephen\\.nuget\\packages\\nuget.versioning\\7.3.1\\nuget.versioning.7.3.1.nupkg.sha512",
     "C:\\Users\\elishastephen\\.nuget\\packages\\projnet\\2.1.0\\projnet.2.1.0.nupkg.sha512",
+    "C:\\Users\\elishastephen\\.nuget\\packages\\sendgrid\\9.29.3\\sendgrid.9.29.3.nupkg.sha512",
     "C:\\Users\\elishastephen\\.nuget\\packages\\sqlitepclraw.bundle_e_sqlite3\\2.1.11\\sqlitepclraw.bundle_e_sqlite3.2.1.11.nupkg.sha512",
     "C:\\Users\\elishastephen\\.nuget\\packages\\sqlitepclraw.core\\2.1.11\\sqlitepclraw.core.2.1.11.nupkg.sha512",
     "C:\\Users\\elishastephen\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.1.11\\sqlitepclraw.lib.e_sqlite3.2.1.11.nupkg.sha512",
     "C:\\Users\\elishastephen\\.nuget\\packages\\sqlitepclraw.provider.e_sqlite3\\2.1.11\\sqlitepclraw.provider.e_sqlite3.2.1.11.nupkg.sha512",
+    "C:\\Users\\elishastephen\\.nuget\\packages\\starkbank-ecdsa\\1.3.3\\starkbank-ecdsa.1.3.3.nupkg.sha512",
     "C:\\Users\\elishastephen\\.nuget\\packages\\system.clientmodel\\1.5.1\\system.clientmodel.1.5.1.nupkg.sha512",
     "C:\\Users\\elishastephen\\.nuget\\packages\\system.codedom\\6.0.0\\system.codedom.6.0.0.nupkg.sha512",
     "C:\\Users\\elishastephen\\.nuget\\packages\\system.composition\\9.0.0\\system.composition.9.0.0.nupkg.sha512",

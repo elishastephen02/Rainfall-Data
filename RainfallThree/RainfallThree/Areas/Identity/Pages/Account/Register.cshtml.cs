@@ -31,13 +31,15 @@ namespace RainfallThree.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<ApplicationUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly IConfiguration _configuration;
 
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
             IUserStore<ApplicationUser> userStore,
             SignInManager<ApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IConfiguration configuration)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -45,6 +47,7 @@ namespace RainfallThree.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -136,8 +139,16 @@ namespace RainfallThree.Areas.Identity.Pages.Account
                         return Page();
                     }
 
+                    var adminEmail = _configuration["AdminEmail"];
+
+                    await _emailSender.SendEmailAsync(
+                        adminEmail,
+                        "New User Registration Pending Approval",
+                        $"A new user has registered:<br/>Email: {Input.Email}"
+                    );
+
                     // Instead of auto login, show a message
-                    TempData["RegistrationMessage"] = "Registration successful! Your account must be verified by an administrator before you can log in.";
+                    TempData["RegistrationMessage"] = "Log in created, registration pending! Your account must be verified by an administrator before you can log in.";
 
 
                     // Redirect to Login page instead of auto sign-in

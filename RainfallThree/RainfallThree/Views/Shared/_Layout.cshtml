@@ -11,52 +11,73 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3 custom-navbar">
-            <div class="container-fluid">
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+        <nav class="navbar navbar-expand-lg custom-navbar border-bottom box-shadow mb-3">
+            <div class="container-fluid px-3">
+
+                <!-- Brand: always visible -->
+                <a class="navbar-brand app-title" asp-area="" asp-controller="Home" asp-action="Index">EDRE</a>
+
+                <!-- Hamburger toggler (visible on mobile) -->
+                <button class="navbar-toggler" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mainNavContent"
+                        aria-controls="mainNavContent"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+
+                <!-- Collapsible content -->
+                <div class="collapse navbar-collapse" id="mainNavContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Rainfall" asp-action="Search">Rainfall Data</a>
+                                <a class="nav-link" asp-area="" asp-controller="Rainfall" asp-action="Search">Rainfall Data</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Storm" asp-action="Index">Storm Events</a>
+                                <a class="nav-link" asp-area="" asp-controller="Storm" asp-action="Index">Storm Events</a>
                             </li>
                         }
                         @if (User.IsInRole("PrimaryUser"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-light" asp-controller="Admin" asp-action="PendingUsers">User Approvals</a>
+                                <a class="nav-link" asp-controller="Admin" asp-action="PendingUsers">User Approvals</a>
                             </li>
                         }
                     </ul>
-                    <partial name="_LoginPartial" />
+
+                    <!-- Login partial: right-aligned on desktop, stacked on mobile -->
+                    <div class="nav-login-partial">
+                        <partial name="_LoginPartial" />
+                    </div>
                 </div>
+
             </div>
         </nav>
     </header>
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
-    <footer class="border-top footer py-2">
-        <div class="container d-flex justify-content-between align-items-start flex-wrap">
-            <div class="small text-white pe-3" style="flex:1;">
-                &copy; 2026 E.D.R.E. All rights reserved. <span class="mx-1">|</span>
-                Commissioned by KC Sha. <span class="mx-1">|</span>
+
+    <footer class="site-footer border-top py-3">
+        <div class="container">
+            <p class="footer-text mb-0">
+                &copy; 2026 E.D.R.E. All rights reserved.
+                <span class="footer-sep">&nbsp;|&nbsp;</span>
+                Commissioned by KC Sha.
+                <span class="footer-sep">&nbsp;|&nbsp;</span>
                 All intellectual property rights in this application, including its content, design, and functionality, are reserved.
-            </div>
+            </p>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

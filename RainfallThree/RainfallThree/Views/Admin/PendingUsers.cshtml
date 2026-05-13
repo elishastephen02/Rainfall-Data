@@ -8,31 +8,37 @@
 }
 else
 {
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Email</th>
-                <th>Approve</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in Model.PendingUsers)
-            {
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm">
+            <thead>
                 <tr>
-                    <td>@user.Email</td>
-                    <td>
-                        <form asp-action="Approve" method="post">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@user.Id" />
-                            <button type="submit" class="btn btn-success">
-                                Approve
-                            </button>
-                        </form>
-                    </td>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Action</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var user in Model.PendingUsers)
+                {
+                    <tr>
+                        <td>@user.Email</td>
+                        <td>
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        </td>
+                        <td>
+                            <form asp-action="Approve" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    Approve
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 <hr />
@@ -45,30 +51,60 @@ else
 }
 else
 {
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Email</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in Model.AllUsers)
-            {
+   <div class="table-responsive">
+      <table class="table table-bordered table-sm">
+            <thead>
                 <tr>
-                    <td>@user.Email</td>
-                    <td>
-                        @if (user.IsApproved)
-                        {
-                            <span class="badge bg-success">Approved</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-warning text-dark">Pending</span>
-                        }
-                    </td>
+                    <th>Email</th>
+                    <th>Last Login</th>
+                    <th>Status</th>
+                    <th>Action</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var user in Model.AllUsers)
+                {
+                    <tr>
+                        <td>@user.Email</td>
+                        <td>@user.LastLoginDate?.ToLocalTime().ToString("dd MMM yyyy HH:mm")</td>
+
+                        <td>
+                            @if (user.IsApproved)
+                            {
+                                <span class="badge bg-success">Approved</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Not Approved</span>
+                            }
+                        </td>
+
+
+                        <td>
+                            @if (user.IsApproved)
+                            {
+                                <form asp-action="Deny" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@user.Id" />
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        Deny
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="Approve" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@user.Id" />
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        Approve
+                                    </button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }

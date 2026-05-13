@@ -1,68 +1,162 @@
+/* ── Base typography ── */
 html {
-  font-size: 14px;
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
+/* ── Full-height layout so footer sticks to bottom ── */
 body {
-    margin-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+    body > .container {
+        flex: 1 0 auto;
+    }
+
+/* ── Focus rings ── */
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+/* ── Floating label placeholders ── */
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
 }
 
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   NAVBAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 .custom-navbar {
     background-color: #333386;
 }
 
-    .custom-navbar .nav-link,
-    .custom-navbar .navbar-brand {
-        color: white;
+    /* Brand */
+    .custom-navbar .app-title {
+        color: #fff !important;
+        font-weight: 700;
+        font-size: 1.4rem;
+        letter-spacing: 0.4px;
+        padding: 0;
+        line-height: 1;
+    }
+
+    /* Nav links */
+    .custom-navbar .nav-link {
+        color: rgba(255, 255, 255, 0.88) !important;
+        border-radius: 6px;
+        padding: 6px 10px;
+        transition: background 0.15s, color 0.15s;
     }
 
         .custom-navbar .nav-link:hover {
-            color: blue !important;
+            color: #fff !important;
+            background-color: rgba(255, 255, 255, 0.12);
         }
 
-    .custom-navbar .app-title {
-        color: white;
-        font-weight: 700;
-        font-size: 1.5rem;
-        letter-spacing: 0.5px;
+        .custom-navbar .nav-link.active,
+        .custom-navbar .nav-link:focus {
+            color: #fff !important;
+            background-color: rgba(255, 255, 255, 0.18) !important;
+            box-shadow: none !important;
+        }
+
+    /* Hamburger toggler — white icon on dark bg */
+    .custom-navbar .navbar-toggler {
+        border-color: rgba(255, 255, 255, 0.45);
+        padding: 5px 8px;
     }
 
-footer {
-    background-color: #333386;
-    color: white !important;
+        .custom-navbar .navbar-toggler:focus {
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+        }
+
+    .custom-navbar .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255,255,255,0.85)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+
+/* Login partial wrapper */
+.nav-login-partial {
+    display: flex;
+    align-items: center;
 }
 
-    footer .container {
-        text-align: left;
+/* ── Mobile: collapsed menu styles ── */
+@media (max-width: 991.98px) {
+    .custom-navbar .navbar-collapse {
+        padding: 8px 0 4px;
     }
 
-    footer .text-white {
-        color: white !important;
+    /* Full-width nav links when stacked */
+    .custom-navbar .navbar-nav .nav-link {
+        padding: 10px 4px;
+        border-radius: 0;
+        border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
     }
 
-    footer img {
-        margin-left: 15px;
+    .custom-navbar .navbar-nav .nav-item:last-child .nav-link {
+        border-bottom: none;
     }
+
+    /* Divider above login partial when stacked */
+    .nav-login-partial {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 0.5px solid rgba(255, 255, 255, 0.2);
+        width: 100%;
+    }
+
+    /* Shrink brand a touch on small phones */
+    .custom-navbar .app-title {
+        font-size: 1.2rem;
+    }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   FOOTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.site-footer {
+    flex-shrink: 0;
+    background-color: #333386;
+}
+
+.footer-text {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.8rem;
+    line-height: 1.7;
+}
+
+.footer-sep {
+    opacity: 0.5;
+}
+
+/* On small phones, hide the pipe separators so text wraps naturally */
+@media (max-width: 575.98px) {
+    .footer-sep {
+        display: none;
+    }
+
+    .footer-text {
+        font-size: 0.75rem;
+    }
+}

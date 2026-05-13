@@ -110,41 +110,57 @@ namespace RainfallThree.Areas.Identity.Pages.Account
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var user = await _userManager.FindByEmailAsync(Input.Email);
-                if (user != null && !user.IsApproved)
-                {
-                    ModelState.AddModelError(string.Empty, "Your account is pending approval by an admin.");
-                    return Page();
-                }
-
-                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
-
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("User logged in.");
-                    return LocalRedirect(returnUrl);
-                }
-                if (result.RequiresTwoFactor)
-                {
-                    return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
-                }
-                if (result.IsLockedOut)
-                {
-                    _logger.LogWarning("User account locked out.");
-                    return RedirectToPage("./Lockout");
-                }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                    return Page();
-                }
+                return Page();
             }
 
-            // If we got this far, something failed, redisplay form
+            // 1. Find user first
+            var user = await _userManager.FindByEmailAsync(Input.Email);
+
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                return Page();
+            }
+
+            // 2. Check approval BEFORE sign-in
+            if (!user.IsApproved)
+            {
+                ModelState.AddModelError(string.Empty, "Your account is not approved or has been disabled by an admin.");
+                return Page();
+            }
+
+            // 3. Now attempt password sign-in
+            var result = await _signInManager.PasswordSignInAsync(
+                user.UserName,
+                Input.Password,
+                Input.RememberMe,
+                lockoutOnFailure: true
+            );
+
+            if (result.Succeeded)
+            {
+                _logger.LogInformation("User logged in.");
+
+                user.LastLoginDate = DateTime.UtcNow;
+                await _userManager.UpdateAsync(user);
+
+                return LocalRedirect(returnUrl);
+            }
+
+            if (result.RequiresTwoFactor)
+            {
+                return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
+            }
+
+            if (result.IsLockedOut)
+            {
+                _logger.LogWarning("User account locked out.");
+                return RedirectToPage("./Lockout");
+            }
+
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             return Page();
         }
     }

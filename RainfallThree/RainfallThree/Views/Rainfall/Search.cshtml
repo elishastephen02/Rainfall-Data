@@ -7,6 +7,7 @@
     <h3>Select Location on Durban Map or Draw Area Polygon</h3>
     <div id="map" style="height: 400px; width: 100%; margin-bottom: 20px;"></div>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCOOGU5sHBREmUAIpPYv1THtaM-t0SgE8I&libraries=places"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
@@ -340,6 +341,45 @@
         console.log("Polygon cleared");
         }
 
+        // GOOGLE ADDRESS AUTOCOMPLETE
+        const addressInput = document.getElementById("Address");
+
+        const autocomplete = new google.maps.places.Autocomplete(addressInput, {
+        types: ["address"],
+        componentRestrictions: { country: "za" }, // South Africa only
+        strictBounds: false,
+        fields: ["geometry", "formatted_address", "name"]
+        });
+
+        // Bias results toward Durban
+        autocomplete.setBounds(
+        new google.maps.LatLngBounds(
+        new google.maps.LatLng(-30.2, 30.6),
+        new google.maps.LatLng(-29.5, 31.5)
+        )
+        );
+
+        autocomplete.addListener("place_changed", function () {
+
+        const place = autocomplete.getPlace();
+
+        if (!place.geometry) {
+        showMessage("Address not found.");
+        return;
+        }
+
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+
+        clearPolygon();
+
+        placeMarker(lat, lng);
+        updateInputsFromCoordinates(lat, lng);
+
+        showMessage("Address selected!", false);
+        });
+
+
         });
 
         document.querySelector("form").addEventListener("submit", function () {
@@ -366,11 +406,12 @@
     <fieldset>
         <legend>Search by Address</legend>
         <div class="form-group" style="margin-bottom: 15px;">
-            <label asp-for="Address">Address</label>
-            <div style="display:flex; gap:10px;">
-                <div id="addressMessage" style="margin-bottom:10px; color:red; font-weight:500;"></div>
-                <input asp-for="Address" id="Address" placeholder="Enter in your address" style="flex:1;" />
-                <button type="button" id="searchAddressBtn">Find Address</button>
+            <div class="address-row" style="display:flex; gap:10px; align-items:center;">
+                <div id="addressMessage" style="color:red; font-weight:500;"></div>
+                <input asp-for="Address" id="Address" placeholder="Enter in your address within Ethekwini region" style="flex:1; height:40px; padding:6px 10px; box-sizing:border-box; margin:0;" />
+                <button type="button" id="searchAddressBtn" style="height:40px; padding:0 15px; box-sizing:border-box; white-space:nowrap; margin:0; line-height:40px;">
+                    Find Address
+                </button>
             </div>
         </div>
     </fieldset>
@@ -863,5 +904,48 @@
     .table-scroll-xy::-webkit-scrollbar-thumb {
     background: #007bff;
     border-radius: 10px;
+    }
+
+    @@media (max-width: 767px) {
+    /* Form */
+    form.rainfall-form {
+    padding: 15px;
+    border-radius: 6px;
+    }
+
+    form.rainfall-form fieldset {
+    padding: 12px;
+    }
+    /* 2-column grid → single column */
+
+    form.rainfall-form .form-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    }
+    /* Address search row stacks vertically */
+    form.rainfall-form .address-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    }
+
+    form.rainfall-form .address-row input,
+    form.rainfall-form .address-row button {
+    width: 100% !important;
+    height: auto !important;
+    box-sizing: border-box;
+    }
+    /* Map height reduction on mobile */
+    #map {
+    height: 260px !important;
+    }
+    /* Results container */
+    .results-container {
+    padding: 0 5px;
+    }
+    /* Submit button full-width */
+    form.rainfall-form > button[type="submit"] {
+    width: 100%;
+    }
     }
 </style>

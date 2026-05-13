@@ -5,5 +5,6 @@ namespace RainfallThree.Models
     public class ApplicationUser : IdentityUser
     {
         public bool IsApproved { get; set; } = false;
+        public DateTime? LastLoginDate { get; set; }
     }
 }
