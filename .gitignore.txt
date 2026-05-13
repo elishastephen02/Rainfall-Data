@@ -1,0 +1,18 @@
+# Visual Studio
+.vs/
+
+# Build output
+bin/
+obj/
+
+# User secrets / environment
+.env
+.env.*
+*.env.txt
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/

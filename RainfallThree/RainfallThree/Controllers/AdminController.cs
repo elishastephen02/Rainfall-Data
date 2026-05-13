@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RainfallThree.Models;
@@ -7,10 +8,12 @@ using RainfallThree.Models;
 public class AdminController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IEmailSender _emailSender;
 
-    public AdminController(UserManager<ApplicationUser> userManager)
+    public AdminController(UserManager<ApplicationUser> userManager, IEmailSender emailSender)
     {
         _userManager = userManager;
+        _emailSender = emailSender;
     }
 
     [HttpGet]
@@ -41,6 +44,32 @@ public class AdminController : Controller
         {
             user.IsApproved = true;
             await _userManager.UpdateAsync(user);
+
+            await _emailSender.SendEmailAsync(
+                user.Email,
+                "Account Approved",
+                $"Hello {user.UserName}, your EDRE account has been approved. You can now log in.");
+        }
+
+        return RedirectToAction(nameof(PendingUsers));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Deny(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+
+        if (user != null)
+        {
+            user.IsApproved = false;
+            await _userManager.UpdateAsync(user);
+
+            await _emailSender.SendEmailAsync(
+                user.Email,
+                "Account Disabled",
+                $"Hello {user.UserName}, your account access has been disabled by an administrator."
+            );
         }
 
         return RedirectToAction(nameof(PendingUsers));

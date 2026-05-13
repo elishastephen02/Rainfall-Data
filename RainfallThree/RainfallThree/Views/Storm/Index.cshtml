@@ -1,7 +1,7 @@
 ﻿@model StormViewModel
 
-<div class="container mt-5">
-    <div class="card shadow-lg p-4 rounded-4">
+<div class="container mt-4 px-3">
+    <div class="card shadow-lg p-3 p-md-4 rounded-4">
         <h2 class="text-center mb-4" style="color:#005E83">🌧 Storm Event Finder</h2>
         <form asp-action="Index" method="post" enctype="multipart/form-data">
             <div class="mb-3">
@@ -10,12 +10,12 @@
                 <span asp-validation-for="UploadedFile" class="text-danger"></span>
             </div>
             <div class="row">
-                <div class="col-md-6 mb-3">
+                <div class="col-6 mb-3">
                     <label class="form-label fw-bold">Rainfall Depth (mm)</label>
                     <input asp-for="Depth" type="number" step="0.1" class="form-control" placeholder="e.g. 100" />
                     <span asp-validation-for="Depth" class="text-danger"></span>
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-6 mb-3">
                     <label class="form-label fw-bold">Duration (minutes)</label>
                     <input asp-for="DurationMinutes" type="number" class="form-control" placeholder="e.g. 30" />
                     <span asp-validation-for="DurationMinutes" class="text-danger"></span>
@@ -34,10 +34,9 @@
 
 @if (!string.IsNullOrEmpty(Model.Message))
 {
-    <div id="tempMessage" class="alert alert-success text-center">
+    <div id="tempMessage" class="alert alert-success text-center mx-3">
         @Model.Message
     </div>
-
     <script>
         setTimeout(function () {
             var msg = document.getElementById('tempMessage');
@@ -52,53 +51,42 @@
 
 @if (Model != null && Model.StationName != null)
 {
-    <div class="card border-0 shadow-lg rounded-4 mb-4">
-        <div class="card-body">
+    <div class="card border-0 shadow-lg rounded-4 mb-4 mx-3">
+        <div class="card-body p-3 p-md-4">
+            <h5 class="fw-bold text-primary text-center mb-3">📍 Station Information</h5>
 
-            <h5 class="fw-bold text-primary text-center mb-3">
-                📍 Station Information
-            </h5>
-
-            <div class="row">
-
-                <!-- Station Details -->
-                <div class="col-md-6 text-start ps-3">
-
+            <!-- Stack vertically on mobile, side-by-side on md+ -->
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
                     <div class="mb-2">
-                        <div class="fw-bold text-secondary">Rainfall Monitoring Station:</div>
-                        <div class="fs-6">@Model.StationName</div>
+                        <div class="fw-bold text-secondary small">Rainfall Monitoring Station:</div>
+                        <div>@Model.StationName</div>
                     </div>
-
                     <div class="mb-2">
-                        <div class="fw-bold text-secondary">Latitude:</div>
-                        <div class="fs-6">@Model.Latitude?.ToString("F6")</div>
+                        <div class="fw-bold text-secondary small">Latitude:</div>
+                        <div>@Model.Latitude?.ToString("F6")</div>
                     </div>
-
                     <div class="mb-2">
-                        <div class="fw-bold text-secondary">Longitude:</div>
-                        <div class="fs-6">@Model.Longitude?.ToString("F6")</div>
+                        <div class="fw-bold text-secondary small">Longitude:</div>
+                        <div>@Model.Longitude?.ToString("F6")</div>
                     </div>
-
                 </div>
 
-                <!-- Map -->
-                <div class="col-md-6 d-flex justify-content-center align-items-center">
-                    <div id="stationMap" style="width: 300px; height: 300px; border-radius: 8px; border: 1px solid #dee2e6;"></div>
+                <div class="col-12 col-md-6">
+                    <div id="stationMap" class="station-map rounded"></div>
                 </div>
-
             </div>
-
         </div>
     </div>
 }
 
 @if (Model.Results != null && Model.Results.Count > 0)
 {
-    <h4 class="mb-4 text-center">
+    <h4 class="mb-4 text-center px-3">
         🌧 Storm Found: @Model.Results.Count storm(s) matching criteria
     </h4>
 
-    <div id="stormCarousel" class="carousel slide" data-bs-ride="false" data-bs-touch="false" data-bs-interval="false">
+    <div id="stormCarousel" class="carousel slide px-1" data-bs-ride="false" data-bs-touch="false" data-bs-interval="false">
         <div class="carousel-inner">
 
             @for (int i = 0; i < Model.Results.Count; i++)
@@ -106,187 +94,202 @@
                 var storm = Model.Results[i];
 
                 <div class="carousel-item @(i == 0 ? "active" : "")">
-                    <div class="card shadow-sm p-4 rounded-4 mb-4">
+                    <div class="card shadow-sm p-3 p-md-4 rounded-4 mb-4 mx-2">
 
-                        <h5 class="text-primary text-center mb-3">
-                            Storm @(@i + 1): @storm.StartTime.ToString("dd/MM/yyyy") to @storm.EndTime.ToString("dd/MM/yyyy")
+                        <h5 class="text-primary text-center mb-2 fs-6 fs-md-5">
+                            Storm @(i + 1): @storm.StartTime.ToString("dd/MM/yyyy") – @storm.EndTime.ToString("dd/MM/yyyy")
                         </h5>
 
-                        <p class="text-center">
+                        <p class="text-center mb-3">
                             <strong>Total Rainfall:</strong>
-                            <span class="badge bg-success fs-6">
-                                @Math.Round(storm.TotalRainfall, 2) mm
-                            </span>
+                            <span class="badge bg-success fs-6">@Math.Round(storm.TotalRainfall, 2) mm</span>
                         </p>
+                        
+                        <!-- Graph + Satellite Image Row -->
+                        <div class="row g-4 align-items-start mb-4">
 
-                        <div class="storm-carousel-content d-flex justify-content-between align-items-center" style="padding-left: 40px;">
-                            <!-- GRAPH -->
-                            <div class="col-md-6">
-                                <canvas id="rainChart_@i" style="width:100%; height:300px;"></canvas>
+                            <!-- Rainfall Graph -->
+                            <div class="col-12 col-lg-6">
+                                <div class="chart-wrapper">
+                                    <canvas id="rainChart_@i"></canvas>
+                                </div>
                             </div>
 
-                            <!-- SATELLITE IMAGE -->
-                            <div class="col-md-6 text-center">
-                                <div class="fw-bold mb-2">
-                                    Storm Satellite Image(@storm.MidTime.ToString("dd/MM/yyyy HH:mm"))
-                                </div>
+                            <!-- Satellite Image -->
+                            <div class="col-12 col-lg-6">
+                                <div class="text-center">
+                                    <div class="fw-bold mb-2 small">
+                                        Storm Satellite Image (@storm.MidTime.ToString("dd/MM/yyyy HH:mm"))
+                                    </div>
 
-                                @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
-                                {
-                                    var lat = Model.Latitude.Value;
-                                    var lon = Model.Longitude.Value;
-
-                                    // eumetsat
-                                    var minLatE = lat - 20;
-                                    var maxLatE = lat + 20;
-                                    var minLonE = lon - 20;
-                                    var maxLonE = lon + 20;
-
-                                    var dtE = storm.MidTime.ToUniversalTime();
-                                    int minutesE = (dtE.Minute / 15) * 15;
-
-                                    var validTimeE = new DateTime(
-                                        dtE.Year,
-                                        dtE.Month,
-                                        dtE.Day,
-                                        dtE.Hour,
-                                        minutesE,
-                                        0,
-                                        DateTimeKind.Utc
-                                    );
-
-                                    var eumetsatTime = validTimeE.ToString("yyyy-MM-ddTHH:mmZ");
-
-                                    var eumetsatUrl =
-                                      "https://view.eumetsat.int/geoserver/wms" +
-                                      "?SERVICE=WMS" +
-                                      "&VERSION=1.3.0" +
-                                      "&REQUEST=GetMap" +
-                                      "&LAYERS=msg_fes:ir108" +
-                                      "&FORMAT=image/png" +
-                                      "&CRS=EPSG:4326" +
-                                      $"&BBOX={minLatE},{minLonE},{maxLatE},{maxLonE}" +
-                                      "&WIDTH=400&HEIGHT=300" +
-                                      $"&TIME={eumetsatTime}";
-
-                                    //nasa gibs
-                                    var minLatN = lat - 20;
-                                    var maxLatN = lat + 20;
-                                    var minLonN = lon - 20;
-                                    var maxLonN = lon + 20;
-
-                                    var dtN = storm.MidTime;
-
-                                    int roundedMinutes = (int)(Math.Round(dtN.Minute / 10.0) * 10);
-                                    if (roundedMinutes == 60)
+                                    @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
                                     {
-                                        dtN = dtN.AddHours(1);
-                                        roundedMinutes = 0;
-                                    }
+                                        var lat = Model.Latitude.Value;
+                                        var lon = Model.Longitude.Value;
 
-                                    var roundedMid = new DateTime(dtN.Year, dtN.Month, dtN.Day, dtN.Hour, 0, 0)
-                                                        .AddMinutes(roundedMinutes);
+                                        var minLatE = lat - 20;
+                                        var maxLatE = lat + 20;
+                                        var minLonE = lon - 20;
+                                        var maxLonE = lon + 20;
 
-                                    var gibsStartDate = new DateTime(2000, 2, 24);
+                                        var dtE = storm.MidTime.ToUniversalTime();
+                                        int minutesE = (dtE.Minute / 15) * 15;
 
-                                    var nasaGibsUrl =
-                                        "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi" +
-                                        "?SERVICE=WMS" +
-                                        "&REQUEST=GetMap" +
-                                        "&VERSION=1.3.0" +
-                                        "&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor" +
-                                        "&FORMAT=image/jpeg" +
-                                        "&CRS=EPSG:4326" +
-                                        $"&BBOX={minLatN},{minLonN},{maxLatN},{maxLonN}" +
-                                        "&WIDTH=400&HEIGHT=300" +
-                                        $"&TIME={roundedMid:yyyy-MM-ddTHH:mm:ssZ}";
+                                        var validTimeE = new DateTime(
+                                            dtE.Year,
+                                            dtE.Month,
+                                            dtE.Day,
+                                            dtE.Hour,
+                                            minutesE,
+                                            0,
+                                            DateTimeKind.Utc);
 
-                                    // time ranges
-                                    var eumetsatStart = new DateTime(2020, 9, 1, 0, 0, 0, DateTimeKind.Utc);
-                                    var eumetsatEnd = new DateTime(2026, 4, 13, 8, 0, 0, DateTimeKind.Utc);
+                                        var eumetsatTime = validTimeE.ToString("yyyy-MM-ddTHH:mmZ");
 
-                                    if (validTimeE >= eumetsatStart && validTimeE <= eumetsatEnd)
-                                    {
-                                        // Use EUMETSAT ONLY if within valid range
-                                        <div class="text-muted" style="font-style: italic; margin-top: 20px;">
-                                            EUMETSAT Satellite Image
-                                        </div>
-                                        <img src="@eumetsatUrl"
-                                             class="img-fluid rounded shadow-sm"
-                                             alt="EUMETSAT Satellite Image" />
-                                    }
-                                    else if (roundedMid >= gibsStartDate)
-                                    {
-                                        // Fallback to NASA GIBS
-                                        <div class="text-muted" style="font-style: italic; margin-top: 20px;">
-                                            NASA GIBS Satellite Image
-                                        </div>
-                                        <img src="@nasaGibsUrl"
-                                             class="img-fluid rounded shadow-sm"
-                                             alt="NASA GIBS Satellite Image" />
+                                        var eumetsatUrl =
+                                            "https://view.eumetsat.int/geoserver/wms" +
+                                            "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap" +
+                                            "&LAYERS=msg_fes:ir108&FORMAT=image/png&CRS=EPSG:4326" +
+                                            $"&BBOX={minLatE},{minLonE},{maxLatE},{maxLonE}" +
+                                            "&WIDTH=700&HEIGHT=500" +
+                                            $"&TIME={eumetsatTime}";
+
+                                        var dtN = storm.MidTime;
+
+                                        int roundedMinutes =
+                                            (int)(Math.Round(dtN.Minute / 10.0) * 10);
+
+                                        if (roundedMinutes == 60)
+                                        {
+                                            dtN = dtN.AddHours(1);
+                                            roundedMinutes = 0;
+                                        }
+
+                                        var roundedMid =
+                                            new DateTime(
+                                                dtN.Year,
+                                                dtN.Month,
+                                                dtN.Day,
+                                                dtN.Hour,
+                                                0,
+                                                0)
+                                            .AddMinutes(roundedMinutes);
+
+                                        var gibsStartDate = new DateTime(2000, 2, 24);
+
+                                        var nasaGibsUrl =
+                                            "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi" +
+                                            "?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0" +
+                                            "&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor&FORMAT=image/jpeg&CRS=EPSG:4326" +
+                                            $"&BBOX={minLatE},{minLonE},{maxLatE},{maxLonE}" +
+                                            "&WIDTH=700&HEIGHT=500" +
+                                            $"&TIME={roundedMid:yyyy-MM-ddTHH:mm:ssZ}";
+
+                                        var eumetsatStart =
+                                            new DateTime(2020, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+
+                                        var eumetsatEnd =
+                                            new DateTime(2026, 4, 13, 8, 0, 0, DateTimeKind.Utc);
+
+                                        if (validTimeE >= eumetsatStart &&
+                                            validTimeE <= eumetsatEnd)
+                                        {
+                                            <p class="text-muted small fst-italic mb-1">
+                                                EUMETSAT Satellite Image
+                                            </p>
+
+                                            <img src="@eumetsatUrl"
+                                                 class="img-fluid shadow-sm satellite-img"
+                                                 alt="EUMETSAT Satellite Image" />
+                                        }
+                                        else if (roundedMid >= gibsStartDate)
+                                        {
+                                            <p class="text-muted small fst-italic mb-1">
+                                                NASA GIBS Satellite Image
+                                            </p>
+
+                                            <img src="@nasaGibsUrl"
+                                                 class="img-fluid shadow-sm satellite-img"
+                                                 alt="NASA GIBS Satellite Image" />
+                                        }
+                                        else
+                                        {
+                                            <p class="text-muted fst-italic mt-4">
+                                                No Image Captured
+                                                (Date before 24 Feb 2000)
+                                            </p>
+                                        }
                                     }
                                     else
                                     {
-                                        // No image available
-                                        <div class="text-muted" style="font-style: italic; margin-top: 120px;"> 
-                                            No Image Captured (Date before 24 Feb 2000)
-                                        </div>
+                                        <p class="text-muted">
+                                            No Image Detected.
+                                        </p>
                                     }
-                                }
-                                else
-                                {
-                                    <div class="text-muted">No Image Detected.</div>
-                                }
+                                </div>
                             </div>
 
                         </div>
 
-                    </div>
+                        <!-- Download link -->
+                        <div class="text-center mb-3">
+                            <form asp-action="Download" method="post">
+                                <input type="hidden" name="stormJson" value='@System.Text.Json.JsonSerializer.Serialize(storm)' />
+                                <input type="hidden" name="stormNumber" value="@(i + 1)" />
+                                <button type="submit" class="btn btn-link p-0">Download Data</button>
+                            </form>
+                        </div>
 
-                    <div class="text-center mb-3">
-                        <form asp-action="Download" method="post">
-                            <input type="hidden" name="stormJson"
-                                   value='@System.Text.Json.JsonSerializer.Serialize(storm)' />
-                            <input type="hidden" name="stormNumber" value="@(i + 1)" />
-                            <button type="submit" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">
-                                Download Data
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- TABLE -->
-                    <div class="storm-table-container mt-3">
-                        <table class="table table-sm table-striped table-bordered">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Time</th>
-                                    <th>Rainfall (mm)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in storm.EventData)
-                                {
+                        <!-- Scrollable data table -->
+                        <div class="storm-table-container mt-2">
+                            <table class="table table-sm table-striped table-bordered mb-0">
+                                <thead class="table-dark">
                                     <tr>
-                                        <td>@item.Time.ToString("dd/MM/yyyy HH:mm")</td>
-                                        <td>@Math.Round(item.Rainfall, 2)</td>
+                                        <th>Time</th>
+                                        <th>Rainfall (mm)</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in storm.EventData)
+                                    {
+                                        <tr>
+                                            <td>@item.Time.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>@Math.Round(item.Rainfall, 2)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div><!-- /card -->
+
+                    <div class="carousel-nav-row text-center mt-3 mb-4 d-flex justify-content-center gap-4">
+                        @if (i > 0)
+                        {
+                            <button class="carousel-arrow-btn"
+                                    type="button"
+                                    data-bs-target="#stormCarousel"
+                                    data-bs-slide="prev">
+                                ← Previous
+                            </button>
+                        }
+
+                        @if (i < Model.Results.Count - 1)
+                        {
+                            <button class="carousel-arrow-btn"
+                                    type="button"
+                                    data-bs-target="#stormCarousel"
+                                    data-bs-slide="next">
+                                Next →
+                            </button>
+                        }
+
                     </div>
 
-                </div>
-                
+                </div><!-- /carousel-item -->
             }
 
-        </div>
-
-        <button class="carousel-control-prev" type="button" data-bs-target="#stormCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#stormCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
-        </button>
+        </div><!-- /carousel-inner -->
     </div>
 }
 
@@ -301,11 +304,9 @@
         {
             <text>
             var map = L.map('stationMap').setView([@Model.Latitude.Value, @Model.Longitude.Value], 13);
-
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
-
             L.marker([@Model.Latitude.Value, @Model.Longitude.Value])
                 .addTo(map)
                 .bindPopup("@(Model.StationName ?? "Station")")
@@ -317,41 +318,24 @@
     @if (Model.Results != null && Model.Results.Count > 0)
     {
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
         <script>
             const storms = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
                 Model.Results.Select(storm => new {
                     labels = storm.EventData.Select(d => d.Time.ToString("HH:mm")),
                     values = storm.EventData.Select(d => Math.Round(d.Rainfall, 2)),
-                    returnPeriod = storm.ReturnPeriod 
+                    returnPeriod = storm.ReturnPeriod
                 })
             ));
-
-            document.querySelectorAll('.storm-table-container').forEach(function (table) 
-            {
-                table.addEventListener('wheel', function (e) {
-                    e.stopPropagation();
-                }, { passive: true });
-
-                table.addEventListener('touchmove', function (e) {
-                    e.stopPropagation();
-                }, { passive: true });
-
-            });
 
             const charts = {};
 
             function createChart(index) {
-
                 if (charts[index]) return;
-
                 const storm = storms[index];
                 const canvas = document.getElementById(`rainChart_${index}`);
                 if (!canvas) return;
 
-                const ctx = canvas.getContext('2d');
-
-                charts[index] = new Chart(ctx, {
+                charts[index] = new Chart(canvas.getContext('2d'), {
                     type: 'bar',
                     data: {
                         labels: storm.labels,
@@ -368,23 +352,25 @@
                             title: {
                                 display: true,
                                 text: storm.returnPeriod,
-                                font: {
-                                    size: 18
-                                }
-                            }
+                                font: { size: 15 }
+                            },
+                            legend: { display: false }
                         },
                         scales: {
                             x: {
                                 ticks: {
                                     autoSkip: true,
+                                    maxTicksLimit: 10,
                                     maxRotation: 45,
-                                    minRotation: 45
+                                    minRotation: 0,
+                                    font: { size: 11 }
                                 }
                             },
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    callback: value => value.toFixed(2)
+                                    callback: value => value.toFixed(2),
+                                    font: { size: 11 }
                                 }
                             }
                         }
@@ -392,104 +378,106 @@
                 });
             }
 
-            @* Create first chart immediately *@
             createChart(0);
 
-            @* Create chart when slide changes *@
             const carousel = document.getElementById('stormCarousel');
-
             if (carousel) {
                 carousel.addEventListener('slid.bs.carousel', function (event) {
                     createChart(event.to);
                 });
             }
 
-            const carouselEl = document.getElementById('stormCarousel');
-            const prevBtn = carouselEl.querySelector('.carousel-control-prev');
-            const nextBtn = carouselEl.querySelector('.carousel-control-next');
-
-            function updateCarouselArrows() {
-                const total = carouselEl.querySelectorAll('.carousel-item').length;
-                const activeIndex = [...carouselEl.querySelectorAll('.carousel-item')].findIndex(item => item.classList.contains('active'));
-
-                prevBtn.style.display = (activeIndex === 0) ? 'none' : 'flex';
-                nextBtn.style.display = (activeIndex === total - 1) ? 'none' : 'flex';
-            }
-
-            @* Initial check *@
-            updateCarouselArrows();
-
-            @* Update arrows after slide changes *@
-            carouselEl.addEventListener('slid.bs.carousel', updateCarouselArrows);
+            // Prevent table scroll from triggering carousel swipe
+            document.querySelectorAll('.storm-table-container').forEach(function (table) {
+                table.addEventListener('wheel', function (e) { e.stopPropagation(); }, { passive: true });
+                table.addEventListener('touchmove', function (e) { e.stopPropagation(); }, { passive: true });
+            });
         </script>
     }
 }
 
 <style>
-    @* Make carousel arrows black and identical style *@ 
-    .carousel-control-prev-icon {
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='black' viewBox='0 0 16 16'%3E%3Cpath d='M11 1 3 8l8 7' stroke='black' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    /* ── Station map ── */
+    .station-map {
+        width: 100%;
+        height: 260px;
+        border: 1px solid #dee2e6;
     }
 
-    .carousel-control-next-icon {
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='black' viewBox='0 0 16 16'%3E%3Cpath d='M5 1l8 7-8 7' stroke='black' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    @@media (min-width: 768px) {
+        .station-map { height: 300px; }
     }
 
-    #stormCarousel {
+    /* ── Chart wrapper: tall enough to read on all screens ── */
+   .chart-wrapper {
         position: relative;
+        width: 100%;
+        height: 420px;
     }
 
+   @@media (max-width: 991px) {
+    .chart-wrapper {
+            height: 320px;
+        }
+    }
+
+    /* ── Satellite image: cap size so it doesn't dominate on desktop ── */
+    .satellite-img {
+        width: 100%;
+        height: 420px;
+        object-fit: cover;
+        border-radius: 14px;
+    }
+
+    @@media (max-width: 991px) {
+        .satellite-img {
+                height: 320px;
+            }
+        }
+
+    /* ── Scrollable data table ── */
+    .storm-table-container {
+        max-height: 300px;
+        overflow-y: auto;
+        overflow-x: auto;          /* allow horizontal scroll on tiny screens */
+        position: relative;
+        z-index: 10;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .storm-table-container::-webkit-scrollbar { width: 8px; height: 8px; }
+    .storm-table-container::-webkit-scrollbar-track { background: #f1f1f1; }
+    .storm-table-container::-webkit-scrollbar-thumb { background: #6c757d; border-radius: 6px; }
+    .storm-table-container::-webkit-scrollbar-thumb:hover { background: #495057; }
+
+    /* Make table cells wrap-friendly on small screens */
+    .storm-table-container td,
+    .storm-table-container th {
+        white-space: nowrap;
+        font-size: 0.85rem;
+    }
+
+    /* ── Carousel nav buttons (text-based, touch-friendly) ── */
+    .carousel-arrow-btn {
+        background: none;
+        border: 1px solid #6c757d;
+        border-radius: 6px;
+        padding: 6px 16px;
+        font-size: 0.9rem;
+        color: #333;
+        cursor: pointer;
+        min-width: 80px;
+        touch-action: manipulation;
+    }
+
+    .carousel-arrow-btn:hover {
+        background: #f0f0f0;
+    }
+
+    /* Remove Bootstrap's default overlay arrows entirely */
     .carousel-control-prev,
     .carousel-control-next {
-        width: 5%;
-        top: 35%;
-        transform: translateY(-50%);
-        position: absolute;
-        z-index: 20;
-    }
-
-    .carousel-control-prev {
-        left: 10px;
-    }
-
-    .carousel-control-next {
-        right: 10px; 
-    }
-
-    .storm-table-container {
-        max-height: 400px;
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding-right: 10px;
-        position: relative;
-        pointer-events: auto;
-        z-index: 10;
-    }
-
-    .carousel-control-prev-icon,
-    .carousel-control-next-icon {
-        width: 35px;
-        height: 35px;
-    }
-
-    .storm-table-container {
-        scroll-behavior: smooth;
-    }
-
-    .storm-table-container::-webkit-scrollbar {
-        width: 10px;
-    }
-
-    .storm-table-container::-webkit-scrollbar-track {
-        background: #f1f1f1;
-    }
-
-    .storm-table-container::-webkit-scrollbar-thumb {
-        background: #6c757d;
-        border-radius: 6px;
-    }
-
-    .storm-table-container::-webkit-scrollbar-thumb:hover {
-        background: #495057;
+        display: none !important;
     }
 </style>
