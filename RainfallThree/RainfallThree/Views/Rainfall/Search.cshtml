@@ -721,18 +721,26 @@
     max-width: 800px;
     margin: 0 auto;
     font-family: Arial, sans-serif;
-    background: #f7f7f7;
+    background: var(--card);
+    color: var(--text);
     padding: 25px 30px;
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px var(--shadow);
     }
 
     form.rainfall-form fieldset {
-    border: 1px solid #ccc;
+    border: 1px solid var(--border);
     padding: 20px;
     margin-bottom: 20px;
     border-radius: 8px;
-    background: #fff;
+    background: var(--card-inner);
+    }
+
+    form.rainfall-form input,
+    form.rainfall-form select {
+    background: var(--card-inner);
+    color: var(--text);
+    border: 1px solid var(--border);
     }
 
     form.rainfall-form legend {
@@ -814,12 +822,11 @@
     }
 
     form.rainfall-form tbody tr:nth-child(even) {
-    background-color: #f2f2f2;
+    background-color: var(--row-alt);
     }
 
     form.rainfall-form tbody tr:hover {
-    background-color: #d6e4ff;
-    transition: background 0.2s;
+    background-color: var(--row-hover);
     }
 
     .return-period-center {

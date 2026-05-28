@@ -1,18 +1,21 @@
 # Visual Studio
 .vs/
+**/.vs/
 
-# Build output
+# Build folders
 bin/
 obj/
+**/bin/
+**/obj/
 
-# User secrets / environment
+# User files
+*.user
+*.suo
+
+# Environment
 .env
 .env.*
 *.env.txt
 
 # Logs
 *.log
-
-# IDE
-.vscode/
-.idea/

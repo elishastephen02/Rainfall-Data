@@ -20,6 +20,8 @@ namespace RainfallThree.Areas.Identity.Pages.Account
 {
     public class LoginModel : PageModel
     {
+        private const string CurrentTermsVersion = "1.0";
+
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<LoginModel> _logger;
@@ -85,6 +87,8 @@ namespace RainfallThree.Areas.Identity.Pages.Account
             /// </summary>
             [Display(Name = "Remember me?")]
             public bool RememberMe { get; set; }
+
+            public bool AcceptTerms { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -124,6 +128,8 @@ namespace RainfallThree.Areas.Identity.Pages.Account
                 return Page();
             }
 
+            bool needsAcceptance = user.AcceptedTermsVersion != CurrentTermsVersion;
+
             // 2. Check approval BEFORE sign-in
             if (!user.IsApproved)
             {
@@ -139,11 +145,26 @@ namespace RainfallThree.Areas.Identity.Pages.Account
                 lockoutOnFailure: true
             );
 
+            if (needsAcceptance && !Input.AcceptTerms)
+            {
+                ModelState.AddModelError(string.Empty,
+                    "You must accept the latest Terms and Conditions to log in.");
+
+                return Page();
+            }
+
             if (result.Succeeded)
             {
                 _logger.LogInformation("User logged in.");
 
                 user.LastLoginDate = DateTime.UtcNow;
+
+                if (Input.AcceptTerms || user.AcceptedTermsVersion != CurrentTermsVersion)
+                {
+                    user.HasAcceptedTerms = true;
+                    user.AcceptedTermsVersion = CurrentTermsVersion;
+                    user.TermsAcceptedOn = DateTime.UtcNow;
+                }
                 await _userManager.UpdateAsync(user);
 
                 return LocalRedirect(returnUrl);

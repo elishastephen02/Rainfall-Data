@@ -1,6 +1,8 @@
 wwwroot\css\site.css
+wwwroot\Document\Terms and Conditions of Use.pdf
 wwwroot\favicon.ico
 wwwroot\Images\EDRE.png
+wwwroot\Images\EDREIcon.png
 wwwroot\Images\ethekweniLogo.png
 wwwroot\Images\logo.png
 wwwroot\Images\logoicon.png
@@ -123,7 +125,7 @@ C:\Users\elishastephen\Downloads\Rainfall-Data\RainfallThree\RainfallThree\wwwro
 C:\Users\elishastephen\Downloads\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
 C:\Users\elishastephen\Downloads\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 C:\Users\elishastephen\Downloads\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\js\site.js
-C:\Users\elishastephen\Downloads\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\favicon.ico
 C:\Users\elishastephen\Downloads\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\lib\jquery\LICENSE.txt
 C:\Users\elishastephen\Downloads\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\lib\jquery\dist\jquery.slim.min.map
+C:\Users\elishastephen\Downloads\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\favicon.ico
 C:\Users\elishastephen\Downloads\Rainfall-Data\RainfallThree\RainfallThree\wwwroot\css\site.css

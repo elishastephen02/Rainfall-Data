@@ -43,6 +43,7 @@ public class AdminController : Controller
         if (user != null)
         {
             user.IsApproved = true;
+            user.Status = "Approved";
             await _userManager.UpdateAsync(user);
 
             await _emailSender.SendEmailAsync(
@@ -63,13 +64,37 @@ public class AdminController : Controller
         if (user != null)
         {
             user.IsApproved = false;
+            user.Status = "Pending";
             await _userManager.UpdateAsync(user);
 
             await _emailSender.SendEmailAsync(
                 user.Email,
                 "Account Disabled",
-                $"Hello {user.UserName}, your account access has been disabled by an administrator."
+                $"Hello {user.UserName}, your account access has been disabled by an administrator. Contact admin@edre.ethekwinifews.durban for assisstance."
             );
+        }
+
+        return RedirectToAction(nameof(PendingUsers));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Reject(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+
+        if (user != null)
+        {
+            user.Status = "Rejected";
+            await _userManager.UpdateAsync(user);
+
+            await _emailSender.SendEmailAsync(
+                user.Email,
+                "Account Rejected",
+                $"Hello {user.UserName}, your EDRE account request has been rejected by an administrator. Contact admin@edre.ethekwinifews.durban for assisstance."
+            );
+
+            //await _userManager.DeleteAsync(user);
         }
 
         return RedirectToAction(nameof(PendingUsers));
