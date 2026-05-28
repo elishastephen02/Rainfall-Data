@@ -82,7 +82,7 @@ using (var scope = app.Services.CreateScope())
     }
 
     // Primary User Info
-    string primaryUserEmail = "kiyashcsha@gmail.com";
+    string primaryUserEmail = "kiyash.sha@durban.gov.za";
     string primaryUserPassword = "KickAss8*";
 
     // Check if user exists
