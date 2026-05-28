@@ -1,4 +1,42 @@
-/* ── Base typography ── */
+/* LIGHT MODE (DEFAULT) */
+:root {
+    --bg: #ffffff;
+    --text: #212529;
+    --card: #f7f7f7;
+    --card-inner: #ffffff;
+    --border: #dee2e6;
+    --primary: #007bff;
+    --primary-hover: #0056b3;
+    --navbar: #333386;
+    --footer: #333386;
+    --table-header: #007bff;
+    --row-alt: #f2f2f2;
+    --row-hover: #d6e4ff;
+    --shadow: rgba(0,0,0,0.1);
+    --muted: #6c757d;
+}
+
+/* DARK MODE */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #121212;
+        --text: #e4e4e4;
+        --card: #1e1e1e;
+        --card-inner: #2a2a2a;
+        --border: #3a3a3a;
+        --primary: #4ea1ff;
+        --primary-hover: #2f7fd1;
+        --navbar: #1f1f3a;
+        --footer: #1f1f3a;
+        --table-header: #2d6cdf;
+        --row-alt: #1a1a1a;
+        --row-hover: #2a2a2a;
+        --shadow: rgba(0,0,0,0.4);
+        --muted: #a0a0a0;
+        --text-secondary: #6c757d;
+    }
+}
+
 html {
     font-size: 14px;
     position: relative;
@@ -11,19 +49,34 @@ html {
     }
 }
 
-/* ── Full-height layout so footer sticks to bottom ── */
 body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     margin: 0;
+    background: var(--bg);
+    color: var(--text);
 }
-
     body > .container {
         flex: 1 0 auto;
     }
 
-/* ── Focus rings ── */
+.text-muted {
+    color: var(--muted) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text);
+}
+
+.card-theme {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
 .btn:focus,
 .btn:active:focus,
 .btn-link.nav-link:focus,
@@ -32,7 +85,6 @@ body {
     box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-/* ── Floating label placeholders ── */
 .form-floating > .form-control-plaintext::placeholder,
 .form-floating > .form-control::placeholder {
     color: var(--bs-secondary-color);
@@ -44,11 +96,8 @@ body {
     text-align: start;
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   NAVBAR
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 .custom-navbar {
-    background-color: #333386;
+    background-color: var(--navbar);
 }
 
     /* Brand */
@@ -81,7 +130,6 @@ body {
             box-shadow: none !important;
         }
 
-    /* Hamburger toggler — white icon on dark bg */
     .custom-navbar .navbar-toggler {
         border-color: rgba(255, 255, 255, 0.45);
         padding: 5px 8px;
@@ -101,13 +149,11 @@ body {
     align-items: center;
 }
 
-/* ── Mobile: collapsed menu styles ── */
 @media (max-width: 991.98px) {
     .custom-navbar .navbar-collapse {
         padding: 8px 0 4px;
     }
 
-    /* Full-width nav links when stacked */
     .custom-navbar .navbar-nav .nav-link {
         padding: 10px 4px;
         border-radius: 0;
@@ -132,12 +178,9 @@ body {
     }
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   FOOTER
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 .site-footer {
     flex-shrink: 0;
-    background-color: #333386;
+    background-color: var(--footer);
 }
 
 .footer-text {
@@ -150,7 +193,6 @@ body {
     opacity: 0.5;
 }
 
-/* On small phones, hide the pipe separators so text wraps naturally */
 @media (max-width: 575.98px) {
     .footer-sep {
         display: none;

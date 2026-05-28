@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - EDRE</title>
+    <link rel="icon" type="image/png" href="~/images/edre.png" />
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -13,11 +14,7 @@
     <header>
         <nav class="navbar navbar-expand-lg custom-navbar border-bottom box-shadow mb-3">
             <div class="container-fluid px-3">
-
-                <!-- Brand: always visible -->
-                <a class="navbar-brand app-title" asp-area="" asp-controller="Home" asp-action="Index">EDRE</a>
-
-                <!-- Hamburger toggler (visible on mobile) -->
+                <a class="navbar-brand app-title">EDRE</a>
                 <button class="navbar-toggler" type="button"
                         data-bs-toggle="collapse"
                         data-bs-target="#mainNavContent"
@@ -26,8 +23,6 @@
                         aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-
-                <!-- Collapsible content -->
                 <div class="collapse navbar-collapse" id="mainNavContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
@@ -49,8 +44,6 @@
                             </li>
                         }
                     </ul>
-
-                    <!-- Login partial: right-aligned on desktop, stacked on mobile -->
                     <div class="nav-login-partial">
                         <partial name="_LoginPartial" />
                     </div>

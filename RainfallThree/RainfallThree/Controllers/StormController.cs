@@ -113,6 +113,21 @@ public class StormController : Controller
 
         rainfallData = rainfallData.OrderBy(r => r.Time).ToList();
 
+        model.TotalDays = rainfallData
+        .Select(r => r.Time.Date)
+        .Distinct()
+        .Count();
+
+        model.DailyTotals = rainfallData
+        .GroupBy(r => r.Time.Date)
+        .OrderBy(g => g.Key)
+        .Select(g => new DailyRainfallPoint
+        {
+            Date = g.Key.ToString("yyyy-MM-dd"),
+            Total = Math.Round(g.Sum(r => r.Rainfall), 2)
+        })
+        .ToList();
+
         // Find storms matching user-entered depth and duration
         var results = FindAllStorms(rainfallData, model.Depth, model.DurationMinutes);
 
