@@ -11,7 +11,7 @@ namespace RainfallThree.Services
             var client = new SmtpClient("smtp.gmail.com")
             {
                 Port = 587,
-                Credentials = new NetworkCredential("admin@edre.ethekwinifews.durban", "yxxy kywq vrde biyb"),
+                Credentials = new NetworkCredential("admin@edre.ethekwinifews.durban", "bioc pbwv uojb iies"),
                 EnableSsl = true,
             };
 
