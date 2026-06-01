@@ -1,0 +1,28 @@
+# Visual Studio
+.vs/
+**/.vs/
+
+# Build folders
+bin/
+obj/
+**/bin/
+**/obj/
+
+# User files
+*.user
+*.suo
+
+# Environment
+.env
+.env.*
+*.env.txt
+
+# Logs
+*.log
+
+.vs/
+**/bin/
+**/obj/
+*.suo
+*.user
+*.vsidx
