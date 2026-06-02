@@ -195,27 +195,50 @@
                                             var eumetsatStart = new DateTime(2020, 9, 1, 0, 0, 0, DateTimeKind.Utc);
                                             var eumetsatEnd = new DateTime(2026, 4, 13, 8, 0, 0, DateTimeKind.Utc);
 
-                                            if (validTimeE >= eumetsatStart && validTimeE <= eumetsatEnd)
-                                            {
-                                                <p class="text-muted small fst-italic mb-1">EUMETSAT Satellite Image</p>
+                                            bool showEumetsat = validTimeE >= eumetsatStart && validTimeE <= eumetsatEnd;
+                                            bool showNasa = roundedMid >= gibsStartDate;
 
-                                                <img src="@eumetsatUrl"
-                                                     class="img-fluid shadow-sm satellite-img"
-                                                     alt="EUMETSAT Satellite Image" />
+                                            @if (!Model.Latitude.HasValue || !Model.Longitude.HasValue)
+                                            {
+                                                <p class="text-muted">No Image Detected.</p>
                                             }
-                                            else if (roundedMid >= gibsStartDate)
+                                            else if (!showEumetsat && !showNasa)
                                             {
-                                                <p class="text-muted small fst-italic mb-1">NASA GIBS Satellite Image</p>
-
-                                                <img src="@nasaGibsUrl"
-                                                     class="img-fluid shadow-sm satellite-img"
-                                                     alt="NASA GIBS Satellite Image" />
+                                                <p class="text-muted fst-italic mt-4">
+                                                    No Satellite Image Available (Date too early or unsupported)
+                                                </p>
                                             }
                                             else
                                             {
-                                                <p class="text-muted fst-italic mt-4">
-                                                    No Image Captured (Date before 24 Feb 2000)
-                                                </p>
+                                                <div class="row g-3 justify-content-center">
+
+                                                    @if (showEumetsat)
+                                                    {
+                                                        <div class="col-12 @(showNasa ? "col-md-6" : "") text-center">
+                                                            <div class="fw-bold mb-2 small">
+                                                                EUMETSAT Satellite Image
+                                                            </div>
+
+                                                            <img src="@eumetsatUrl"
+                                                                    class="img-fluid shadow-sm satellite-img"
+                                                                    alt="EUMETSAT Satellite Image" />
+                                                        </div>
+                                                    }
+
+                                                    @if (showNasa)
+                                                    {
+                                                        <div class="col-12 @(showEumetsat ? "col-md-6" : "") text-center">
+                                                            <div class="fw-bold mb-2 small">
+                                                                NASA GIBS Satellite Image
+                                                            </div>
+
+                                                            <img src="@nasaGibsUrl"
+                                                                    class="img-fluid shadow-sm satellite-img"
+                                                                    alt="NASA GIBS Satellite Image" />
+                                                        </div>
+                                                    }
+
+                                                </div>
                                             }
                                         }
                                         else
@@ -468,7 +491,16 @@
                                     minRotation: 0,
                                     font: { size: window.innerWidth < 600 ? 9 : 11 },
                                     callback(val, idx) {
-                                        return dailyLabels[idx]?.substring(0, 4) ?? '';
+                                        const raw = dailyLabels[idx];
+                                        if (!raw) return '';
+
+                                        const d = new Date(raw);
+                                        if (isNaN(d)) return raw.substring(0, 7); // fallback: YYYY-MM
+
+                                        return d.toLocaleString('en-GB', {
+                                            month: 'short',
+                                            year: 'numeric'
+                                        }); // e.g. "May 1988"
                                     }
                                 },
                                 grid: { display: false }

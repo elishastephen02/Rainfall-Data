@@ -4,8 +4,16 @@
 
 <div class="container text-center pt-2 pb-4">
     <div class="mb-4">
-        <img src="/Images/EDREIcon.png"
-             style="max-width:400px; width:100%; height:auto; margin-top:20px; margin-bottom:10px" />
+        <picture>
+            <!-- Dark mode image -->
+            <source srcset="/Images/EDREDark.png"
+                    media="(prefers-color-scheme: dark)">
+
+            <!-- Light mode default -->
+            <img src="/Images/EDRELight.png"
+                 class="theme-logo"
+                 style="max-width:400px; width:100%; height:auto; margin-top:20px; margin-bottom:10px" />
+        </picture>
     </div>
 
     <div class="row mt-4 mb-5 justify-content-center">
