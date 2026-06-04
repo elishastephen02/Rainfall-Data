@@ -32,6 +32,19 @@
                         <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
                     </div>
 
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" asp-for="Input.AcceptTerms" />
+
+                        <label class="form-check-label small" asp-for="Input.AcceptTerms">
+                            I agree to the
+                            <a asp-controller="Home" asp-action="Terms" target="_blank">
+                                Terms and Conditions
+                            </a>
+                        </label>
+
+                        <span asp-validation-for="Input.AcceptTerms" class="text-danger"></span>
+                    </div>
+
                     <div>
                         <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
                     </div>

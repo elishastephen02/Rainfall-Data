@@ -14,7 +14,11 @@
     <header>
         <nav class="navbar navbar-expand-lg custom-navbar border-bottom box-shadow mb-3">
             <div class="container-fluid px-3">
-                <a class="navbar-brand app-title">EDRE</a>
+                <a class="navbar-brand app-title me-2">EDRE</a>
+                <a class="navbar-brand d-flex align-items-center gap-1">
+                    <img src="/images/ethekwini_logo.png" alt="eThekwini Logo" style="height:35px;" />
+                    <img src="/images/cscm_logo.png" alt="CSCM Logo" style="height:35px;" />
+                </a>
                 <button class="navbar-toggler" type="button"
                         data-bs-toggle="collapse"
                         data-bs-target="#mainNavContent"
@@ -31,7 +35,7 @@
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="" asp-controller="Rainfall" asp-action="Search">Rainfall Data</a>
+                                <a class="nav-link" asp-area="" asp-controller="Rainfall" asp-action="Search">Design Rainfall Data</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" asp-area="" asp-controller="Storm" asp-action="Index">Storm Events</a>
@@ -64,9 +68,11 @@
             <p class="footer-text mb-0">
                 &copy; 2026 E.D.R.E. All rights reserved.
                 <span class="footer-sep">&nbsp;|&nbsp;</span>
-                Commissioned by KC Sha.
+                Commissioned by CSCM: Engineering Data Management.
                 <span class="footer-sep">&nbsp;|&nbsp;</span>
                 All intellectual property rights in this application, including its content, design, and functionality, are reserved.
+                <span class="footer-sep">&nbsp;|&nbsp;</span>
+                V 1.0.4
             </p>
         </div>
     </footer>

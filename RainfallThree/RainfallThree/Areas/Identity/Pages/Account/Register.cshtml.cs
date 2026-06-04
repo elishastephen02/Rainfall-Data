@@ -25,6 +25,8 @@ namespace RainfallThree.Areas.Identity.Pages.Account
 {
     public class RegisterModel : PageModel
     {
+        private const string CurrentTermsVersion = "1.0";
+
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUserStore<ApplicationUser> _userStore;
@@ -102,8 +104,9 @@ namespace RainfallThree.Areas.Identity.Pages.Account
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
-        }
 
+            public bool AcceptTerms { get; set; }
+        }
 
         public async Task OnGetAsync(string returnUrl = null)
         {
@@ -115,10 +118,23 @@ namespace RainfallThree.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
                 user.IsApproved = false;
+
+                if (!Input.AcceptTerms)
+                {
+                    ModelState.AddModelError(string.Empty,
+                        "You must accept the Terms and Conditions before registering.");
+
+                    return Page();
+                }
+
+                user.HasAcceptedTerms = true;
+                user.AcceptedTermsVersion = CurrentTermsVersion;
+                user.TermsAcceptedOn = DateTime.UtcNow;
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
