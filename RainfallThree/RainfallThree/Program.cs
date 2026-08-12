@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using RainfallThree.Data;
 using RainfallThree.Models;
 using RainfallThree.Services;
+using RainfallThree.Services.PCSWMM;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,8 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddScoped<ExportServiceI, ExportService>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

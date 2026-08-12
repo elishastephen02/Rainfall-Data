@@ -1,0 +1,249 @@
+﻿@{
+    ViewData["Title"] = "Instructions";
+}
+
+<div class="instructions-page">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-primary text-white py-3">
+            <h4 class="mb-0">
+                <i class="bi bi-info-circle me-2"></i>
+                PCSWMM Import Instructions
+            </h4>
+        </div>
+
+        <div class="card-body p-4">
+
+            <p class="instruction-text mb-4">
+                Follow the steps below to add the generated raingage and timeseries
+                data to your PCSWMM model.
+            </p>
+
+            <!-- Step 1 -->
+            <div class="d-flex mb-4">
+                <div class="me-3">
+                    <span class="badge bg-primary rounded-circle p-2">1</span>
+                </div>
+                <div>
+                    <h5 class="mb-1">Unzip the generated folder</h5>
+                    <p class="mb-0">
+                        Unzip the downloaded folder within your PCSWMM model folder.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="d-flex mb-4">
+                <div class="me-3">
+                    <span class="badge bg-primary rounded-circle p-2">2</span>
+                </div>
+                <div>
+                    <h5 class="mb-1">Locate your model file</h5>
+                    <p class="mb-0">
+                        In your PCSWMM model directory, locate your
+                        <strong><code>.INP</code></strong> file.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="d-flex mb-4">
+                <div class="me-3">
+                    <span class="badge bg-primary rounded-circle p-2">3</span>
+                </div>
+                <div>
+                    <h5 class="mb-1">Open the <strong>.INP</strong> file</h5>
+                    <p class="mb-0">
+                        Open the <strong><code>.INP</code></strong> file using
+                        <strong>TextEdit</strong> or <strong>Notepad</strong>.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Steps 4-6 -->
+            <div class="border rounded p-3 mb-4 step-box">
+                <h5 class="text-primary mb-3">
+                    <span class="badge bg-primary me-2">4–6</span>
+                    Add the Raingages
+                </h5>
+
+                <ol class="mb-3">
+                    <li class="mb-2">
+                        From the SWMM <strong>Raingages</strong> list, copy all
+                        raingages.
+                    </li>
+
+                    <li class="mb-2">
+                        In the <strong><code>.INP</code></strong> file, locate the heading
+                        <code>[RAINGAGES]</code>.
+                    </li>
+
+                    <li>
+                        Paste the copied raingages underneath the
+                        <code>[RAINGAGES]</code> heading.
+                    </li>
+                </ol>
+
+                <div class="border rounded p-3 example-box">
+                    <small class="text-muted d-block mb-2">
+                        Example:
+                    </small>
+
+                    <pre class="mb-1"><code> [RAINGAGES]</code></pre>
+                    <pre class="mb-1"><code>  ;;Name           Format    Interval SCF      Source</code></pre>
+                    <pre class="mb-1"><code>  ;;-------------- --------- -------- -------- ----------</code></pre>
+                </div>
+            </div>
+
+            <!-- Steps 7-9 -->
+            <div class="border rounded p-3 mb-4 step-box">
+                <h5 class="text-primary mb-3">
+                    <span class="badge bg-primary me-2">7–9</span>
+                    Add the Timeseries
+                </h5>
+
+                <ol class="mb-3">
+                    <li class="mb-2">
+                        From the SWMM <strong>Timeseries</strong> list, copy all
+                        timeseries.
+                    </li>
+
+                    <li class="mb-2">
+                        In the <strong><code>.INP</code></strong> file, locate the heading
+                        <code>[TIMESERIES]</code>.
+                    </li>
+
+                    <li>
+                        Paste the copied timeseries underneath the
+                        <code>[TIMESERIES]</code> heading.
+                    </li>
+                </ol>
+
+                <div class="border rounded p-3 example-box">
+                    <small class="text-muted d-block mb-2">
+                        Example:
+                    </small>
+
+                    <pre class="mb-1"><code> [TIMESERIES]</code></pre>
+                    <pre class="mb-1"><code>  ;;Name           Date       Time       Value</code></pre>
+                    <pre class="mb-1"><code>  ;;-------------- ---------- ---------- ----------</code></pre>
+                </div>
+            </div>
+
+            <!-- Step 10 -->
+            <div class="d-flex mb-4">
+                <div class="me-3">
+                    <span class="badge bg-primary rounded-circle p-2">10</span>
+                </div>
+                <div>
+                    <h5 class="mb-1">Save the <strong>.INP</strong> file</h5>
+                    <p class="mb-0">
+                        Save the changes made to the <strong><code>.INP</code></strong> file.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Step 11 -->
+            <div class="d-flex mb-4">
+                <div class="me-3">
+                    <span class="badge bg-primary rounded-circle p-2">11</span>
+                </div>
+                <div>
+                    <h5 class="mb-1">Open the model in PCSWMM</h5>
+                    <p class="mb-0">
+                        Open the updated <strong><code>.INP</code></strong> file in PCSWMM.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Steps 12-14 -->
+            <div class="border rounded p-3 mb-4 step-box">
+                <h5 class="text-primary mb-3">
+                    <span class="badge bg-primary me-2">12–14</span>
+                    Verify the Raingages
+                </h5>
+
+                <ol class="mb-0">
+                    <li class="mb-2">
+                        Click on <strong>Map</strong>.
+                    </li>
+
+                    <li class="mb-2">
+                        Click on <strong>Raingages</strong>.
+                    </li>
+
+                    <li>
+                        Check that the raingages have been loaded correctly.
+                    </li>
+                </ol>
+            </div>
+
+        </div>
+
+        <div class="card-footer text-center py-3">
+            <small>
+                Once the raingages have been verified, your PCSWMM model is ready
+                for use with the imported rainfall data.
+            </small>
+        </div>
+    </div>
+</div>
+<style>
+    .instructions-page {
+        color: var(--text);
+    }
+
+    .instructions-page .card {
+        background-color: var(--card);
+        color: var(--text);
+        border-color: var(--border);
+    }
+
+    .instructions-page .card-body {
+        background-color: var(--card);
+        color: var(--text);
+    }
+
+    .instructions-page h4,
+    .instructions-page h5,
+    .instructions-page p,
+    .instructions-page li,
+    .instructions-page strong {
+        color: var(--text);
+    }
+
+    /* Main introductory text */
+    .instructions-page .instruction-text {
+        color: var(--text);
+    }
+
+    /* Step 4-6 and 7-9 containers */
+    .instructions-page .step-box {
+        background-color: var(--card-inner);
+        border-color: var(--border) !important;
+    }
+
+    /* Example boxes */
+    .instructions-page .example-box {
+        background-color: var(--card-inner);
+        border-color: var(--border) !important;
+    }
+
+        .instructions-page .example-box small {
+            color: var(--muted) !important;
+        }
+
+    .instructions-page pre,
+    .instructions-page code {
+        color: var(--text);
+    }
+
+    /* Footer */
+    .instructions-page .card-footer {
+        background-color: var(--card-inner) !important;
+        border-top-color: var(--border);
+    }
+
+    .instructions-page .card-footer small {
+        color: var(--muted) !important;
+    }
+</style>

@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
     <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
     <input type="hidden" asp-for="PolygonGeoJson" id="PolygonGeoJson" />
 
     <script>
@@ -455,14 +457,32 @@
     <fieldset>
         <legend>Rainfall Return Period & Duration</legend>
 
-        <div class="form-group" style="margin-top: 10px">
-            <label asp-for="ReturnPeriod">Return Period</label>
-            <select asp-for="ReturnPeriod" asp-items="Model.ReturnPeriodOptions"></select>
+        <div class="checkbox-grid">
+            @foreach (var rp in Model.ReturnPeriodOptions.Where(x => !string.IsNullOrEmpty(x.Value)))
+            {
+                <label class="checkbox-item">
+                    <input type="checkbox"
+                           name="SelectedReturnPeriods"
+                           value="@rp.Value"
+                    @(Model.SelectedReturnPeriods?.Contains(int.Parse(rp.Value)) == true ? "checked" : "") />
+
+                    @rp.Text
+                </label>
+            }
         </div>
 
-        <div class="form-group" style="margin-top: 10px;">
-            <label asp-for="SelectedDuration">Select Duration</label>
-            <select asp-for="SelectedDuration" asp-items="Model.DurationOptions"></select>
+        <div class="checkbox-grid">
+            @foreach (var d in Model.DurationOptions.Where(x => !string.IsNullOrEmpty(x.Value)))
+            {
+                <label class="checkbox-item">
+                    <input type="checkbox"
+                           name="SelectedDurations"
+                           value="@d.Value"
+                    @(Model.SelectedDurations?.Contains(d.Value) == true ? "checked" : "") />
+
+                    @d.Text
+                </label>
+            }
         </div>
     </fieldset>
 
@@ -474,18 +494,28 @@
     <div class="results-container">
         <h3>Results (@Model.Results.Count)</h3>
 
-        <div style="text-align:right; margin-bottom:10px;">
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px; padding-right:40px;">
             <form method="post" asp-action="Download" onsubmit="prepareDownload()">
                 <input type="hidden" name="Index" value="@Model.Index" />
                 <input type="hidden" name="LATDEG" value="@Model.LATDEG" />
                 <input type="hidden" name="LATMIN" value="@Model.LATMIN" />
                 <input type="hidden" name="LONGDEG" value="@Model.LONGDEG" />
                 <input type="hidden" name="LONGMIN" value="@Model.LONGMIN" />
-                <input type="hidden" name="ReturnPeriod" value="@Model.ReturnPeriod" />
-                <input type="hidden" name="SelectedDuration" value="@Model.SelectedDuration" />
+                @foreach (var rp in Model.SelectedReturnPeriods)
+                {
+                    <input type="hidden" name="SelectedReturnPeriods" value="@rp" />
+                }
+
+                @foreach (var d in Model.SelectedDurations)
+                {
+                    <input type="hidden" name="SelectedDurations" value="@d" />
+                }
                 <input type="hidden" name="ResultsJson" id="ResultsJson" />
                 <button type="submit" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">
-                    Download Data
+                    Download CSV
+                </button>
+                <button type="button" id="btnExportPCSWMM" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">
+                        Export to PCSWMM
                 </button>
             </form>
         </div>
@@ -501,21 +531,24 @@
                         <th>Long Min</th>
                         <th>Return Period</th>
 
-                        @if (string.IsNullOrEmpty(Model.SelectedDuration))
+                        @if (!Model.SelectedDurations.Any())
                         {
                             <th>5 Min</th>
                             <th>10 Min</th>
                             <th>15 Min</th>
                             <th>30 Min</th>
-                            <th>60 Min</th>
-                            <th>120 Min</th>
-                            <th>1440 Min</th>
-                            <th>4320 Min</th>
-                            <th>10080 Min</th>
+                            <th>1 Hour</th>
+                            <th>2 Hours</th>
+                            <th>1 Day</th>
+                            <th>3 Days</th>
+                            <th>7 Days</th>
                         }
                         else
                         {
-                            <th>@Model.SelectedDuration Min</th>
+                            @foreach (var duration in Model.SelectedDurations)
+                            {
+                                <th>@duration Min</th>
+                            }
                         }
 
                         <th>Source Sheet</th>
@@ -533,7 +566,7 @@
                             <td>@item.Longmin</td>
                             <td>@item.ReturnPeriod</td>
 
-                            @if (string.IsNullOrEmpty(Model.SelectedDuration))
+                            @if (!Model.SelectedDurations.Any())
                             {
                                 <td>@item._5Min?.ToString("0.00")</td>
                                 <td>@item._10Min?.ToString("0.00")</td>
@@ -547,24 +580,28 @@
                             }
                             else
                             {
-                                <td>
-                                    @{
-                                        var val = Model.SelectedDuration switch
-                                        {
-                                            "5" => item._5Min?.ToString("0.00"),
-                                            "10" => item._10Min?.ToString("0.00"),
-                                            "15" => item._15Min?.ToString("0.00"),
-                                            "30" => item._30Min?.ToString("0.00"),
-                                            "60" => item._60Min?.ToString("0.00"),
-                                            "120" => item._120Min?.ToString("0.00"),
-                                            "1440" => item._1440Min?.ToString("0.00"),
-                                            "4320" => item._4320Min?.ToString("0.00"),
-                                            "10080" => item._10080Min?.ToString("0.00"),
-                                            _ => ""
-                                        };
-                                    }
-                                    @val
-                                </td>
+                                foreach (var duration in Model.SelectedDurations)
+                                {
+                                    <td>
+                                        @{
+                                            var value = duration switch
+                                            {
+                                                "5" => item._5Min,
+                                                "10" => item._10Min,
+                                                "15" => item._15Min,
+                                                "30" => item._30Min,
+                                                "60" => item._60Min,
+                                                "120" => item._120Min,
+                                                "1440" => item._1440Min,
+                                                "4320" => item._4320Min,
+                                                "10080" => item._10080Min,
+                                                _ => null
+                                            };
+                                        }
+
+                                        @value?.ToString("0.00")
+                                    </td>
+                                }
                             }
 
                             <td>@item.SourceSheet</td>
@@ -590,20 +627,20 @@
         <div class="table-scroll">
             <table>
                 <thead>
-                    @if (string.IsNullOrEmpty(Model.SelectedDuration))
+                    @if (!Model.SelectedDurations.Any())
                     {
                         <tr>
                             <th rowspan="2">Return Period</th>
 
-                            <th colspan="3">5 min</th>
-                            <th colspan="3">10 min</th>
-                            <th colspan="3">15 min</th>
-                            <th colspan="3">30 min</th>
-                            <th colspan="3">60 min</th>
-                            <th colspan="3">120 min</th>
-                            <th colspan="3">1440 min</th>
-                            <th colspan="3">4320 min</th>
-                            <th colspan="3">10080 min</th>
+                            <th colspan="3">5 Min</th>
+                            <th colspan="3">10 Min</th>
+                            <th colspan="3">15 Min</th>
+                            <th colspan="3">30 Min</th>
+                            <th colspan="3">1 Hour</th>
+                            <th colspan="3">2 Hours</th>
+                            <th colspan="3">1 Day</th>
+                            <th colspan="3">3 Days</th>
+                            <th colspan="3">7 Days</th>
                         </tr>
                         <tr>
                             @for (int i = 0; i < 9; i++)
@@ -618,9 +655,13 @@
                     {
                         <tr>
                             <th>Return Period</th>
-                            <th>Min @Model.SelectedDuration</th>
-                            <th>Max @Model.SelectedDuration</th>
-                            <th>Avg @Model.SelectedDuration</th>
+
+                            @foreach (var duration in Model.SelectedDurations)
+                            {
+                                <th>Min @duration</th>
+                                <th>Max @duration</th>
+                                <th>Avg @duration</th>
+                            }
                         </tr>
                     }
                 </thead>
@@ -630,83 +671,94 @@
                         <tr>
                             <td>@item.ReturnPeriod</td>
 
-                            @if (string.IsNullOrEmpty(Model.SelectedDuration))
+                            @if (!Model.SelectedDurations.Any())
                             {
                                 <td>@item.Min5?.ToString("0.00")</td>
                                 <td>@item.Max5?.ToString("0.00")</td>
                                 <td>@item.Avg5?.ToString("0.00")</td>
+
                                 <td>@item.Min10?.ToString("0.00")</td>
                                 <td>@item.Max10?.ToString("0.00")</td>
                                 <td>@item.Avg10?.ToString("0.00")</td>
+
                                 <td>@item.Min15?.ToString("0.00")</td>
                                 <td>@item.Max15?.ToString("0.00")</td>
                                 <td>@item.Avg15?.ToString("0.00")</td>
+
                                 <td>@item.Min30?.ToString("0.00")</td>
                                 <td>@item.Max30?.ToString("0.00")</td>
                                 <td>@item.Avg30?.ToString("0.00")</td>
+
                                 <td>@item.Min60?.ToString("0.00")</td>
                                 <td>@item.Max60?.ToString("0.00")</td>
                                 <td>@item.Avg60?.ToString("0.00")</td>
+
                                 <td>@item.Min120?.ToString("0.00")</td>
                                 <td>@item.Max120?.ToString("0.00")</td>
                                 <td>@item.Avg120?.ToString("0.00")</td>
+
                                 <td>@item.Min1440?.ToString("0.00")</td>
                                 <td>@item.Max1440?.ToString("0.00")</td>
                                 <td>@item.Avg1440?.ToString("0.00")</td>
+
                                 <td>@item.Min4320?.ToString("0.00")</td>
                                 <td>@item.Max4320?.ToString("0.00")</td>
                                 <td>@item.Avg4320?.ToString("0.00")</td>
+
                                 <td>@item.Min10080?.ToString("0.00")</td>
                                 <td>@item.Max10080?.ToString("0.00")</td>
                                 <td>@item.Avg10080?.ToString("0.00")</td>
                             }
                             else
                             {
-                                double? min = Model.SelectedDuration switch
+                                @foreach (var duration in Model.SelectedDurations)
                                 {
-                                    "5" => item.Min5,
-                                    "10" => item.Min10,
-                                    "15" => item.Min15,
-                                    "30" => item.Min30,
-                                    "60" => item.Min60,
-                                    "120" => item.Min120,
-                                    "1440" => item.Min1440,
-                                    "4320" => item.Min4320,
-                                    "10080" => item.Min10080,
-                                    _ => null
-                                };
+                                    double? min = duration switch
+                                    {
+                                        "5" => item.Min5,
+                                        "10" => item.Min10,
+                                        "15" => item.Min15,
+                                        "30" => item.Min30,
+                                        "60" => item.Min60,
+                                        "120" => item.Min120,
+                                        "1440" => item.Min1440,
+                                        "4320" => item.Min4320,
+                                        "10080" => item.Min10080,
+                                        _ => null
+                                    };
 
-                                double? max = Model.SelectedDuration switch
-                                {
-                                    "5" => item.Max5,
-                                    "10" => item.Max10,
-                                    "15" => item.Max15,
-                                    "30" => item.Max30,
-                                    "60" => item.Max60,
-                                    "120" => item.Max120,
-                                    "1440" => item.Max1440,
-                                    "4320" => item.Max4320,
-                                    "10080" => item.Max10080,
-                                    _ => null
-                                };
+                                    double? max = duration switch
+                                    {
+                                        "5" => item.Max5,
+                                        "10" => item.Max10,
+                                        "15" => item.Max15,
+                                        "30" => item.Max30,
+                                        "60" => item.Max60,
+                                        "120" => item.Max120,
+                                        "1440" => item.Max1440,
+                                        "4320" => item.Max4320,
+                                        "10080" => item.Max10080,
+                                        _ => null
+                                    };
 
-                                double? avg = Model.SelectedDuration switch
-                                {
-                                    "5" => item.Avg5,
-                                    "10" => item.Avg10,
-                                    "15" => item.Avg15,
-                                    "30" => item.Avg30,
-                                    "60" => item.Avg60,
-                                    "120" => item.Avg120,
-                                    "1440" => item.Avg1440,
-                                    "4320" => item.Avg4320,
-                                    "10080" => item.Avg10080,
-                                    _ => null
-                                };
+                                    double? avg = duration switch
+                                    {
+                                        "5" => item.Avg5,
+                                        "10" => item.Avg10,
+                                        "15" => item.Avg15,
+                                        "30" => item.Avg30,
+                                        "60" => item.Avg60,
+                                        "120" => item.Avg120,
+                                        "1440" => item.Avg1440,
+                                        "4320" => item.Avg4320,
+                                        "10080" => item.Avg10080,
+                                        _ => null
+                                    };
 
-                                <td>@min?.ToString("0.00")</td>
-                                <td>@max?.ToString("0.00")</td>
-                                <td>@avg?.ToString("0.00")</td>
+                                    <td>@min?.ToString("0.00")</td>
+                                    <td>@max?.ToString("0.00")</td>
+                                    <td>@avg?.ToString("0.00")</td>
+                                }
                             }
                         </tr>
                     }
@@ -715,6 +767,285 @@
         </div>
     </div>
 }
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-dark">
+            <div class="modal-header">
+                <h5 class="modal-title"> 
+                    Export to PCSWMM 
+                </h5> 
+            </div> 
+            <div class="modal-body"> 
+                <p> Select the South African SCS type. </p> 
+                <select id="stormType" class="form-select"> 
+                    <option value="Type_1"> South Africa SCS Type 1 </option> 
+                    <option value="Type_2"> South Africa SCS Type 2 </option> 
+                    <option value="Both"> Both </option> 
+                </select> 
+                
+                <br /> 
+                <!-- PCSWMM Model Directory --> 
+                <label for="modelFolderPath" class="form-label"> 
+                    <strong>PCSWMM Model Directory</strong> 
+                </label> 
+                <input type="text" id="modelFolderPath" class="form-control" placeholder="C:\Users\YourName\Documents\YourModel" autocomplete="off" /> 
+                <small class="text-muted"> 
+                    Enter the full path to your PCSWMM model folder by opening your folder directly in Windows Explorer, coping the address bar and pasting it above. 
+                </small>
+                <br /> <br /> 
+                <div class="alert alert-info"> 
+                    <strong>NOTE:</strong> 
+                    <br /><br /> 
+                    The generated PCSWMM files will be packaged into a 
+                    <strong>Generated_SWMM_Storms.zip</strong> file. 
+                    <br /><br /> The ZIP will contain all generated <strong>.dat</strong> files, 
+                    <strong>SWMM_Raingages_List.txt</strong> and <strong>SWMM_Timeseries_List.txt</strong>. 
+                </div> 
+            </div> 
+            <div class="modal-footer"> 
+                
+                <button class="btn btn-secondary" data-bs-dismiss="modal"> Cancel </button> 
+                <button class="btn btn-primary" id="btnGenerate"> Generate Files </button> 
+            </div> 
+        </div> 
+    </div> 
+</div> 
+
+<!-- Progress Modal --> 
+<div class="modal fade" id="progressModal" data-bs-backdrop="static" data-bs-keyboard="false"> 
+    <div class="modal-dialog modal-dialog-centered"> 
+        <div class="modal-content text-dark"> 
+            <div class="modal-header"> 
+                <h5> Generating PCSWMM Files </h5> 
+            </div> 
+            <div class="modal-body"> 
+                <p id="progressText"> Preparing export... </p> 
+                <div class="progress mb-3"> 
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"> 0% </div> 
+                </div> 
+                <table class="table table-sm"> 
+                    <tr> 
+                        <th>Total Files</th> 
+                        <td id="totalFiles">0</td> 
+                    </tr> 
+                    <tr> 
+                        <th>Completed</th> 
+                        <td id="completedFiles">0</td> 
+                    </tr> <tr> 
+                        <th>Current File</th> 
+                        <td id="currentFile"> Preparing... </td> 
+                    </tr> 
+                </table> 
+            </div> 
+        </div> 
+    </div> 
+</div> 
+
+<!-- Complete Modal --> 
+<div class="modal fade" id="completeModal"> 
+    <div class="modal-dialog modal-dialog-centered"> 
+        <div class="modal-content text-dark"> 
+            <div class="modal-header"> 
+                <h5> Export Complete </h5> 
+            </div> 
+            <div class="modal-body"> 
+                <div class="alert alert-success"> ✔ Export completed successfully. 
+                    <br /> <br /> 
+                    <strong id="fileCount"></strong> PCSWMM files were generated. 
+                </div> 
+                <p> Click <strong>Download ZIP Files</strong>. 
+                    <br /> <br /> Save the ZIP file inside your <b>PCSWMM Model</b> folder. 
+                    <br /> <br /> The ZIP file is named: <br /> 
+                    <strong> Generated_SWMM_Storms.zip </strong> 
+                </p> 
+                <button class="btn btn-success w-100" id="btnDownloadZip"> 
+                    Download ZIP Files 
+                </button>
+                <hr /> 
+            </div> 
+            <div class="modal-footer"> 
+                <button class="btn btn-primary" id="btnContinue" disabled> 
+                    Continue to Instructions 
+                </button> 
+            </div> 
+        </div> 
+    </div> 
+</div>
+<script> 
+   // PCSWMM EXPORT DATA 
+    const exportResults = @Html.Raw(Json.Serialize(Model.Results)); 
+    const selectedDurations = @Html.Raw(Json.Serialize(Model.SelectedDurations)); 
+    let generatedZip = null; 
+    let downloaded = false; 
+    
+    // BOOTSTRAP MODALS 
+    const exportModal = 
+    new bootstrap.Modal( document.getElementById("exportModal") ); 
+    const progressModal = 
+    new bootstrap.Modal( document.getElementById("progressModal") ); 
+    const completeModal = 
+    new bootstrap.Modal( document.getElementById("completeModal") ); 
+    
+    // OPEN EXPORT MODAL
+    document .getElementById("btnExportPCSWMM")
+    .addEventListener("click", function () { exportModal.show(); }); 
+    
+    // GENERATE PCSWMM FILES
+    document .getElementById("btnGenerate")
+    .addEventListener("click", async function () { 
+        /* * Get model directory. */ 
+        const modelFolderPath = document 
+        .getElementById("modelFolderPath") 
+        .value 
+        .trim(); 
+        
+        /* * Make sure the user entered a path. */ 
+        if (!modelFolderPath) { 
+            alert( "Please enter your PCSWMM Model Directory." );
+            return; 
+        } 
+        
+        /* * Get storm type. */ 
+        const stormType = document 
+        .getElementById("stormType") 
+        .value; 
+        
+        /* * Close export modal. */ 
+        exportModal.hide(); 
+        
+        /* * Open progress modal. */ 
+        progressModal.show(); 
+        
+        /* * Reset progress information. */ 
+        document.getElementById("progressBar") 
+        .style.width = "0%"; 
+        
+        document.getElementById("progressBar") 
+        .innerHTML = "0%"; 
+        
+        document.getElementById("progressText")
+        .innerHTML = "Preparing export..."; 
+        
+        document.getElementById("totalFiles")
+        .innerHTML = "0"; 
+        
+        document.getElementById("completedFiles")
+        .innerHTML = "0"; 
+
+        document.getElementById("currentFile")
+        .innerHTML = "Preparing..."; 
+        
+        try { 
+            /* * Send export request. */ 
+            const response = await fetch( "/Rainfall/GeneratePCSWMM", { 
+                method: "POST", headers: 
+                { "Content-Type": "application/json" }, 
+                body: JSON.stringify({ 
+                    stormType: stormType, 
+                    results: exportResults, 
+                    selectedDurations: selectedDurations, 
+                    modelFolderPath: modelFolderPath }) }
+            ); 
+            
+            /* * Handle server error. */ 
+            if (!response.ok) { 
+                const errorText = await response.text(); 
+                progressModal.hide(); 
+                alert( errorText || "Failed to generate PCSWMM files." ); 
+                return; 
+            } 
+            
+            /* * Get ZIP. */ 
+            const zipBlob = await response.blob(); 
+
+            /* * Create browser URL for ZIP. */ 
+            generatedZip = URL.createObjectURL(zipBlob); 
+            
+            /* * Generation completed. */ 
+            progressModal.hide(); 
+            completeModal.show(); 
+        } catch (err) { 
+            console.error(err); 
+            progressModal.hide(); 
+            alert( "An error occurred while generating the PCSWMM files." ); }
+    }); 
+    
+    // DOWNLOAD ZIP
+document.getElementById("btnDownloadZip")
+    .addEventListener("click", async function () {
+
+        if (!generatedZip) {
+            return;
+        }
+
+        try {
+            // Ask the user where to save the ZIP
+            const fileHandle = await window.showSaveFilePicker({
+                suggestedName: "Generated_SWMM_Storms.zip",
+                types: [
+                    {
+                        description: "ZIP files",
+                        accept: {
+                            "application/zip": [".zip"]
+                        }
+                    }
+                ]
+            });
+
+            // Convert the generated ZIP URL into a Blob
+            const response = await fetch(generatedZip);
+            const blob = await response.blob();
+
+            // Write the ZIP to the selected location
+            const writable = await fileHandle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+
+            // Only mark as downloaded after successfully saving
+            downloaded = true;
+
+            // Enable Continue button
+            updateContinueButton();
+
+        } catch (error) {
+
+            // User cancelled the Save As dialog
+            if (error.name === "AbortError") {
+                return;
+            }
+
+            console.error("Error saving ZIP:", error);
+        }
+    });
+    
+    // ENABLE CONTINUE AFTER DOWNLOAD
+    function updateContinueButton() { 
+        document.getElementById("btnContinue")
+        .disabled = !downloaded; } 
+        
+    // CONTINUE TO INSTRUCTIONS
+    document.getElementById("btnContinue")
+    .addEventListener("click", function () {
+        window.location = "/Rainfall/Instructions"; }); 
+        
+    // UPDATE PROGRESS
+    function updateProgress(progress) { 
+        document.getElementById("progressBar")
+        .style.width = progress.percentage + "%"; 
+        document.getElementById("progressBar")
+        .innerHTML = progress.percentage + "%"; 
+        document.getElementById("totalFiles")
+        .innerHTML = progress.totalFiles; 
+        document.getElementById("completedFiles")
+        .innerHTML = progress.filesCompleted; 
+        document.getElementById("currentFile")
+        .innerHTML = progress.currentFile; 
+        document.getElementById("progressText")
+        .innerHTML = "<strong>Generating:</strong><br>" + 
+        progress.currentFile + "<br><br>" + 
+        progress.filesCompleted + " of " + 
+        progress.totalFiles + " files completed."; } 
+</script>
 
 <style>
     form.rainfall-form {
@@ -827,6 +1158,20 @@
 
     form.rainfall-form tbody tr:hover {
     background-color: var(--row-hover);
+    }
+
+    .checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
+    gap: 8px;
+    margin-top: 10px;
+    }
+
+    .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
     }
 
     .return-period-center {

@@ -1,20 +1,24 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using RainfallThree.Data;
-using RainfallThree.Models;
-using System.Text.Json;
-using System.IO.Compression;
-using System.Xml.Linq;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
+using RainfallThree.Data;
+using RainfallThree.Models;
+using RainfallThree.Models.PCSWMM;
+using RainfallThree.Services.PCSWMM;
+using System.IO.Compression;
+using System.Text.Json;
+using System.Xml.Linq;
 
 public class RainfallController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly ExportServiceI _service;
 
-    public RainfallController(ApplicationDbContext context)
+    public RainfallController(ApplicationDbContext context, ExportServiceI service)
     {
         _context = context;
+        _service = service;
     }
 
     [HttpGet]
@@ -51,8 +55,13 @@ public class RainfallController : Controller
         var allData = _context.RainfallSheets.ToList();
 
         var filteredDataQuery = _context.RainfallSheets.AsQueryable();
-        if (model.ReturnPeriod.HasValue)
-            filteredDataQuery = filteredDataQuery.Where(x => x.ReturnPeriod == model.ReturnPeriod);
+
+        if (model.SelectedReturnPeriods.Any())
+        {
+            filteredDataQuery = filteredDataQuery
+                .Where(x => model.SelectedReturnPeriods.Contains(x.ReturnPeriod));
+        }
+
         var filteredData = filteredDataQuery.ToList();
 
         // Handle uploaded area file
@@ -132,21 +141,29 @@ public class RainfallController : Controller
         }
 
         // Filter by SelectedDuration (removes rows where that column is null)
-        if (!string.IsNullOrEmpty(model.SelectedDuration))
+        if (model.SelectedDurations.Any())
         {
-            dataSet = model.SelectedDuration switch
-            {
-                "5" => dataSet.Where(x => x._5Min.HasValue).ToList(),
-                "10" => dataSet.Where(x => x._10Min.HasValue).ToList(),
-                "15" => dataSet.Where(x => x._15Min.HasValue).ToList(),
-                "30" => dataSet.Where(x => x._30Min.HasValue).ToList(),
-                "60" => dataSet.Where(x => x._60Min.HasValue).ToList(),
-                "120" => dataSet.Where(x => x._120Min.HasValue).ToList(),
-                "1440" => dataSet.Where(x => x._1440Min.HasValue).ToList(),
-                "4320" => dataSet.Where(x => x._4320Min.HasValue).ToList(),
-                "10080" => dataSet.Where(x => x._10080Min.HasValue).ToList(),
-                _ => dataSet
-            };
+            dataSet = dataSet.Where(r =>
+
+                (model.SelectedDurations.Contains("5") && r._5Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("10") && r._10Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("15") && r._15Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("30") && r._30Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("60") && r._60Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("120") && r._120Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("1440") && r._1440Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("4320") && r._4320Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("10080") && r._10080Min.HasValue)
+
+            ).ToList();
         }
 
         model.Results = dataSet.Any() ? dataSet : new List<RainfallSheet>();
@@ -192,73 +209,92 @@ public class RainfallController : Controller
         }
 
         // Apply ReturnPeriod filter
-        if (model.ReturnPeriod.HasValue)
+        if (model.SelectedReturnPeriods.Any())
         {
-            summarySet = summarySet.Where(r => r.ReturnPeriod == model.ReturnPeriod).ToList();
+            summarySet = summarySet
+                .Where(r => model.SelectedReturnPeriods.Contains(r.ReturnPeriod))
+                .ToList();
         }
 
         // Apply Duration filter (same logic as results)
-        if (!string.IsNullOrEmpty(model.SelectedDuration))
-        {
-            summarySet = model.SelectedDuration switch
-            {
-                "5" => summarySet.Where(x => x._5Min.HasValue).ToList(),
-                "10" => summarySet.Where(x => x._10Min.HasValue).ToList(),
-                "15" => summarySet.Where(x => x._15Min.HasValue).ToList(),
-                "30" => summarySet.Where(x => x._30Min.HasValue).ToList(),
-                "60" => summarySet.Where(x => x._60Min.HasValue).ToList(),
-                "120" => summarySet.Where(x => x._120Min.HasValue).ToList(),
-                "1440" => summarySet.Where(x => x._1440Min.HasValue).ToList(),
-                "4320" => summarySet.Where(x => x._4320Min.HasValue).ToList(),
-                "10080" => summarySet.Where(x => x._10080Min.HasValue).ToList(),
-                _ => summarySet
-            };
-        }
+       if (model.SelectedDurations.Any())
+       {
+            summarySet = summarySet.Where(r =>
+
+                (model.SelectedDurations.Contains("5") && r._5Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("10") && r._10Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("15") && r._15Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("30") && r._30Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("60") && r._60Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("120") && r._120Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("1440") && r._1440Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("4320") && r._4320Min.HasValue) ||
+
+                (model.SelectedDurations.Contains("10080") && r._10080Min.HasValue)
+
+            ).ToList();
+       }
 
         model.Summary = summarySet
-            .GroupBy(r => r.ReturnPeriod)
-            .Select(g => new RainfallSummaryViewModel
-            {
-                ReturnPeriod = g.Key,
+    .GroupBy(r => r.ReturnPeriod)
+    .Select(g => new RainfallSummaryViewModel
+    {
+        ReturnPeriod = g.Key,
 
-                Min5 = g.Min(x => x._5Min ?? 0),
-                Max5 = g.Max(x => x._5Min ?? 0),
-                Avg5 = g.Average(x => x._5Min ?? 0),
+        // 5 Min
+        Min5 = g.Where(x => x._5Min.HasValue).Select(x => x._5Min).DefaultIfEmpty().Min(),
+        Max5 = g.Where(x => x._5Min.HasValue).Select(x => x._5Min).DefaultIfEmpty().Max(),
+        Avg5 = g.Where(x => x._5Min.HasValue).Select(x => x._5Min).DefaultIfEmpty().Average(),
 
-                Min10 = g.Min(x => x._10Min ?? 0),
-                Max10 = g.Max(x => x._10Min ?? 0),
-                Avg10 = g.Average(x => x._10Min ?? 0),
+        // 10 Min
+        Min10 = g.Where(x => x._10Min.HasValue).Select(x => x._10Min).DefaultIfEmpty().Min(),
+        Max10 = g.Where(x => x._10Min.HasValue).Select(x => x._10Min).DefaultIfEmpty().Max(),
+        Avg10 = g.Where(x => x._10Min.HasValue).Select(x => x._10Min).DefaultIfEmpty().Average(),
 
-                Min15 = g.Min(x => x._15Min ?? 0),
-                Max15 = g.Max(x => x._15Min ?? 0),
-                Avg15 = g.Average(x => x._15Min ?? 0),
+        // 15 Min
+        Min15 = g.Where(x => x._15Min.HasValue).Select(x => x._15Min).DefaultIfEmpty().Min(),
+        Max15 = g.Where(x => x._15Min.HasValue).Select(x => x._15Min).DefaultIfEmpty().Max(),
+        Avg15 = g.Where(x => x._15Min.HasValue).Select(x => x._15Min).DefaultIfEmpty().Average(),
 
-                Min30 = g.Min(x => x._30Min ?? 0),
-                Max30 = g.Max(x => x._30Min ?? 0),
-                Avg30 = g.Average(x => x._30Min ?? 0),
+        // 30 Min
+        Min30 = g.Where(x => x._30Min.HasValue).Select(x => x._30Min).DefaultIfEmpty().Min(),
+        Max30 = g.Where(x => x._30Min.HasValue).Select(x => x._30Min).DefaultIfEmpty().Max(),
+        Avg30 = g.Where(x => x._30Min.HasValue).Select(x => x._30Min).DefaultIfEmpty().Average(),
 
-                Min60 = g.Min(x => x._60Min ?? 0),
-                Max60 = g.Max(x => x._60Min ?? 0),
-                Avg60 = g.Average(x => x._60Min ?? 0),
+        // 1 Hour
+        Min60 = g.Where(x => x._60Min.HasValue).Select(x => x._60Min).DefaultIfEmpty().Min(),
+        Max60 = g.Where(x => x._60Min.HasValue).Select(x => x._60Min).DefaultIfEmpty().Max(),
+        Avg60 = g.Where(x => x._60Min.HasValue).Select(x => x._60Min).DefaultIfEmpty().Average(),
 
-                Min120 = g.Min(x => x._120Min ?? 0),
-                Max120 = g.Max(x => x._120Min ?? 0),
-                Avg120 = g.Average(x => x._120Min ?? 0),
+        // 2 Hours
+        Min120 = g.Where(x => x._120Min.HasValue).Select(x => x._120Min).DefaultIfEmpty().Min(),
+        Max120 = g.Where(x => x._120Min.HasValue).Select(x => x._120Min).DefaultIfEmpty().Max(),
+        Avg120 = g.Where(x => x._120Min.HasValue).Select(x => x._120Min).DefaultIfEmpty().Average(),
 
-                Min1440 = g.Min(x => x._1440Min ?? 0),
-                Max1440 = g.Max(x => x._1440Min ?? 0),
-                Avg1440 = g.Average(x => x._1440Min ?? 0),
+        // 1 Day
+        Min1440 = g.Where(x => x._1440Min.HasValue).Select(x => x._1440Min).DefaultIfEmpty().Min(),
+        Max1440 = g.Where(x => x._1440Min.HasValue).Select(x => x._1440Min).DefaultIfEmpty().Max(),
+        Avg1440 = g.Where(x => x._1440Min.HasValue).Select(x => x._1440Min).DefaultIfEmpty().Average(),
 
-                Min4320 = g.Min(x => x._4320Min ?? 0),
-                Max4320 = g.Max(x => x._4320Min ?? 0),
-                Avg4320 = g.Average(x => x._4320Min ?? 0),
+        // 3 Days
+        Min4320 = g.Where(x => x._4320Min.HasValue).Select(x => x._4320Min).DefaultIfEmpty().Min(),
+        Max4320 = g.Where(x => x._4320Min.HasValue).Select(x => x._4320Min).DefaultIfEmpty().Max(),
+        Avg4320 = g.Where(x => x._4320Min.HasValue).Select(x => x._4320Min).DefaultIfEmpty().Average(),
 
-                Min10080 = g.Min(x => x._10080Min ?? 0),
-                Max10080 = g.Max(x => x._10080Min ?? 0),
-                Avg10080 = g.Average(x => x._10080Min ?? 0),
-            })
-            .OrderBy(x => x.ReturnPeriod)
-            .ToList();
+        // 7 Days
+        Min10080 = g.Where(x => x._10080Min.HasValue).Select(x => x._10080Min).DefaultIfEmpty().Min(),
+        Max10080 = g.Where(x => x._10080Min.HasValue).Select(x => x._10080Min).DefaultIfEmpty().Max(),
+        Avg10080 = g.Where(x => x._10080Min.HasValue).Select(x => x._10080Min).DefaultIfEmpty().Average()
+    })
+    .OrderBy(x => x.ReturnPeriod)
+    .ToList();
 
         // Preload map marker from first result if no coords entered
         if ((!model.LATDEG.HasValue || !model.LONGDEG.HasValue) && model.Results.Any())
@@ -285,46 +321,160 @@ public class RainfallController : Controller
 
         var builder = new System.Text.StringBuilder();
 
-        if (string.IsNullOrEmpty(model.SelectedDuration))
-            builder.AppendLine("Index,LatDeg,LatMin,LongDeg,LongMin,ReturnPeriod,5Min,10Min,15Min,30Min,60Min,120Min,1440Min,4320Min,10080Min,SourceSheet");
-        else
-            builder.AppendLine($"Index,LatDeg,LatMin,LongDeg,LongMin,ReturnPeriod,{model.SelectedDuration}Min,SourceSheet");
+        // Build header
+        var headers = new List<string>
+        {
+            "Index",
+            "LatDeg",
+            "LatMin",
+            "LongDeg",
+            "LongMin",
+            "ReturnPeriod"
+        };
 
+        if (!model.SelectedDurations.Any())
+        {
+            headers.AddRange(new[]
+            {
+                "5Min",
+                "10Min",
+                "15Min",
+                "30Min",
+                "60Min",
+                "120Min",
+                "1440Min",
+                "4320Min",
+                "10080Min"
+            });
+        }
+        else
+        {
+            foreach (var duration in model.SelectedDurations)
+                headers.Add($"{duration}Min");
+        }
+
+        headers.Add("SourceSheet");
+
+        builder.AppendLine(string.Join(",", headers));
+
+
+        // Build rows
         foreach (var item in dataSet)
         {
-            if (string.IsNullOrEmpty(model.SelectedDuration))
+            var row = new List<string>
             {
-                builder.AppendLine(
-                    $"{item.Index},{item.Latdeg},{item.Latmin},{item.Longdeg},{item.Longmin},{item.ReturnPeriod}," +
-                    $"{item._5Min?.ToString("0.00")},{item._10Min?.ToString("0.00")},{item._15Min?.ToString("0.00")}," +
-                    $"{item._30Min?.ToString("0.00")},{item._60Min?.ToString("0.00")},{item._120Min?.ToString("0.00")}," +
-                    $"{item._1440Min?.ToString("0.00")},{item._4320Min?.ToString("0.00")},{item._10080Min?.ToString("0.00")}," +
-                    $"{item.SourceSheet}");
+                item.Index.ToString(),
+                item.Latdeg.ToString(),
+                item.Latmin.ToString(),
+                item.Longdeg.ToString(),
+                item.Longmin.ToString(),
+                item.ReturnPeriod.ToString()
+            };
+
+            if (!model.SelectedDurations.Any())
+            {
+                row.Add(item._5Min?.ToString("0.00") ?? "");
+                row.Add(item._10Min?.ToString("0.00") ?? "");
+                row.Add(item._15Min?.ToString("0.00") ?? "");
+                row.Add(item._30Min?.ToString("0.00") ?? "");
+                row.Add(item._60Min?.ToString("0.00") ?? "");
+                row.Add(item._120Min?.ToString("0.00") ?? "");
+                row.Add(item._1440Min?.ToString("0.00") ?? "");
+                row.Add(item._4320Min?.ToString("0.00") ?? "");
+                row.Add(item._10080Min?.ToString("0.00") ?? "");
             }
             else
             {
-                string durationValue = model.SelectedDuration switch
+                foreach (var duration in model.SelectedDurations)
                 {
-                    "5" => item._5Min?.ToString("0.00"),
-                    "10" => item._10Min?.ToString("0.00"),
-                    "15" => item._15Min?.ToString("0.00"),
-                    "30" => item._30Min?.ToString("0.00"),
-                    "60" => item._60Min?.ToString("0.00"),
-                    "120" => item._120Min?.ToString("0.00"),
-                    "1440" => item._1440Min?.ToString("0.00"),
-                    "4320" => item._4320Min?.ToString("0.00"),
-                    "10080" => item._10080Min?.ToString("0.00"),
-                    _ => ""
-                };
-
-                builder.AppendLine(
-                    $"{item.Index},{item.Latdeg},{item.Latmin},{item.Longdeg},{item.Longmin}," +
-                    $"{item.ReturnPeriod},{durationValue},{item.SourceSheet}");
+                    row.Add(duration switch
+                    {
+                        "5" => item._5Min?.ToString("0.00") ?? "",
+                        "10" => item._10Min?.ToString("0.00") ?? "",
+                        "15" => item._15Min?.ToString("0.00") ?? "",
+                        "30" => item._30Min?.ToString("0.00") ?? "",
+                        "60" => item._60Min?.ToString("0.00") ?? "",
+                        "120" => item._120Min?.ToString("0.00") ?? "",
+                        "1440" => item._1440Min?.ToString("0.00") ?? "",
+                        "4320" => item._4320Min?.ToString("0.00") ?? "",
+                        "10080" => item._10080Min?.ToString("0.00") ?? "",
+                        _ => ""
+                    });
+                }
             }
+
+            builder.AppendLine(string.Join(",", row));
         }
 
         var fileName = $"RainfallResults_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
         return File(System.Text.Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", fileName);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> GeneratePCSWMM([FromBody] ExportRequest request)
+    {
+        if (request == null ||
+            request.Results == null ||
+            !request.Results.Any())
+        {
+            return BadRequest(
+                "No rainfall results were supplied.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.ModelFolderPath))
+        {
+            return BadRequest(
+                "The PCSWMM model folder is required.");
+        }
+
+        string folder = string.Empty;
+
+        try
+        {
+            folder = await _service.GenerateAsync(request);
+
+            ZipService zipper = new ZipService();
+
+            byte[] zip = zipper.CreateZip(folder);
+
+            if (Directory.Exists(folder))
+            {
+                Directory.Delete(folder, true);
+            }
+
+            return File(
+                zip,
+                "application/zip",
+                "Generated_SWMM_Storms.zip");
+        }
+        catch (InvalidOperationException ex)
+        {
+            if (!string.IsNullOrWhiteSpace(folder) &&
+                Directory.Exists(folder))
+            {
+                Directory.Delete(folder, true);
+            }
+
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            if (!string.IsNullOrWhiteSpace(folder) &&
+                Directory.Exists(folder))
+            {
+                Directory.Delete(folder, true);
+            }
+
+            return StatusCode(
+                500,
+                $"An error occurred while generating the PCSWMM files: {ex.Message}");
+        }
+    }
+
+    //[HttpGet]
+    public IActionResult Instructions()
+    {
+        return View();
     }
 
     private bool IsPointInPolygon(double lat, double lon, List<(double lat, double lon)> polygon)
@@ -356,16 +506,15 @@ public class RainfallController : Controller
 
     private List<SelectListItem> BuildDurationOptions() => new()
     {
-        new SelectListItem { Value = "",      Text = "All" },
-        new SelectListItem { Value = "5",     Text = "5 Min" },
-        new SelectListItem { Value = "10",    Text = "10 Min" },
-        new SelectListItem { Value = "15",    Text = "15 Min" },
-        new SelectListItem { Value = "30",    Text = "30 Min" },
-        new SelectListItem { Value = "60",    Text = "60 Min" },
-        new SelectListItem { Value = "120",   Text = "120 Min" },
-        new SelectListItem { Value = "1440",  Text = "1440 Min" },
-        new SelectListItem { Value = "4320",  Text = "4320 Min" },
-        new SelectListItem { Value = "10080", Text = "10080 Min" },
+        new() { Value = "5", Text = "5 Min" },
+        new() { Value = "10", Text = "10 Min" },
+        new() { Value = "15", Text = "15 Min" },
+        new() { Value = "30", Text = "30 Min" },
+        new() { Value = "60", Text = "1 Hour" },
+        new() { Value = "120", Text = "2 Hours" },
+        new() { Value = "1440", Text = "1 Day" },
+        new() { Value = "4320", Text = "3 Days" },
+        new() { Value = "10080", Text = "7 Days" }
     };
 
     private string ConvertToGeoJson(IFormFile file)
