@@ -304,6 +304,10 @@ namespace RainfallThree.Services.PCSWMM
             using StreamWriter writer =
                 new StreamWriter(outputPath);
 
+            writer.WriteLine("[RAINGAGES]");
+            writer.WriteLine(";;Name           Format    Interval SCF      Source");
+            writer.WriteLine(";;-------------- --------- -------- -------- ----------");
+
             foreach (GeneratedRainfallFile file in generatedFiles)
             {
                 writer.WriteLine(
@@ -321,6 +325,10 @@ namespace RainfallThree.Services.PCSWMM
 
             using StreamWriter writer =
                 new StreamWriter(outputPath);
+
+            writer.WriteLine("[TIMESERIES]");
+            writer.WriteLine(";;Name           Date       Time       Value");
+            writer.WriteLine(";;-------------- ---------- ---------- ----------");
 
             foreach (GeneratedRainfallFile file in generatedFiles)
             {
