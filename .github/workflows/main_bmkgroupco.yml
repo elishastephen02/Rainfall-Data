@@ -52,4 +52,4 @@ jobs:
           app-name: 'bmkgroupco'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_342461A638B04EBAA76C66E1E4BA6868 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C33BC7090E6841AEAFA685EA8C759AEF }}
