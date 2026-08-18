@@ -1,1303 +1,2381 @@
 ﻿@model RainfallThree.Models.SearchRainfallViewModel
 
-<h2 class="text-center" style="color:#005E83">☔ Design Rainfall Data</h2>
-
-<form class="rainfall-form" method="post" asp-action="Search" asp-controller="Rainfall" enctype="multipart/form-data">
-
-    <h3>Select Location on Map or Draw Area Polygon</h3>
-    <div id="map" style="height: 400px; width: 100%; margin-bottom: 20px;"></div>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCOOGU5sHBREmUAIpPYv1THtaM-t0SgE8I&libraries=places"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
-    <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-
-    <input type="hidden" asp-for="PolygonGeoJson" id="PolygonGeoJson" />
-
-    <script>
-        window.addEventListener('load', function () {
-
-        // initialise map
-        var durbanCenter = [-29.8587, 31.0218];
-        var map = L.map('map').setView(durbanCenter, 12);
-
-        var southWest = L.latLng(-30.2, 30.6);
-        var northEast = L.latLng(-29.5, 31.5);
-        var durbanBounds = L.latLngBounds(southWest, northEast);
-
-        map.setMaxBounds(durbanBounds);
-
-        map.on('drag', function () {
-        map.panInsideBounds(durbanBounds, { animate: false });
-        });
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
-
-        var drawnItems = new L.FeatureGroup();
-        map.addLayer(drawnItems);
-
-        var marker;
-
-        function placeMarker(lat, lng) {
-        if (marker) map.removeLayer(marker);
-        marker = L.marker([lat, lng]).addTo(map);
-        map.setView([lat, lng], 14);
-        }
-
-        var uploadedLayer;
-
-        // Upload button click
-        document.getElementById("uploadAreaBtn").addEventListener("click", async function () {
-
-        var fileInput = document.getElementById("areaFileInput");
-
-        if (!fileInput.files || fileInput.files.length === 0) {
-        alert("Please select a file first.");
-        return;
-        }
-
-        var file = fileInput.files[0];
-        var formData = new FormData();
-        formData.append("file", file);
-
-        try {
-        const response = await fetch("/Rainfall/UploadAreaFile", {
-        method: "POST",
-        body: formData
-        });
-
-        if (!response.ok) {
-        alert("File upload failed.");
-        return;
-        }
-
-        const geojsonText = await response.text();
-        const geojson = JSON.parse(geojsonText);
-
-        // remove old layer
-        if (uploadedLayer) {
-        map.removeLayer(uploadedLayer);
-        }
-
-        // draw polygon
-        uploadedLayer = L.geoJSON(geojson, {
-        style: { color: "red", weight: 3 }
-        }).addTo(map);
-
-        drawnItems.clearLayers();
-
-        // add each layer individually
-        uploadedLayer.eachLayer(function (layer) {
-        drawnItems.addLayer(layer);
-        });
-
-        map.fitBounds(uploadedLayer.getBounds());
-
-        // store GeoJSON in hidden field
-        document.getElementById("PolygonGeoJson").value =
-        JSON.stringify(geojson);
-
-        // extract coordinates → fill inputs (optional centroid)
-        var coords;
-
-        function extractCoords(geojson) {
-        if (geojson.type === "FeatureCollection") {
-        return geojson.features[0].geometry.coordinates[0];
-        }
-
-        if (geojson.type === "Feature") {
-        return geojson.geometry.coordinates[0];
-        }
-
-        if (geojson.type === "Polygon") {
-        return geojson.coordinates[0];
-        }
-
-        if (geojson.type === "MultiPolygon") {
-        return geojson.coordinates[0][0];
-        }
-
-        throw "Unsupported GeoJSON format";
-        }
-
-        var coords = extractCoords(geojson);
-
-        var lats = coords.map(c => c[1]);
-        var lons = coords.map(c => c[0]);
-
-        var avgLat = lats.reduce((a,b)=>a+b,0) / lats.length;
-        var avgLon = lons.reduce((a,b)=>a+b,0) / lons.length;
-
-        if (!isNaN(avgLat) && !isNaN(avgLon)) {
-        updateInputsFromCoordinates(avgLat, avgLon);
-        console.log("Inputs updated:", avgLat, avgLon);
-        } else {
-        console.error("Invalid centroid values");
-        }
-
-        alert("Polygon loaded successfully. Now click Search.", true);
-
-        } catch (err) {
-        console.error(err);
-        alert("Error processing file: " + err.message);
-        console.error(err);
-        }
-        });
-
-        // coordinate conversion
-        function degMinToDecimal(deg, min) {
-        if (deg === null || deg === "" || isNaN(deg)) return null;
-        return parseFloat(deg) + (parseFloat(min) || 0) / 60;
-        }
-
-        function decimalToDegMin(value) {
-        var abs = Math.abs(value);
-        var deg = Math.floor(abs);
-        var min = Math.round((abs - deg) * 60);
-
-        if (min === 60) {
-        deg += 1;
-        min = 0;
-        }
-
-        return { deg: deg, min: min };
-        }
-
-        function updateInputsFromCoordinates(lat, lng) {
-        var latParts = decimalToDegMin(lat);
-        var lngParts = decimalToDegMin(lng);
-
-        document.getElementById("LATDEG").value = latParts.deg;
-        document.getElementById("LATMIN").value = latParts.min;
-        document.getElementById("LONGDEG").value = lngParts.deg;
-        document.getElementById("LONGMIN").value = lngParts.min;
-        }
-
-        function updateMarkerFromInputs() {
-        var latDeg = parseFloat(document.getElementById("LATDEG").value);
-        var latMin = parseFloat(document.getElementById("LATMIN").value);
-        var lngDeg = parseFloat(document.getElementById("LONGDEG").value);
-        var lngMin = parseFloat(document.getElementById("LONGMIN").value);
-
-        if (!isNaN(latDeg) && !isNaN(lngDeg)) {
-        var lat = -degMinToDecimal(latDeg, latMin);
-        var lng = degMinToDecimal(lngDeg, lngMin);
-        placeMarker(lat, lng);
-        }
-        }
-
-        //message
-        function showMessage(msg, isError = true) {
-        var box = document.getElementById("addressMessage");
-        if (!box) return;
-        box.style.color = isError ? "red" : "green";
-        box.innerText = msg;
-        }
-
-        //preload markers
-        var latDeg = @(Model.LATDEG.HasValue? Model.LATDEG.Value.ToString() : "NaN");
-        var latMin = @(Model.LATMIN.HasValue? Model.LATMIN.Value.ToString() : "0");
-        var lngDeg = @(Model.LONGDEG.HasValue? Model.LONGDEG.Value.ToString() : "NaN");
-        var lngMin = @(Model.LONGMIN.HasValue? Model.LONGMIN.Value.ToString() : "0");
-
-        if (!isNaN(latDeg) && !isNaN(lngDeg)) {
-        var lat = -degMinToDecimal(latDeg, latMin);
-        var lng = degMinToDecimal(lngDeg, lngMin);
-        placeMarker(lat, lng);
-        }
-
-        //input listener
-        ["LATDEG", "LATMIN", "LONGDEG", "LONGMIN"].forEach(function (id) {
-        var el = document.getElementById(id);
-        if (el) {
-        el.addEventListener("change", function () {
-        clearPolygon();
-        updateMarkerFromInputs();
-        });
-        }
-        });
-
-        //map click
-        map.on('click', function (e) {
-        clearPolygon();
-        placeMarker(e.latlng.lat, e.latlng.lng);
-        updateInputsFromCoordinates(e.latlng.lat, e.latlng.lng);
-        });
-
-        //address search
-        var btn = document.getElementById("searchAddressBtn");
-
-        if (btn) {
-        btn.addEventListener("click", async function (e) {
-        e.preventDefault();
-
-        showMessage("");
-
-        var address = document.getElementById("Address").value;
-
-        if (!address || address.trim() === "") {
-        showMessage("Please enter an address.");
-        return;
-        }
-
-        try {
-        const apiKey = "AIzaSyC688eU0nYXp4K6Qx_HV3dj4dLLaWJPBNM";
-
-        var url =
-        "https://maps.googleapis.com/maps/api/geocode/json?address=" +
-        encodeURIComponent(address) +
-        "&key=" + apiKey;
-
-        var response = await fetch(url);
-        var data = await response.json();
-
-        if (!data.results || data.results.length === 0) {
-        showMessage("Address not found.");
-        return;
-        }
-
-        var location = data.results[0].geometry.location;
-
-        clearPolygon();
-
-        placeMarker(location.lat, location.lng);
-        updateInputsFromCoordinates(location.lat, location.lng);
-
-        showMessage("Address found!", false);
-
-        } catch (error) {
-        console.error(error);
-        showMessage("Error finding address.");
-        }
-        });
-        }
-
-        //draw polygon
-        var drawnItems = new L.FeatureGroup();
-        map.addLayer(drawnItems);
-
-        var drawControl = new L.Control.Draw({
-        draw: {
-        polygon: true,
-        rectangle: false,
-        circle: false,
-        circlemarker: false,
-        marker: false,
-        polyline: false
-        },
-        edit: {
-        featureGroup: drawnItems
-        }
-        });
-
-        map.addControl(drawControl);
-
-        map.on(L.Draw.Event.CREATED, function (e) {
-        drawnItems.clearLayers();
-        drawnItems.addLayer(e.layer);
-
-        var geojson = e.layer.toGeoJSON();
-        document.getElementById("PolygonGeoJson").value = JSON.stringify(geojson);
-        });
-
-        //restore polygon
-        var savedPolygon = document.getElementById("PolygonGeoJson").value;
-
-        if (savedPolygon) {
-        try {
-        var geo = JSON.parse(savedPolygon);
-
-        var layer = L.geoJSON(geo, {
-        style: { color: "red", weight: 3 }
-        });
-
-        layer.addTo(map);
-        drawnItems.addLayer(layer);
-        map.fitBounds(layer.getBounds());
-
-        } catch (e) {
-        console.log("Invalid polygon JSON", e);
-        }
-        }
-
-        function clearPolygon() {
-        // remove drawn shapes
-        if (drawnItems) {
-        drawnItems.clearLayers();
-        }
-
-        // remove uploaded polygon layer
-        if (uploadedLayer) {
-        map.removeLayer(uploadedLayer);
-        uploadedLayer = null;
-        }
-
-        // clear hidden field (VERY IMPORTANT)
-        document.getElementById("PolygonGeoJson").value = "";
-
-        console.log("Polygon cleared");
-        }
-
-        // GOOGLE ADDRESS AUTOCOMPLETE
-        const addressInput = document.getElementById("Address");
-
-        const autocomplete = new google.maps.places.Autocomplete(addressInput, {
-        types: ["address"],
-        componentRestrictions: { country: "za" }, // South Africa only
-        strictBounds: false,
-        fields: ["geometry", "formatted_address", "name"]
-        });
-
-        // Bias results toward Durban
-        autocomplete.setBounds(
-        new google.maps.LatLngBounds(
-        new google.maps.LatLng(-30.2, 30.6),
-        new google.maps.LatLng(-29.5, 31.5)
-        )
-        );
-
-        autocomplete.addListener("place_changed", function () {
-
-        const place = autocomplete.getPlace();
-
-        if (!place.geometry) {
-        showMessage("Address not found.");
-        return;
-        }
-
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
-
-        clearPolygon();
-
-        placeMarker(lat, lng);
-        updateInputsFromCoordinates(lat, lng);
-
-        showMessage("Address selected!", false);
-        });
-
-
-        });
-
-        document.querySelector("form").addEventListener("submit", function () {
-
-        // ALWAYS use drawnItems (this is what user sees)
-        var allLayers = drawnItems.toGeoJSON();
-
-        if (allLayers && allLayers.features && allLayers.features.length > 0) {
-        document.getElementById("PolygonGeoJson").value =
-        JSON.stringify(allLayers);
-        console.log("Submitting polygon:", allLayers);
-        } else {
-        console.log("No polygon to submit");
-        }
-        });
-
-        //download
-        function prepareDownload() {
-        var results = @Html.Raw(Json.Serialize(Model.Results));
-        document.getElementById("ResultsJson").value = JSON.stringify(results);
-        }
-    </script>
-
-    <fieldset>
-        <legend>Search by Address</legend>
-        <div class="form-group" style="margin-bottom: 15px;">
-            <div class="address-row" style="display:flex; gap:10px; align-items:center;">
-                <div id="addressMessage" style="color:red; font-weight:500;"></div>
-                <input asp-for="Address" id="Address" placeholder="Enter in your address within Ethekwini region" style="flex:1; height:40px; padding:6px 10px; box-sizing:border-box; margin:0;" />
-                <button type="button" id="searchAddressBtn" style="height:40px; padding:0 15px; box-sizing:border-box; white-space:nowrap; margin:0; line-height:40px;">
-                    Find Address
-                </button>
-            </div>
-        </div>
-    </fieldset>
-
-    <fieldset>
-        <legend>Location</legend>
-        <div class="form-grid">
-            <div class="form-group">
-                <label asp-for="LATDEG">Latitude Degree</label>
-                <input asp-for="LATDEG" id="LATDEG" />
-            </div>
-            <div class="form-group">
-                <label asp-for="LATMIN">Latitude Minute</label>
-                <input asp-for="LATMIN" id="LATMIN" />
-            </div>
-            <div class="form-group">
-                <label asp-for="LONGDEG">Longitude Degree</label>
-                <input asp-for="LONGDEG" id="LONGDEG" />
-            </div>
-            <div class="form-group">
-                <label asp-for="LONGMIN">Longitude Minute</label>
-                <input asp-for="LONGMIN" id="LONGMIN" />
-            </div>
-        </div>
-    </fieldset>
-
-    <fieldset>
-        <legend>Upload Area File</legend>
-
-        <div class="form-group">
-            <label>Upload Area File (GeoJSON, JSON, KML, KMZ)</label>
-
-            <input type="file" id="areaFileInput" accept=".geojson,.json,.kml,.kmz" />
-
-            <button type="button" id="uploadAreaBtn" style="margin-top:10px;">
-                Upload
-            </button>
-        </div>
-    </fieldset>
-
-    <fieldset>
-        <legend>Rainfall Return Period & Duration</legend>
-
-        <div class="checkbox-grid">
-            @foreach (var rp in Model.ReturnPeriodOptions.Where(x => !string.IsNullOrEmpty(x.Value)))
-            {
-                <label class="checkbox-item">
-                    <input type="checkbox"
-                           name="SelectedReturnPeriods"
-                           value="@rp.Value"
-                    @(Model.SelectedReturnPeriods?.Contains(int.Parse(rp.Value)) == true ? "checked" : "") />
-
-                    @rp.Text
-                </label>
-            }
-        </div>
-
-        <div class="checkbox-grid">
-            @foreach (var d in Model.DurationOptions.Where(x => !string.IsNullOrEmpty(x.Value)))
-            {
-                <label class="checkbox-item">
-                    <input type="checkbox"
-                           name="SelectedDurations"
-                           value="@d.Value"
-                    @(Model.SelectedDurations?.Contains(d.Value) == true ? "checked" : "") />
-
-                    @d.Text
-                </label>
-            }
-        </div>
-    </fieldset>
-
-    <button type="submit">Search</button>
-</form>
-
-@if (Model.Results != null && Model.Results.Any())
-{
-    <div class="results-container">
-        <h3>Results (@Model.Results.Count)</h3>
-
-        <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px; padding-right:40px;">
-            <form method="post" asp-action="Download" onsubmit="prepareDownload()">
-                <input type="hidden" name="Index" value="@Model.Index" />
-                <input type="hidden" name="LATDEG" value="@Model.LATDEG" />
-                <input type="hidden" name="LATMIN" value="@Model.LATMIN" />
-                <input type="hidden" name="LONGDEG" value="@Model.LONGDEG" />
-                <input type="hidden" name="LONGMIN" value="@Model.LONGMIN" />
-                @foreach (var rp in Model.SelectedReturnPeriods)
-                {
-                    <input type="hidden" name="SelectedReturnPeriods" value="@rp" />
-                }
-
-                @foreach (var d in Model.SelectedDurations)
-                {
-                    <input type="hidden" name="SelectedDurations" value="@d" />
-                }
-                <input type="hidden" name="ResultsJson" id="ResultsJson" />
-                <button type="submit" style="background:none; border:none; padding:0; margin-right:40px; color:blue; text-decoration:underline; cursor:pointer;">
-                    Download CSV
-                </button>
-                <button type="button" id="btnExportPCSWMM" style="background:none; border:none; padding:0; color:blue; text-decoration:underline; cursor:pointer;">
-                        Export to PCSWMM
-                </button>
-            </form>
-        </div>
-
-        <div class="table-scroll-xy">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Index</th>
-                        <th>Lat Deg</th>
-                        <th>Lat Min</th>
-                        <th>Long Deg</th>
-                        <th>Long Min</th>
-                        <th>Return Period</th>
-
-                        @if (!Model.SelectedDurations.Any())
-                        {
-                            <th>5 Min</th>
-                            <th>10 Min</th>
-                            <th>15 Min</th>
-                            <th>30 Min</th>
-                            <th>1 Hour</th>
-                            <th>2 Hours</th>
-                            <th>1 Day</th>
-                            <th>3 Days</th>
-                            <th>7 Days</th>
-                        }
-                        else
-                        {
-                            @foreach (var duration in Model.SelectedDurations)
-                            {
-                                <th>@duration Min</th>
-                            }
-                        }
-
-                        <th>Source Sheet</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach (var item in Model.Results)
-                    {
-                        <tr>
-                            <td>@item.Index</td>
-                            <td>@item.Latdeg</td>
-                            <td>@item.Latmin</td>
-                            <td>@item.Longdeg</td>
-                            <td>@item.Longmin</td>
-                            <td>@item.ReturnPeriod</td>
-
-                            @if (!Model.SelectedDurations.Any())
-                            {
-                                <td>@item._5Min?.ToString("0.00")</td>
-                                <td>@item._10Min?.ToString("0.00")</td>
-                                <td>@item._15Min?.ToString("0.00")</td>
-                                <td>@item._30Min?.ToString("0.00")</td>
-                                <td>@item._60Min?.ToString("0.00")</td>
-                                <td>@item._120Min?.ToString("0.00")</td>
-                                <td>@item._1440Min?.ToString("0.00")</td>
-                                <td>@item._4320Min?.ToString("0.00")</td>
-                                <td>@item._10080Min?.ToString("0.00")</td>
-                            }
-                            else
-                            {
-                                foreach (var duration in Model.SelectedDurations)
-                                {
-                                    <td>
-                                        @{
-                                            var value = duration switch
-                                            {
-                                                "5" => item._5Min,
-                                                "10" => item._10Min,
-                                                "15" => item._15Min,
-                                                "30" => item._30Min,
-                                                "60" => item._60Min,
-                                                "120" => item._120Min,
-                                                "1440" => item._1440Min,
-                                                "4320" => item._4320Min,
-                                                "10080" => item._10080Min,
-                                                _ => null
-                                            };
-                                        }
-
-                                        @value?.ToString("0.00")
-                                    </td>
-                                }
-                            }
-
-                            <td>@item.SourceSheet</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
+@{
+    ViewData["Title"] = "Design Rainfall Data";
 }
 
-@if (Model.Results != null && Model.Results.Any())
-{
-    <div class="results-container">
-        <h3>
-            @(string.IsNullOrEmpty(Model.PolygonGeoJson)
-                ? "Point Summary Statistics (Coordinates)"
-                : "Area Summary Statistics (Polygon)")
-        </h3>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCOOGU5sHBREmUAIpPYv1THtaM-t0SgE8I&libraries=places"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
-        <hr>
+<div class="rainfall-page">
+    <div class="rainfall-page-header">
+        <div class="rainfall-title-icon">
+            ☔
+        </div>
+        <div>
+            <h1>Design Rainfall Data</h1>
+            <p>
+                Select a location, define an area, and retrieve detailed
+                rainfall information for your selected return periods and durations.
+            </p>
+        </div>
+    </div>
 
-        <div class="table-scroll">
-            <table>
-                <thead>
-                    @if (!Model.SelectedDurations.Any())
-                    {
-                        <tr>
-                            <th rowspan="2">Return Period</th>
+    <!-- SEARCH FORM -->
+    <form class="rainfall-form" method="post" asp-action="Search" asp-controller="Rainfall" enctype="multipart/form-data">
+        <input type="hidden" asp-for="PolygonGeoJson" id="PolygonGeoJson" />
+        <!-- MAP CARD -->
+        <section class="rainfall-card map-card">
+            <div class="section-header">
+                <div class="section-icon">
+                    📍
+                </div>
+                <div>
+                    <h2>Select Location</h2>
+                    <p>
+                        Select a location on the map or draw an area polygon.
+                    </p>
+                </div>
+            </div>
+            <div class="map-wrapper">
+                <div id="map"></div>
+            </div>
+            <div class="map-help">
+                <span>
+                    🖱️ Click the map to select a location
+                </span>
+                <span>
+                    ✏️ Use the polygon tool to define an area
+                </span>
+            </div>
+        </section>
 
-                            <th colspan="3">5 Min</th>
-                            <th colspan="3">10 Min</th>
-                            <th colspan="3">15 Min</th>
-                            <th colspan="3">30 Min</th>
-                            <th colspan="3">1 Hour</th>
-                            <th colspan="3">2 Hours</th>
-                            <th colspan="3">1 Day</th>
-                            <th colspan="3">3 Days</th>
-                            <th colspan="3">7 Days</th>
-                        </tr>
+        <!-- ADDRESS + COORDINATES -->
+        <div class="rainfall-two-column">
+            <!-- ADDRESS CARD -->
+            <section class="rainfall-card">
+                <div class="section-header compact">
+                    <div class="section-icon">
+                        🔎
+                    </div>
+                    <div>
+                        <h2>Search by Address</h2>
+                        <p>
+                            Find a location within the eThekwini region.
+                        </p>
+                    </div>
+                </div>
+                <div id="addressMessage"
+                     class="address-message">
+                </div>
+                <div class="address-search">
+                    <input asp-for="Address" id="Address" class="modern-input" placeholder="Enter an address within the eThekwini region" autocomplete="off" />
+                    <button type="button" id="searchAddressBtn" class="modern-button">
+                        <span>🔎</span>
+                        Find Address
+                    </button>
+                </div>
+            </section>
+
+            <!-- COORDINATES CARD -->
+            <section class="rainfall-card">
+                <div class="section-header compact">
+                    <div class="section-icon">
+                        🧭
+                    </div>
+                    <div>
+                        <h2>Location Coordinates</h2>
+                        <p>
+                            Enter latitude and longitude manually.
+                        </p>
+                    </div>
+                </div>
+                <div class="coordinate-grid">
+                    <div class="input-group-modern">
+                        <label asp-for="LATDEG">
+                            Latitude Degree
+                        </label>
+                        <input asp-for="LATDEG" id="LATDEG" class="modern-input" placeholder="Degrees" />
+                    </div>
+                    <div class="input-group-modern">
+                        <label asp-for="LATMIN">
+                            Latitude Minute
+                        </label>
+                        <input asp-for="LATMIN" id="LATMIN" class="modern-input" placeholder="Minutes" />
+                    </div>
+                    <div class="input-group-modern">
+                        <label asp-for="LONGDEG">
+                            Longitude Degree
+                        </label>
+                        <input asp-for="LONGDEG" id="LONGDEG" class="modern-input" placeholder="Degrees" />
+                    </div>
+                    <div class="input-group-modern">
+                        <label asp-for="LONGMIN">
+                            Longitude Minute
+                        </label>
+                        <input asp-for="LONGMIN" id="LONGMIN" class="modern-input"placeholder="Minutes" />
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- UPLOAD + RAINFALL OPTIONS -->
+        <div class="rainfall-two-column">
+            <!-- UPLOAD AREA -->
+            <section class="rainfall-card">
+                <div class="section-header compact">
+                    <div class="section-icon">
+                        🗺️
+                    </div>
+                    <div>
+                        <h2>Upload Area</h2>
+                        <p>
+                            Upload a polygon defining the area to analyse.
+                        </p>
+                    </div>
+                </div>
+                <div class="upload-area">
+                    <div class="upload-icon">
+                        📁
+                    </div>
+                    <div class="upload-text">
+                        <strong>
+                            Upload an area file
+                        </strong>
+                        <span>
+                            GeoJSON, JSON, KML or KMZ
+                        </span>
+                    </div>
+                    <input type="file" id="areaFileInput" accept=".geojson,.json,.kml,.kmz" class="file-input" />
+                </div>
+                <button type="button" id="uploadAreaBtn" class="modern-button secondary-button">
+                    📤 Upload Area
+                </button>
+            </section>
+
+            <!-- RAINFALL OPTIONS -->
+            <section class="rainfall-card">
+                <div class="section-header compact">
+                    <div class="section-icon">
+                        🌧️
+                    </div>
+                    <div>
+                        <h2>Rainfall Options</h2>
+                        <p>
+                            Select the return periods and durations required.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- RETURN PERIODS -->
+                <div class="option-section">
+                    <h3>
+                        Return Period
+                    </h3>
+                    <div class="checkbox-grid">
+                        @foreach (var rp in Model.ReturnPeriodOptions.Where(x => !string.IsNullOrEmpty(x.Value)))
+                        {
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="SelectedReturnPeriods" value="@rp.Value" @(Model.SelectedReturnPeriods?.Contains(int.Parse(rp.Value)) == true ? "checked" : "") />
+                                <span>
+                                    @rp.Text
+                                </span>
+                            </label>
+                        }
+                    </div>
+                </div>
+
+                <!-- DURATIONS -->
+                <div class="option-section">
+                    <h3>
+                        Duration
+                    </h3>
+                    <div class="checkbox-grid">
+                        @foreach (var d in Model.DurationOptions.Where(x => !string.IsNullOrEmpty(x.Value)))
+                        {
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="SelectedDurations" value="@d.Value" @(Model.SelectedDurations?.Contains(d.Value) == true ? "checked" : "") />
+                                <span>
+                                    @d.Text
+                                </span>
+                            </label>
+                        }
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- SEARCH BUTTON -->
+        <div class="search-button-container">
+            <button type="submit" class="search-button">
+                <span>🔍</span>
+                Search Rainfall Data
+            </button>
+        </div>
+    </form>
+
+    <!-- RESULTS -->
+    @if (Model.Results != null && Model.Results.Any())
+    {
+        <section class="results-card">
+            <div class="results-header">
+                <div>
+                    <h2>
+                        Rainfall Results
+                    </h2>
+                    <p>
+                        @Model.Results.Count result(s) found
+                    </p>
+                </div>
+                <div class="results-actions">
+                    <form method="post" asp-action="Download" onsubmit="prepareDownload()">
+                        <input type="hidden" name="Index" value="@Model.Index" />
+                        <input type="hidden" name="LATDEG" value="@Model.LATDEG" />
+                        <input type="hidden" name="LATMIN" value="@Model.LATMIN" />
+                        <input type="hidden" name="LONGDEG" value="@Model.LONGDEG" />
+                        <input type="hidden" name="LONGMIN" value="@Model.LONGMIN" />
+                        
+                        @foreach (var rp in Model.SelectedReturnPeriods)
+                        {
+                            <input type="hidden" name="SelectedReturnPeriods" value="@rp" />
+                        }
+
+                        @foreach (var d in Model.SelectedDurations)
+                        {
+                            <input type="hidden" name="SelectedDurations" value="@d" />
+                        }
+
+                        <input type="hidden" name="ResultsJson" id="ResultsJson" />
+                        <button type="submit" class="result-button">
+                            ⬇ Download CSV
+                        </button>
+                        <button type="button" id="btnExportPCSWMM" class="result-button primary-result-button">
+                            ⚡ Export to PCSWMM
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- DETAIL TABLE -->
+            <div class="table-scroll-xy">
+                <table class="modern-table">
+                    <thead>
                         <tr>
-                            @for (int i = 0; i < 9; i++)
-                            {
-                                <th>Min</th>
-                                <th>Max</th>
-                                <th>Avg</th>
-                            }
-                        </tr>
-                    }
-                    else
-                    {
-                        <tr>
+                            <th>Index</th>
+                            <th>Lat Deg</th>
+                            <th>Lat Min</th>
+                            <th>Long Deg</th>
+                            <th>Long Min</th>
                             <th>Return Period</th>
-
-                            @foreach (var duration in Model.SelectedDurations)
-                            {
-                                <th>Min @duration</th>
-                                <th>Max @duration</th>
-                                <th>Avg @duration</th>
-                            }
-                        </tr>
-                    }
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.Summary)
-                    {
-                        <tr>
-                            <td>@item.ReturnPeriod</td>
 
                             @if (!Model.SelectedDurations.Any())
                             {
-                                <td>@item.Min5?.ToString("0.00")</td>
-                                <td>@item.Max5?.ToString("0.00")</td>
-                                <td>@item.Avg5?.ToString("0.00")</td>
-
-                                <td>@item.Min10?.ToString("0.00")</td>
-                                <td>@item.Max10?.ToString("0.00")</td>
-                                <td>@item.Avg10?.ToString("0.00")</td>
-
-                                <td>@item.Min15?.ToString("0.00")</td>
-                                <td>@item.Max15?.ToString("0.00")</td>
-                                <td>@item.Avg15?.ToString("0.00")</td>
-
-                                <td>@item.Min30?.ToString("0.00")</td>
-                                <td>@item.Max30?.ToString("0.00")</td>
-                                <td>@item.Avg30?.ToString("0.00")</td>
-
-                                <td>@item.Min60?.ToString("0.00")</td>
-                                <td>@item.Max60?.ToString("0.00")</td>
-                                <td>@item.Avg60?.ToString("0.00")</td>
-
-                                <td>@item.Min120?.ToString("0.00")</td>
-                                <td>@item.Max120?.ToString("0.00")</td>
-                                <td>@item.Avg120?.ToString("0.00")</td>
-
-                                <td>@item.Min1440?.ToString("0.00")</td>
-                                <td>@item.Max1440?.ToString("0.00")</td>
-                                <td>@item.Avg1440?.ToString("0.00")</td>
-
-                                <td>@item.Min4320?.ToString("0.00")</td>
-                                <td>@item.Max4320?.ToString("0.00")</td>
-                                <td>@item.Avg4320?.ToString("0.00")</td>
-
-                                <td>@item.Min10080?.ToString("0.00")</td>
-                                <td>@item.Max10080?.ToString("0.00")</td>
-                                <td>@item.Avg10080?.ToString("0.00")</td>
+                                <th>5 Min</th>
+                                <th>10 Min</th>
+                                <th>15 Min</th>
+                                <th>30 Min</th>
+                                <th>1 Hour</th>
+                                <th>2 Hours</th>
+                                <th>1 Day</th>
+                                <th>3 Days</th>
+                                <th>7 Days</th>
                             }
                             else
                             {
                                 @foreach (var duration in Model.SelectedDurations)
                                 {
-                                    double? min = duration switch
-                                    {
-                                        "5" => item.Min5,
-                                        "10" => item.Min10,
-                                        "15" => item.Min15,
-                                        "30" => item.Min30,
-                                        "60" => item.Min60,
-                                        "120" => item.Min120,
-                                        "1440" => item.Min1440,
-                                        "4320" => item.Min4320,
-                                        "10080" => item.Min10080,
-                                        _ => null
-                                    };
-
-                                    double? max = duration switch
-                                    {
-                                        "5" => item.Max5,
-                                        "10" => item.Max10,
-                                        "15" => item.Max15,
-                                        "30" => item.Max30,
-                                        "60" => item.Max60,
-                                        "120" => item.Max120,
-                                        "1440" => item.Max1440,
-                                        "4320" => item.Max4320,
-                                        "10080" => item.Max10080,
-                                        _ => null
-                                    };
-
-                                    double? avg = duration switch
-                                    {
-                                        "5" => item.Avg5,
-                                        "10" => item.Avg10,
-                                        "15" => item.Avg15,
-                                        "30" => item.Avg30,
-                                        "60" => item.Avg60,
-                                        "120" => item.Avg120,
-                                        "1440" => item.Avg1440,
-                                        "4320" => item.Avg4320,
-                                        "10080" => item.Avg10080,
-                                        _ => null
-                                    };
-
-                                    <td>@min?.ToString("0.00")</td>
-                                    <td>@max?.ToString("0.00")</td>
-                                    <td>@avg?.ToString("0.00")</td>
+                                    <th>
+                                        @duration Min
+                                    </th>
                                 }
                             }
+
+                            <th>Source Sheet</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-}
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Results)
+                        {
+                            <tr>
+                                <td>@item.Index</td>
+                                <td>@item.Latdeg</td>
+                                <td>@item.Latmin</td>
+                                <td>@item.Longdeg</td>
+                                <td>@item.Longmin</td>
+                                <td>
+                                    <span class="return-period-badge">
+                                        @item.ReturnPeriod
+                                    </span>
+                                </td>
+
+                                @if (!Model.SelectedDurations.Any())
+                                {
+                                    <td>@item._5Min?.ToString("0.00")</td>
+                                    <td>@item._10Min?.ToString("0.00")</td>
+                                    <td>@item._15Min?.ToString("0.00")</td>
+                                    <td>@item._30Min?.ToString("0.00")</td>
+                                    <td>@item._60Min?.ToString("0.00")</td>
+                                    <td>@item._120Min?.ToString("0.00")</td>
+                                    <td>@item._1440Min?.ToString("0.00")</td>
+                                    <td>@item._4320Min?.ToString("0.00")</td>
+                                    <td>@item._10080Min?.ToString("0.00")</td>
+                                }
+                                else
+                                {
+                                    foreach (var duration in Model.SelectedDurations)
+                                    {
+                                        <td>
+
+                                            @{
+                                                var value = duration switch
+                                                {
+                                                    "5" => item._5Min,
+                                                    "10" => item._10Min,
+                                                    "15" => item._15Min,
+                                                    "30" => item._30Min,
+                                                    "60" => item._60Min,
+                                                    "120" => item._120Min,
+                                                    "1440" => item._1440Min,
+                                                    "4320" => item._4320Min,
+                                                    "10080" => item._10080Min,
+                                                    _ => null
+                                                };
+                                            }
+
+                                            @value?.ToString("0.00")
+
+                                        </td>
+                                    }
+                                }
+                                <td>
+                                    @item.SourceSheet
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+
+    <!-- SUMMARY -->
+    @if (Model.Results != null && Model.Results.Any())
+    {
+        <section class="results-card">
+            <div class="results-header">
+                <div>
+                    <h2>
+                        @(string.IsNullOrEmpty(Model.PolygonGeoJson) ? "Point Summary Statistics" : "Area Summary Statistics")
+                    </h2>
+                    <p>
+                        Minimum, maximum and average rainfall values.
+                    </p>
+                </div>
+            </div>
+            <div class="table-scroll">
+                <table class="modern-table summary-table">
+                    <thead>
+                        @if (!Model.SelectedDurations.Any())
+                        {
+                            <tr>
+                                <th rowspan="2">
+                                    Return Period
+                                </th>
+                                <th colspan="3">5 Min</th>
+                                <th colspan="3">10 Min</th>
+                                <th colspan="3">15 Min</th>
+                                <th colspan="3">30 Min</th>
+                                <th colspan="3">1 Hour</th>
+                                <th colspan="3">2 Hours</th>
+                                <th colspan="3">1 Day</th>
+                                <th colspan="3">3 Days</th>
+                                <th colspan="3">7 Days</th>
+                            </tr>
+                            <tr>
+                                @for (int i = 0; i < 9; i++)
+                                {
+                                    <th>Min</th>
+                                    <th>Max</th>
+                                    <th>Avg</th>
+                                }
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <th>
+                                    Return Period
+                                </th>
+                                @foreach (var duration in Model.SelectedDurations)
+                                {
+                                    <th>
+                                        Min @duration
+                                    </th>
+                                    <th>
+                                        Max @duration
+                                    </th>
+                                    <th>
+                                        Avg @duration
+                                    </th>
+                                }
+                            </tr>
+                        }
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Summary)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="return-period-badge">
+                                        @item.ReturnPeriod
+                                    </span>
+                                </td>
+                                @if (!Model.SelectedDurations.Any())
+                                {
+                                    <td>@item.Min5?.ToString("0.00")</td>
+                                    <td>@item.Max5?.ToString("0.00")</td>
+                                    <td class="average-value">@item.Avg5?.ToString("0.00")</td>
+
+                                    <td>@item.Min10?.ToString("0.00")</td>
+                                    <td>@item.Max10?.ToString("0.00")</td>
+                                    <td class="average-value">@item.Avg10?.ToString("0.00")</td>
+
+                                    <td>@item.Min15?.ToString("0.00")</td>
+                                    <td>@item.Max15?.ToString("0.00")</td>
+                                    <td class="average-value">@item.Avg15?.ToString("0.00")</td>
+
+                                    <td>@item.Min30?.ToString("0.00")</td>
+                                    <td>@item.Max30?.ToString("0.00")</td>
+                                    <td class="average-value">@item.Avg30?.ToString("0.00")</td>
+
+                                    <td>@item.Min60?.ToString("0.00")</td>
+                                    <td>@item.Max60?.ToString("0.00")</td>
+                                    <td class="average-value">@item.Avg60?.ToString("0.00")</td>
+
+                                    <td>@item.Min120?.ToString("0.00")</td>
+                                    <td>@item.Max120?.ToString("0.00")</td>
+                                    <td class="average-value">@item.Avg120?.ToString("0.00")</td>
+
+                                    <td>@item.Min1440?.ToString("0.00")</td>
+                                    <td>@item.Max1440?.ToString("0.00")</td>
+                                    <td class="average-value">@item.Avg1440?.ToString("0.00")</td>
+
+                                    <td>@item.Min4320?.ToString("0.00")</td>
+                                    <td>@item.Max4320?.ToString("0.00")</td>
+                                    <td class="average-value">@item.Avg4320?.ToString("0.00")</td>
+
+                                    <td>@item.Min10080?.ToString("0.00")</td>
+                                    <td>@item.Max10080?.ToString("0.00")</td>
+                                    <td class="average-value">@item.Avg10080?.ToString("0.00")</td>
+                                }
+                                else
+                                {
+                                    @foreach (var duration in Model.SelectedDurations)
+                                    {
+                                        double? min = duration switch
+                                        {
+                                            "5" => item.Min5,
+                                            "10" => item.Min10,
+                                            "15" => item.Min15,
+                                            "30" => item.Min30,
+                                            "60" => item.Min60,
+                                            "120" => item.Min120,
+                                            "1440" => item.Min1440,
+                                            "4320" => item.Min4320,
+                                            "10080" => item.Min10080,
+                                            _ => null
+                                        };
+
+                                        double? max = duration switch
+                                        {
+                                            "5" => item.Max5,
+                                            "10" => item.Max10,
+                                            "15" => item.Max15,
+                                            "30" => item.Max30,
+                                            "60" => item.Max60,
+                                            "120" => item.Max120,
+                                            "1440" => item.Max1440,
+                                            "4320" => item.Max4320,
+                                            "10080" => item.Max10080,
+                                            _ => null
+                                        };
+
+                                        double? avg = duration switch
+                                        {
+                                            "5" => item.Avg5,
+                                            "10" => item.Avg10,
+                                            "15" => item.Avg15,
+                                            "30" => item.Avg30,
+                                            "60" => item.Avg60,
+                                            "120" => item.Avg120,
+                                            "1440" => item.Avg1440,
+                                            "4320" => item.Avg4320,
+                                            "10080" => item.Avg10080,
+                                            _ => null
+                                        };
+
+                                        <td>@min?.ToString("0.00")</td>
+
+                                        <td>@max?.ToString("0.00")</td>
+
+                                        <td class="average-value">
+                                            @avg?.ToString("0.00")
+                                        </td>
+                                    }
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+</div>
+
+<!-- PCSWMM EXPORT MODAL -->
 <div class="modal fade" id="exportModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content text-dark">
+        <div class="modal-content modern-modal">
             <div class="modal-header">
-                <h5 class="modal-title"> 
-                    Export to PCSWMM 
-                </h5> 
-            </div> 
-            <div class="modal-body"> 
-                <p> Select the South African SCS type. </p> 
-                <select id="stormType" class="form-select"> 
-                    <option value="Type_1"> South Africa SCS Type 1 </option> 
-                    <option value="Type_2"> South Africa SCS Type 2 </option> 
-                    <option value="Both"> Both </option> 
-                </select> 
-                
-                <br /> 
-                <!-- PCSWMM Model Directory --> 
-                <label for="modelFolderPath" class="form-label"> 
-                    <strong>PCSWMM Model Directory</strong> 
-                </label> 
-                <input type="text" id="modelFolderPath" class="form-control" placeholder="C:\Users\YourName\Documents\YourModel" autocomplete="off" /> 
-                <small class="text-muted"> 
-                    Enter the full path to your PCSWMM model folder by opening your folder directly in Windows Explorer, coping the address bar and pasting it above. 
-                </small>
-                <br /> <br /> 
-                <div class="alert alert-info"> 
-                    <strong>NOTE:</strong> 
-                    <br /><br /> 
-                    The generated PCSWMM files will be packaged into a 
-                    <strong>Generated_SWMM_Storms.zip</strong> file. 
-                    <br /><br /> The ZIP will contain all generated <strong>.dat</strong> files, 
-                    <strong>SWMM_Raingages_List.txt</strong> and <strong>SWMM_Timeseries_List.txt</strong>. 
-                </div> 
-            </div> 
-            <div class="modal-footer"> 
-                
-                <button class="btn btn-secondary" data-bs-dismiss="modal"> Cancel </button> 
-                <button class="btn btn-primary" id="btnGenerate"> Generate Files </button> 
-            </div> 
-        </div> 
-    </div> 
-</div> 
-
-<!-- Progress Modal --> 
-<div class="modal fade" id="progressModal" data-bs-backdrop="static" data-bs-keyboard="false"> 
-    <div class="modal-dialog modal-dialog-centered"> 
-        <div class="modal-content text-dark"> 
-            <div class="modal-header"> 
-                <h5> Generating PCSWMM Files </h5> 
-            </div> 
-            <div class="modal-body"> 
-                <p id="progressText"> Preparing export... </p> 
-                <div class="progress mb-3"> 
-                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"> 0% </div> 
-                </div> 
-                <table class="table table-sm"> 
-                    <tr> 
-                        <th>Total Files</th> 
-                        <td id="totalFiles">0</td> 
-                    </tr> 
-                    <tr> 
-                        <th>Completed</th> 
-                        <td id="completedFiles">0</td> 
-                    </tr> <tr> 
-                        <th>Current File</th> 
-                        <td id="currentFile"> Preparing... </td> 
-                    </tr> 
-                </table> 
-            </div> 
-        </div> 
-    </div> 
-</div> 
-
-<!-- Complete Modal --> 
-<div class="modal fade" id="completeModal"> 
-    <div class="modal-dialog modal-dialog-centered"> 
-        <div class="modal-content text-dark"> 
-            <div class="modal-header"> 
-                <h5> Export Complete </h5> 
-            </div> 
-            <div class="modal-body"> 
-                <div class="alert alert-success"> ✔ Export completed successfully. 
-                    <br /> <br /> 
-                    <strong id="fileCount"></strong> PCSWMM files were generated. 
-                </div> 
-                <p> Click <strong>Download ZIP Files</strong>. 
-                    <br /> <br /> Save the ZIP file inside your <b>PCSWMM Model</b> folder. 
-                    <br /> <br /> The ZIP file is named: <br /> 
-                    <strong> Generated_SWMM_Storms.zip </strong> 
-                </p> 
-                <button class="btn btn-success w-100" id="btnDownloadZip"> 
-                    Download ZIP Files 
+                <div>
+                    <h5 class="modal-title">
+                        ⚡ Export to PCSWMM
+                    </h5>
+                    <small>
+                        Configure your PCSWMM storm export.
+                    </small>
+                </div>
+            </div>
+            <div class="modal-body">
+                <label for="stormType"class="modern-label">
+                    South African SCS Type
+                </label>
+                <select id="stormType" class="modern-input">
+                    <option value="Type_1">
+                        South Africa SCS Type 1
+                    </option>
+                    <option value="Type_2">
+                        South Africa SCS Type 2
+                    </option>
+                    <option value="Both">
+                        Both
+                    </option>
+                </select>
+                <div class="modal-field">
+                    <label for="modelFolderPath" class="modern-label">
+                        PCSWMM Model Directory
+                    </label>
+                    <input type="text" id="modelFolderPath" class="modern-input" placeholder="C:\Users\YourName\Documents\YourModel" autocomplete="off" />
+                    <small>
+                        Copy the address from the Windows Explorer address bar
+                        and paste it here.
+                    </small>
+                </div>
+                <div class="modern-info">
+                    <strong>ℹ Export Information</strong>
+                    <p>
+                        The generated PCSWMM files will be packaged into:
+                    </p>
+                    <strong>
+                        Generated_SWMM_Storms.zip
+                    </strong>
+                    <p>
+                        The ZIP contains the generated
+                        <strong>.dat</strong> files,
+                        <strong>SWMM_Raingages_List.txt</strong>
+                        and
+                        <strong>SWMM_Timeseries_List.txt</strong>.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer">
+               <button class="modal-button secondary" data-bs-dismiss="modal">
+                    Cancel
                 </button>
-                <hr /> 
-            </div> 
-            <div class="modal-footer"> 
-                <button class="btn btn-primary" id="btnContinue" disabled> 
-                    Continue to Instructions 
-                </button> 
-            </div> 
-        </div> 
-    </div> 
+                <button class="modal-button primary" id="btnGenerate">
+                    ⚡ Generate Files
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
-<script> 
-   // PCSWMM EXPORT DATA 
-    const exportResults = @Html.Raw(Json.Serialize(Model.Results)); 
-    const selectedDurations = @Html.Raw(Json.Serialize(Model.SelectedDurations)); 
-    let generatedZip = null; 
-    let downloaded = false; 
-    
-    // BOOTSTRAP MODALS 
-    const exportModal = 
-    new bootstrap.Modal( document.getElementById("exportModal") ); 
-    const progressModal = 
-    new bootstrap.Modal( document.getElementById("progressModal") ); 
-    const completeModal = 
-    new bootstrap.Modal( document.getElementById("completeModal") ); 
-    
-    // OPEN EXPORT MODAL
-    document .getElementById("btnExportPCSWMM")
-    .addEventListener("click", function () { exportModal.show(); }); 
-    
-    // GENERATE PCSWMM FILES
-    document .getElementById("btnGenerate")
-    .addEventListener("click", async function () { 
-        /* * Get model directory. */ 
-        const modelFolderPath = document 
-        .getElementById("modelFolderPath") 
-        .value 
-        .trim(); 
-        
-        /* * Make sure the user entered a path. */ 
-        if (!modelFolderPath) { 
-            alert( "Please enter your PCSWMM Model Directory." );
-            return; 
-        } 
-        
-        /* * Get storm type. */ 
-        const stormType = document 
-        .getElementById("stormType") 
-        .value; 
-        
-        /* * Close export modal. */ 
-        exportModal.hide(); 
-        
-        /* * Open progress modal. */ 
-        progressModal.show(); 
-        
-        /* * Reset progress information. */ 
-        document.getElementById("progressBar") 
-        .style.width = "0%"; 
-        
-        document.getElementById("progressBar") 
-        .innerHTML = "0%"; 
-        
-        document.getElementById("progressText")
-        .innerHTML = "Preparing export..."; 
-        
-        document.getElementById("totalFiles")
-        .innerHTML = "0"; 
-        
-        document.getElementById("completedFiles")
-        .innerHTML = "0"; 
 
-        document.getElementById("currentFile")
-        .innerHTML = "Preparing..."; 
-        
-        try { 
-            /* * Send export request. */ 
-            const response = await fetch( "/Rainfall/GeneratePCSWMM", { 
-                method: "POST", headers: 
-                { "Content-Type": "application/json" }, 
-                body: JSON.stringify({ 
-                    stormType: stormType, 
-                    results: exportResults, 
-                    selectedDurations: selectedDurations, 
-                    modelFolderPath: modelFolderPath }) }
-            ); 
-            
-            /* * Handle server error. */ 
-            if (!response.ok) { 
-                const errorText = await response.text(); 
-                progressModal.hide(); 
-                alert( errorText || "Failed to generate PCSWMM files." ); 
-                return; 
-            } 
-            
-            /* * Get ZIP. */ 
-            const zipBlob = await response.blob(); 
+<!-- PROGRESS MODAL -->
+<div class="modal fade" id="progressModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modern-modal">
+            <div class="modal-header">
+                <h5>
+                    ⚡ Generating PCSWMM Files
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p id="progressText">
+                    Preparing export...
+                </p>
+                <div class="modern-progress">
+                    <div id="progressBar">
+                        0%
+                    </div>
+                </div>
+                <div class="progress-details">
+                    <div>
+                        <span>Total Files</span>
+                        <strong id="totalFiles">0</strong>
+                    </div>
+                    <div>
+                        <span>Completed</span>
+                        <strong id="completedFiles">0</strong>
+                    </div>
+                    <div>
+                        <span>Current File</span>
+                        <strong id="currentFile">
+                            Preparing...
+                        </strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-            /* * Create browser URL for ZIP. */ 
-            generatedZip = URL.createObjectURL(zipBlob); 
-            
-            /* * Generation completed. */ 
-            progressModal.hide(); 
-            completeModal.show(); 
-        } catch (err) { 
-            console.error(err); 
-            progressModal.hide(); 
-            alert( "An error occurred while generating the PCSWMM files." ); }
-    }); 
-    
-    // DOWNLOAD ZIP
-document.getElementById("btnDownloadZip")
-    .addEventListener("click", async function () {
+<!-- COMPLETE MODAL -->
+<div class="modal fade" id="completeModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modern-modal">
+            <div class="modal-header">
+                <h5>
+                    ✅ Export Complete
+                </h5>
+            </div>
+            <div class="modal-body">
+                <div class="success-message">
+                    <strong>
+                        ✔ Export completed successfully.
+                    </strong>
+                    <br />
+                    <span>
+                        <strong id="fileCount"></strong>
+                        PCSWMM files were generated.
+                    </span>
+                </div>
+                <p>
+                    Click <strong>Download ZIP Files</strong> and save the ZIP
+                    file inside your <strong>PCSWMM Model</strong> folder.
+                </p>
+                <div class="zip-name">
+                    Generated_SWMM_Storms.zip
+                </div>
+                <button class="modal-button success full-width" id="btnDownloadZip">
+                    ⬇ Download ZIP Files
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-button primary" id="btnContinue" disabled>
+                    Continue to Instructions →
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-        if (!generatedZip) {
-            return;
-        }
+<!-- JAVASCRIPT -->
+<script>
+    window.addEventListener("load", function() {
+        //MAP
 
-        try {
-            // Ask the user where to save the ZIP
-            const fileHandle = await window.showSaveFilePicker({
-                suggestedName: "Generated_SWMM_Storms.zip",
-                types: [
-                    {
-                        description: "ZIP files",
-                        accept: {
-                            "application/zip": [".zip"]
-                        }
-                    }
-                ]
-            });
+        var durbanCenter = [-29.8587, 31.0218];
+        var map = L.map("map").setView(durbanCenter, 12);
+        var southWest = L.latLng(-30.2, 30.6);
+        var northEast = L.latLng(-29.5, 31.5);
+        var durbanBounds =
+            L.latLngBounds(southWest, northEast);
 
-            // Convert the generated ZIP URL into a Blob
-            const response = await fetch(generatedZip);
-            const blob = await response.blob();
+        map.setMaxBounds(durbanBounds);
 
-            // Write the ZIP to the selected location
-            const writable = await fileHandle.createWritable();
-            await writable.write(blob);
-            await writable.close();
+        map.on("drag", function() {
+            map.panInsideBounds(
+                durbanBounds,
+                {
+                    animate: false
+                }
+            );
+        });
 
-            // Only mark as downloaded after successfully saving
-            downloaded = true;
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                attribution:
+                    "&copy; OpenStreetMap contributors"
+            }
+        ).addTo(map);
 
-            // Enable Continue button
-            updateContinueButton();
+        //DRAWING 
+        var drawnItems =
+            new L.FeatureGroup();
+        map.addLayer(drawnItems);
+        var uploadedLayer = null;
+        var marker = null;
 
-        } catch (error) {
-
-            // User cancelled the Save As dialog
-            if (error.name === "AbortError") {
-                return;
+        function placeMarker(lat, lng) {
+            if (marker) {
+                map.removeLayer(marker);
             }
 
-            console.error("Error saving ZIP:", error);
+            marker =
+                L.marker([lat, lng])
+                    .addTo(map);
+
+            map.setView(
+                [lat, lng],
+                14
+            );
+        }
+
+        function clearPolygon() {
+            drawnItems.clearLayers();
+
+            if (uploadedLayer) {
+                map.removeLayer(
+                    uploadedLayer
+                );
+                uploadedLayer = null;
+            }
+
+            document.getElementById(
+                "PolygonGeoJson"
+            ).value = "";
+        }
+
+        // UPLOAD AREA 
+
+        document
+            .getElementById("uploadAreaBtn")
+            .addEventListener(
+                "click",
+                async function() {
+                    var fileInput =
+                        document.getElementById(
+                            "areaFileInput"
+                        );
+
+                    if (
+                        !fileInput.files ||
+                        fileInput.files.length === 0
+                    ) {
+                        alert(
+                            "Please select a file first."
+                        );
+                        return;
+                    }
+
+                    var file =
+                        fileInput.files[0];
+
+                    var formData =
+                        new FormData();
+
+                    formData.append(
+                        "file",
+                        file
+                    );
+
+                    try {
+                        const response =
+                            await fetch(
+                                "/Rainfall/UploadAreaFile",
+                                {
+                                    method: "POST",
+                                    body: formData
+                                }
+                            );
+
+                        if (!response.ok) {
+                            alert(
+                                "File upload failed."
+                            );
+                            return;
+                        }
+
+                        const geojsonText =
+                            await response.text();
+
+                        const geojson =
+                            JSON.parse(
+                                geojsonText
+                            );
+
+                        if (uploadedLayer) {
+                            map.removeLayer(
+                                uploadedLayer
+                            );
+                        }
+
+                        uploadedLayer =
+                            L.geoJSON(
+                                geojson,
+                                {
+                                    style: {
+                                        color: "#007bff",
+                                        weight: 3,
+                                        fillOpacity: 0.15
+                                    }
+                                }
+                            ).addTo(map);
+
+                        drawnItems.clearLayers();
+
+                        uploadedLayer.eachLayer(
+                            function(layer) {
+                                drawnItems.addLayer(
+                                    layer
+                                );
+                            }
+                        );
+
+                        map.fitBounds(
+                            uploadedLayer.getBounds()
+                        );
+
+                        document.getElementById(
+                            "PolygonGeoJson"
+                        ).value =
+                            JSON.stringify(
+                                geojson
+                            );
+
+                        var coords =
+                            extractCoords(
+                                geojson
+                            );
+
+                        var lats =
+                            coords.map(
+                                c => c[1]
+                            );
+
+                        var lons =
+                            coords.map(
+                                c => c[0]
+                            );
+
+                        var avgLat =
+                            lats.reduce(
+                                (a, b) => a + b,
+                                0
+                            ) / lats.length;
+
+
+                        var avgLon =
+                            lons.reduce(
+                                (a, b) => a + b,
+                                0
+                            ) / lons.length;
+
+                        if (
+                            !isNaN(avgLat) &&
+                            !isNaN(avgLon)
+                        ) {
+                            updateInputsFromCoordinates(
+                                avgLat,
+                                avgLon
+                            );
+                        }
+
+                        alert(
+                            "Polygon loaded successfully. Now click Search."
+                        );
+                    }
+                    catch (err) {
+                        console.error(err);
+                        alert(
+                            "Error processing file: " +
+                            err.message
+                        );
+                    }
+                }
+            );
+
+        function extractCoords(geojson) {
+            if (
+                geojson.type ===
+                "FeatureCollection"
+            ) {
+                return geojson.features[0]
+                    .geometry.coordinates[0];
+            }
+
+            if (
+                geojson.type ===
+                "Feature"
+            ) {
+                return geojson.geometry
+                    .coordinates[0];
+            }
+
+            if (
+                geojson.type ===
+                "Polygon"
+            ) {
+                return geojson.coordinates[0];
+            }
+
+            if (
+                geojson.type ===
+                "MultiPolygon"
+            ) {
+                return geojson.coordinates[0][0];
+            }
+
+            throw new Error(
+                "Unsupported GeoJSON format"
+            );
+        }
+
+        // COORDINATES
+        function degMinToDecimal(
+            deg,
+            min
+        ) {
+            if (
+                deg === null ||
+                deg === "" ||
+                isNaN(deg)
+            ) {
+                return null;
+            }
+            return (
+                parseFloat(deg) +
+                (parseFloat(min) || 0) / 60
+            );
+        }
+
+        function decimalToDegMin(value) {
+            var abs =
+                Math.abs(value);
+
+            var deg =
+                Math.floor(abs);
+
+            var min =
+                Math.round(
+                    (abs - deg) * 60
+                );
+
+            if (min === 60) {
+                deg += 1;
+                min = 0;
+            }
+
+            return {
+                deg: deg,
+                min: min
+            };
+        }
+
+        function updateInputsFromCoordinates(
+            lat,
+            lng
+        ) {
+            var latParts =
+                decimalToDegMin(lat);
+
+            var lngParts =
+                decimalToDegMin(lng);
+
+            document.getElementById(
+                "LATDEG"
+            ).value =
+                latParts.deg;
+
+            document.getElementById(
+                "LATMIN"
+            ).value =
+                latParts.min;
+
+            document.getElementById(
+                "LONGDEG"
+            ).value =
+                lngParts.deg;
+
+            document.getElementById(
+                "LONGMIN"
+            ).value =
+                lngParts.min;
+        }
+
+        function updateMarkerFromInputs() {
+            var latDeg =
+                parseFloat(
+                    document.getElementById(
+                        "LATDEG"
+                    ).value
+                );
+
+            var latMin =
+                parseFloat(
+                    document.getElementById(
+                        "LATMIN"
+                    ).value
+                );
+
+            var lngDeg =
+                parseFloat(
+                    document.getElementById(
+                        "LONGDEG"
+                    ).value
+                );
+
+            var lngMin =
+                parseFloat(
+                    document.getElementById(
+                        "LONGMIN"
+                    ).value
+                );
+
+            if (
+                !isNaN(latDeg) &&
+                !isNaN(lngDeg)
+            ) {
+                var lat =
+                    -degMinToDecimal(
+                        latDeg,
+                        latMin
+                    );
+
+                var lng =
+                    degMinToDecimal(
+                        lngDeg,
+                        lngMin
+                    );
+
+                placeMarker(
+                    lat,
+                    lng
+                );
+            }
+        }
+
+        // MAP CLICK 
+        map.on(
+            "click",
+            function(e) {
+                clearPolygon();
+
+                placeMarker(
+                    e.latlng.lat,
+                    e.latlng.lng
+                );
+
+                updateInputsFromCoordinates(
+                    e.latlng.lat,
+                    e.latlng.lng
+                );
+            }
+        );
+
+        // ADDRESS
+        function showMessage(
+            msg,
+            isError = true
+        ) {
+            var box =
+                document.getElementById(
+                    "addressMessage"
+                );
+
+            if (!box) return;
+
+            box.style.color =
+                isError
+                    ? "#dc3545"
+                    : "#198754";
+
+            box.innerText =
+                msg;
+        }
+
+        var btn =
+            document.getElementById(
+                "searchAddressBtn"
+            );
+
+        if (btn) {
+            btn.addEventListener(
+                "click",
+                async function(e) {
+                    e.preventDefault();
+
+                    showMessage("");
+
+                    var address =
+                        document.getElementById(
+                            "Address"
+                        ).value;
+
+                    if (
+                        !address ||
+                        address.trim() === ""
+                    ) {
+                        showMessage(
+                            "Please enter an address."
+                        );
+                        return;
+                    }
+                    try {
+                        const apiKey = "AIzaSyC688eU0nYXp4K6Qx_HV3dj4dLLaWJPBNM";
+
+                        var url =
+                            "https://maps.googleapis.com/maps/api/geocode/json?address=" +
+                            encodeURIComponent(address) +
+                            "&key=" +
+                            apiKey;
+
+                        var response =
+                            await fetch(url);
+
+                        var data =
+                            await response.json();
+
+                        if (
+                            !data.results ||
+                            data.results.length === 0
+                        ) {
+                            showMessage(
+                                "Address not found."
+                            );
+                            return;
+                        }
+
+                        var location =
+                            data.results[0]
+                                .geometry.location;
+
+                        clearPolygon();
+
+                        placeMarker(
+                            location.lat,
+                            location.lng
+                        );
+
+                        updateInputsFromCoordinates(
+                            location.lat,
+                            location.lng
+                        );
+
+                        showMessage(
+                            "Address found!",
+                            false
+                        );
+                    }
+                    catch (error) {
+                        console.error(error);
+                        showMessage(
+                            "Error finding address."
+                        );
+                    }
+                }
+            );
+        }
+
+        // DRAW POLYGON
+        var drawControl =
+            new L.Control.Draw({
+                draw: {
+                    polygon: true,
+                    rectangle: false,
+                    circle: false,
+                    circlemarker: false,
+                    marker: false,
+                    polyline: false
+                },
+                edit: {
+                    featureGroup:
+                        drawnItems
+                }
+            });
+
+        map.addControl(
+            drawControl
+        );
+
+        map.on(
+            L.Draw.Event.CREATED,
+            function(e) {
+                drawnItems.clearLayers();
+                drawnItems.addLayer(
+                    e.layer
+                );
+
+                var geojson =
+                    e.layer.toGeoJSON();
+
+                document.getElementById(
+                    "PolygonGeoJson"
+                ).value =
+                    JSON.stringify(
+                        geojson
+                    );
+            }
+        );
+
+        // RESTORE SAVED POLYGON 
+        var savedPolygon =
+            document.getElementById(
+                "PolygonGeoJson"
+            ).value;
+
+        if (savedPolygon) {
+            try {
+                var geo =
+                    JSON.parse(
+                        savedPolygon
+                    );
+                var layer =
+                    L.geoJSON(
+                        geo,
+                        {
+                            style: {
+                                color: "#007bff",
+                                weight: 3,
+                                fillOpacity: 0.15
+                            }
+                        }
+                    );
+
+                layer.addTo(map);
+
+                drawnItems.addLayer(
+                    layer
+                );
+
+                map.fitBounds(
+                    layer.getBounds()
+                );
+            }
+            catch (e) {
+                console.log(
+                    "Invalid polygon JSON",
+                    e
+                );
+            }
+        }
+
+        // GOOGLE AUTOCOMPLETE
+        const addressInput =
+            document.getElementById(
+                "Address"
+            );
+
+        if (
+            addressInput &&
+            typeof google !== "undefined"
+        ) {
+            const autocomplete =
+                new google.maps.places.Autocomplete(
+                    addressInput,
+                    {
+                        types: ["address"],
+                        componentRestrictions: {
+                            country: "za"
+                        },
+                        strictBounds: false,
+                        fields: [
+                            "geometry",
+                            "formatted_address",
+                            "name"
+                        ]
+                    }
+                );
+
+            autocomplete.setBounds(
+                new google.maps.LatLngBounds(
+                    new google.maps.LatLng(
+                        -30.2,
+                        30.6
+                    ),
+                    new google.maps.LatLng(
+                        -29.5,
+                        31.5
+                    )
+                )
+            );
+
+            autocomplete.addListener(
+                "place_changed",
+                function() {
+                    const place =
+                        autocomplete.getPlace();
+
+                    if (!place.geometry) {
+                        showMessage(
+                            "Address not found."
+                        );
+                        return;
+                    }
+
+                    const lat =
+                        place.geometry
+                            .location.lat();
+
+                    const lng =
+                        place.geometry
+                            .location.lng();
+
+                    clearPolygon();
+
+                    placeMarker(
+                        lat,
+                        lng
+                    );
+
+                    updateInputsFromCoordinates(
+                        lat,
+                        lng
+                    );
+
+                    showMessage(
+                        "Address selected!",
+                        false
+                    );
+                }
+            );
+        }
+
+        // SUBMIT
+        document
+            .querySelector(".rainfall-form")
+            .addEventListener(
+                "submit",
+                function() {
+                    var allLayers =
+                        drawnItems.toGeoJSON();
+
+                    if (
+                        allLayers &&
+                        allLayers.features &&
+                        allLayers.features.length > 0
+                    ) {
+                        document.getElementById(
+                            "PolygonGeoJson"
+                        ).value =
+                            JSON.stringify(
+                                allLayers
+                            );
+                    }
+                }
+            );
+
+        // PCSWMM EXPORT
+        const exportResults =
+            @Html.Raw(Json.Serialize(Model.Results));
+
+        const selectedDurations =
+            @Html.Raw(Json.Serialize(Model.SelectedDurations));
+
+        let generatedZip = null;
+        let downloaded = false;
+
+        const exportModal =
+            new bootstrap.Modal(
+                document.getElementById(
+                    "exportModal"
+                )
+            );
+
+        const progressModal =
+            new bootstrap.Modal(
+                document.getElementById(
+                    "progressModal"
+                )
+            );
+
+        const completeModal =
+            new bootstrap.Modal(
+                document.getElementById(
+                    "completeModal"
+                )
+            );
+
+        document
+            .getElementById(
+                "btnExportPCSWMM"
+            )
+            .addEventListener(
+                "click",
+                function() {
+                    exportModal.show();
+                }
+            );
+
+        document
+            .getElementById(
+                "btnGenerate"
+            )
+            .addEventListener(
+                "click",
+                async function() {
+                    const modelFolderPath =
+                        document.getElementById(
+                            "modelFolderPath"
+                        )
+                            .value
+                            .trim();
+
+                    if (!modelFolderPath) {
+                        alert(
+                            "Please enter your PCSWMM Model Directory."
+                        );
+                        return;
+                    }
+
+                    const stormType =
+                        document.getElementById(
+                            "stormType"
+                        ).value;
+
+                    exportModal.hide();
+                    progressModal.show();
+
+                    document.getElementById(
+                        "progressBar"
+                    ).style.width =
+                        "0%";
+
+                    document.getElementById(
+                        "progressBar"
+                    ).innerHTML =
+                        "0%";
+
+                    document.getElementById(
+                        "progressText"
+                    ).innerHTML =
+                        "Preparing export...";
+
+                    document.getElementById(
+                        "totalFiles"
+                    ).innerHTML =
+                        "0";
+
+                    document.getElementById(
+                        "completedFiles"
+                    ).innerHTML =
+                        "0";
+
+                    document.getElementById(
+                        "currentFile"
+                    ).innerHTML =
+                        "Preparing...";
+
+                    try {
+                        const response =
+                            await fetch(
+                                "/Rainfall/GeneratePCSWMM",
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+                                    body:
+                                        JSON.stringify({
+                                            stormType:
+                                                stormType,
+                                            results:
+                                                exportResults,
+                                            selectedDurations:
+                                                selectedDurations,
+                                            modelFolderPath:
+                                                modelFolderPath
+                                        })
+                                }
+                            );
+
+                        if (!response.ok) {
+                            const errorText =
+                                await response.text();
+
+                            progressModal.hide();
+
+                            alert(
+                                errorText ||
+                                "Failed to generate PCSWMM files."
+                            );
+                            return;
+                        }
+
+                        const zipBlob =
+                            await response.blob();
+
+                        generatedZip =
+                            URL.createObjectURL(
+                                zipBlob
+                            );
+
+                        progressModal.hide();
+                        completeModal.show();
+                    }
+                    catch (err) {
+                        console.error(err);
+                        progressModal.hide();
+                        alert(
+                            "An error occurred while generating the PCSWMM files."
+                        );
+                    }
+                }
+            );
+
+        // DOWNLOAD ZIP
+        document
+            .getElementById(
+                "btnDownloadZip"
+            )
+            .addEventListener(
+                "click",
+                async function() {
+                    if (!generatedZip) {
+                        return;
+                    }
+
+                    try {
+                        const fileHandle =
+                            await window.showSaveFilePicker(
+                                {
+                                    suggestedName:
+                                        "Generated_SWMM_Storms.zip",
+                                    types: [
+                                        {
+                                            description:
+                                                "ZIP files",
+                                            accept: {
+                                                "application/zip":
+                                                    [".zip"]
+                                            }
+                                        }
+                                    ]
+                                }
+                            );
+
+                        const response =
+                            await fetch(
+                                generatedZip
+                            );
+
+                        const blob =
+                            await response.blob();
+
+                        const writable =
+                            await fileHandle
+                                .createWritable();
+
+                        await writable.write(
+                            blob
+                        );
+
+                        await writable.close();
+
+                        downloaded = true;
+                        updateContinueButton();
+                    }
+                    catch (error) {
+                        if (
+                            error.name ===
+                            "AbortError"
+                        ) {
+                            return;
+                        }
+                        console.error(
+                            "Error saving ZIP:",
+                            error
+                        );
+                    }
+                }
+            );
+
+        function updateContinueButton() {
+            document.getElementById(
+                "btnContinue"
+            ).disabled =
+                !downloaded;
+        }
+
+        // CONTINUE
+        document
+            .getElementById(
+                "btnContinue"
+            )
+            .addEventListener(
+                "click",
+                function() {
+                    window.location =
+                        "/Rainfall/Instructions";
+                }
+            );
+
+        // PROGRESS
+        function updateProgress(progress) {
+            document.getElementById(
+                "progressBar"
+            ).style.width =
+                progress.percentage +
+                "%";
+
+            document.getElementById(
+                "progressBar"
+            ).innerHTML =
+                progress.percentage +
+                "%";
+
+            document.getElementById(
+                "totalFiles"
+            ).innerHTML =
+                progress.totalFiles;
+
+            document.getElementById(
+                "completedFiles"
+            ).innerHTML =
+                progress.filesCompleted;
+
+            document.getElementById(
+                "currentFile"
+            ).innerHTML =
+                progress.currentFile;
+
+            document.getElementById(
+                "progressText"
+            ).innerHTML =
+                "<strong>Generating:</strong><br>" +
+                progress.currentFile +
+                "<br><br>" +
+                progress.filesCompleted +
+                " of " +
+                progress.totalFiles +
+                " files completed.";
         }
     });
-    
-    // ENABLE CONTINUE AFTER DOWNLOAD
-    function updateContinueButton() { 
-        document.getElementById("btnContinue")
-        .disabled = !downloaded; } 
-        
-    // CONTINUE TO INSTRUCTIONS
-    document.getElementById("btnContinue")
-    .addEventListener("click", function () {
-        window.location = "/Rainfall/Instructions"; }); 
-        
-    // UPDATE PROGRESS
-    function updateProgress(progress) { 
-        document.getElementById("progressBar")
-        .style.width = progress.percentage + "%"; 
-        document.getElementById("progressBar")
-        .innerHTML = progress.percentage + "%"; 
-        document.getElementById("totalFiles")
-        .innerHTML = progress.totalFiles; 
-        document.getElementById("completedFiles")
-        .innerHTML = progress.filesCompleted; 
-        document.getElementById("currentFile")
-        .innerHTML = progress.currentFile; 
-        document.getElementById("progressText")
-        .innerHTML = "<strong>Generating:</strong><br>" + 
-        progress.currentFile + "<br><br>" + 
-        progress.filesCompleted + " of " + 
-        progress.totalFiles + " files completed."; } 
 </script>
-
 <style>
-    form.rainfall-form {
-    max-width: 800px;
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-    background: var(--card);
-    color: var(--text);
-    padding: 25px 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px var(--shadow);
+    .rainfall-page {
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 25px 30px 60px;
     }
 
-    form.rainfall-form fieldset {
-    border: 1px solid var(--border);
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    background: var(--card-inner);
+    .rainfall-page-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        margin-bottom: 35px;
+        text-align: left;
     }
 
-    form.rainfall-form input,
-    form.rainfall-form select {
-    background: var(--card-inner);
-    color: var(--text);
-    border: 1px solid var(--border);
+    .rainfall-title-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 58px;
+        height: 58px;
+        border-radius: 16px;
+        background: var(--primary);
+        color: white;
+        font-size: 28px;
+        box-shadow: 0 8px 20px var(--shadow);
     }
 
-    form.rainfall-form legend {
-    font-weight: bold;
-    padding: 0 10px;
-    font-size: 1.1em;
+    .rainfall-page-header h1 {
+        margin: 0;
+        color: var(--text);
+        font-size: 2rem;
+        font-weight: 700;
     }
 
-    form.rainfall-form .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px 30px;
-    margin-top: 15px;
+    .rainfall-page-header p {
+        margin: 5px 0 0;
+        color: var(--muted);
+        font-size: 0.95rem;
     }
 
-    form.rainfall-form .form-group {
-    display: flex;
-    flex-direction: column;
+    .rainfall-card,
+    .results-card {
+        background: var(--card);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 26px;
+        box-shadow: 0 8px 24px var(--shadow);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
-    form.rainfall-form .form-group label {
-    margin-bottom: 5px;
-    font-weight: 500;
+        .rainfall-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px var(--shadow);
+        }
+
+    .map-card {
+        margin-bottom: 24px;
     }
 
-    form.rainfall-form .form-group input,
-    form.rainfall-form .form-group select {
-    padding: 8px 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: border 0.2s;
+    .rainfall-two-column {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+        margin-bottom: 24px;
     }
 
-    form.rainfall-form .form-group input:focus,
-    form.rainfall-form .form-group select:focus {
-    border-color: #007bff;
-    outline: none;
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 20px;
     }
 
-    form.rainfall-form button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    display: block;
-    margin: 0 auto;
-    margin-top: 10px;
-    transition: background 0.2s;
+        .section-header.compact {
+            margin-bottom: 18px;
+        }
+
+    .section-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 46px;
+        height: 46px;
+        flex-shrink: 0;
+        border-radius: 13px;
+        background: rgba(0, 123, 255, 0.12);
+        font-size: 22px;
     }
 
-    form.rainfall-form button:hover {
-    background-color: #0056b3;
+    .section-header h2 {
+        margin: 0;
+        color: var(--text);
+        font-size: 1.2rem;
+        font-weight: 650;
     }
 
-    form.rainfall-form table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    margin-top: 25px;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    .section-header p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 0.85rem;
     }
 
-    form.rainfall-form th,
-    form.rainfall-form td {
-    padding: 12px 15px;
-    text-align: center;
+    .map-wrapper {
+        overflow: hidden;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
     }
 
-    form.rainfall-form th {
-    background-color: #007bff;
-    color: white;
-    font-weight: 600;
+    #map {
+        width: 100%;
+        height: 460px;
     }
 
-    form.rainfall-form tbody tr:nth-child(even) {
-    background-color: var(--row-alt);
+    .map-help {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 25px;
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 0.82rem;
     }
 
-    form.rainfall-form tbody tr:hover {
-    background-color: var(--row-hover);
+    .modern-input {
+        width: 100%;
+        box-sizing: border-box;
+        min-height: 44px;
+        padding: 10px 13px;
+        background: var(--card-inner);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
     }
+
+        .modern-input::placeholder {
+            color: var(--muted);
+        }
+
+        .modern-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12);
+        }
+
+    .input-group-modern {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+        .input-group-modern label,
+        .modern-label {
+            color: var(--text);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+    .address-search {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .address-message {
+        min-height: 20px;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .coordinate-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .modern-button,
+    .search-button,
+    .result-button,
+    .modal-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .modern-button {
+        min-height: 44px;
+        padding: 0 18px;
+        background: var(--primary);
+        color: white !important;
+        box-shadow: 0 5px 12px var(--shadow);
+    }
+
+        .modern-button:hover {
+            background: var(--primary-hover);
+            color: white !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px var(--shadow);
+        }
+
+    .secondary-button {
+        margin-top: 15px;
+    }
+
+    .search-button-container {
+        display: flex;
+        justify-content: center;
+        margin: 30px 0 45px;
+    }
+
+    .search-button {
+        min-width: 250px;
+        min-height: 52px;
+        padding: 0 28px;
+        background: var(--primary);
+        color: white !important;
+        font-size: 1rem;
+        box-shadow: 0 8px 20px var(--shadow);
+    }
+
+        .search-button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px var(--shadow);
+        }
+
+    .upload-area {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px;
+        border: 2px dashed var(--border);
+        border-radius: 13px;
+        background: var(--card-inner);
+    }
+
+    .upload-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        background: rgba(0,123,255,0.1);
+        font-size: 22px;
+    }
+
+    .upload-text {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+        .upload-text strong {
+            color: var(--text);
+        }
+
+        .upload-text span {
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+    .file-input {
+        width: 100%;
+        color: var(--text);
+        font-size: 0.8rem;
+    }
+
+    .option-section {
+        margin-top: 18px;
+    }
+
+        .option-section h3 {
+            margin: 0 0 10px;
+            color: var(--text);
+            font-size: 0.85rem;
+            font-weight: 650;
+        }
 
     .checkbox-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
-    gap: 8px;
-    margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
     }
 
     .checkbox-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px;
+        position: relative;
+        cursor: pointer;
     }
 
-    .return-period-center {
-    grid-column: 1 / -1;
-    text-align: center;
+        .checkbox-item input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .checkbox-item span {
+            display: block;
+            padding: 8px 13px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--card-inner);
+            color: var(--text);
+            font-size: 0.82rem;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .checkbox-item:hover span {
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .checkbox-item input:checked + span {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 10px var(--shadow);
+        }
+
+    .results-card {
+        margin-bottom: 30px;
+        padding: 0;
+        overflow: hidden;
     }
 
-    .return-period-center select {
-    width: 250px;
-    margin: 0 auto;
+    .results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        padding: 25px 26px;
+        border-bottom: 1px solid var(--border);
     }
 
-    .results-container {
-    width: 100%;
-    margin-top: 30px;
-    padding: 0 20px;
+        .results-header h2 {
+            margin: 0;
+            color: var(--text);
+            font-size: 1.3rem;
+        }
+
+        .results-header p {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+    .results-actions form {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
     }
 
-    .results-container table {
-    width: 100%;
-    min-width: 1200px;
+    .result-button {
+        padding: 9px 15px;
+        background: transparent;
+        color: var(--primary) !important;
+        border: 1px solid var(--primary);
+        font-size: 0.85rem;
     }
 
-    .results-container th,
-    .results-container td {
-    padding: 12px 14px;
-    text-align: center;
+        .result-button:hover {
+            background: var(--primary);
+            color: white !important;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px var(--shadow);
+        }
+
+    .primary-result-button {
+        background: var(--primary);
+        color: white !important;
     }
 
-    .results-container thead th {
-    background-color: #007bff;
-    color: white;
-    z-index: 4;
-    }
+        .primary-result-button:hover {
+            background: var(--primary-hover);
+            color: white !important;
+        }
 
-    /* summary table scroll */
-    .table-scroll {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    margin-top: 10px;
-    border-radius: 10px;
-    }
-
-    .table-scroll::-webkit-scrollbar {
-    height: 10px;
-    }
-
-    .table-scroll::-webkit-scrollbar-thumb {
-    background: #007bff;
-    border-radius: 10px;
-    }
-
-    .table-scroll::-webkit-scrollbar-track {
-    background: #e6e6e6;
-    }
-
-    /* detail table scroll */
+    .table-scroll,
     .table-scroll-xy {
-    width: 100%;
-    max-height: 400px; /* vertical scroll height */
-    overflow-x: auto;
-    overflow-y: auto;
-    border-radius: 10px;
+        width: 100%;
+        overflow: auto;
     }
 
-    /* keep header visible while scrolling */
-    .table-scroll-xy thead th {
-    position: sticky;
-    top: 0;
-    background-color: #007bff;
-    color: white;
-    z-index: 5;
+    .table-scroll-xy {
+        max-height: 500px;
     }
 
-    /* optional nicer scrollbars */
+    .modern-table {
+        width: 100%;
+        min-width: 1200px;
+        border-collapse: separate;
+        border-spacing: 0;
+        color: var(--text);
+    }
+
+        .modern-table th {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            padding: 13px 15px;
+            background: var(--table-header);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 650;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .modern-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            white-space: nowrap;
+            font-size: 0.85rem;
+        }
+
+        .modern-table tbody tr {
+            background: var(--card);
+            transition: background-color 0.15s ease;
+        }
+
+            .modern-table tbody tr:nth-child(even) {
+                background: var(--row-alt);
+            }
+
+
+            .modern-table tbody tr:hover {
+                background: var(--row-hover);
+            }
+
+    .return-period-badge {
+        display: inline-block;
+        padding: 4px 9px;
+        border-radius: 20px;
+        background: rgba(0,123,255,0.12);
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 0.78rem;
+    }
+
+    .average-value {
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .table-scroll::-webkit-scrollbar,
     .table-scroll-xy::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+        width: 9px;
+        height: 9px;
     }
 
+    .table-scroll::-webkit-scrollbar-thumb,
     .table-scroll-xy::-webkit-scrollbar-thumb {
-    background: #007bff;
-    border-radius: 10px;
+        background: var(--primary);
+        border-radius: 20px;
+    }
+
+    .table-scroll::-webkit-scrollbar-track,
+    .table-scroll-xy::-webkit-scrollbar-track {
+        background: var(--row-alt);
+    }
+
+    .modern-modal {
+        background: var(--card);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+
+        .modern-modal .modal-header {
+            border-bottom: 1px solid var(--border);
+            padding: 20px 22px;
+        }
+
+            .modern-modal .modal-header h5,
+            .modern-modal .modal-title {
+                margin: 0;
+                color: var(--text);
+                font-weight: 700;
+            }
+
+            .modern-modal .modal-header small {
+                display: block;
+                margin-top: 4px;
+                color: var(--muted);
+            }
+
+        .modern-modal .modal-body {
+            padding: 22px;
+        }
+
+        .modern-modal .modal-footer {
+            border-top: 1px solid var(--border);
+            padding: 16px 22px;
+        }
+
+    .modal-field {
+        margin-top: 20px;
+    }
+
+        .modal-field small {
+            display: block;
+            margin-top: 7px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+    .modern-info {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 12px;
+        background: rgba(0,123,255,0.08);
+        border: 1px solid rgba(0,123,255,0.2);
+        color: var(--text);
+        font-size: 0.85rem;
+        line-height: 1.6;
+    }
+
+        .modern-info p {
+            margin: 8px 0;
+        }
+
+    .modal-button {
+        min-height: 42px;
+        padding: 0 18px;
+    }
+
+        .modal-button.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+            .modal-button.primary:hover {
+                background: var(--primary-hover);
+                color: white;
+                transform: translateY(-1px);
+            }
+
+        .modal-button.secondary {
+            background: var(--card-inner);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .modal-button.success {
+            background: #198754;
+            color: white;
+        }
+
+            .modal-button.success:hover {
+                background: #157347;
+                color: white;
+                transform: translateY(-1px);
+            }
+
+    .full-width {
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    .modern-progress {
+        width: 100%;
+        height: 18px;
+        overflow: hidden;
+        margin: 15px 0 22px;
+        border-radius: 20px;
+        background: var(--row-alt);
+    }
+
+        .modern-progress div {
+            height: 100%;
+            width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            transition: width 0.3s ease;
+        }
+
+    .progress-details {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+        .progress-details div {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: var(--card-inner);
+            border: 1px solid var(--border);
+        }
+
+        .progress-details span {
+            color: var(--muted);
+        }
+
+        .progress-details strong {
+            color: var(--text);
+            text-align: right;
+        }
+
+    .success-message {
+        padding: 16px;
+        margin-bottom: 20px;
+        border-radius: 12px;
+        background: rgba(25,135,84,0.1);
+        border: 1px solid rgba(25,135,84,0.25);
+        color: var(--text);
+        line-height: 1.7;
+    }
+
+    .zip-name {
+        padding: 12px;
+        margin: 15px 0;
+        border-radius: 9px;
+        background: var(--card-inner);
+        border: 1px solid var(--border);
+        color: var(--primary);
+        font-family: monospace;
+        text-align: center;
+    }
+
+    @@media (max-width: 900px) {
+        .rainfall-two-column {
+            grid-template-columns: 1fr;
+        }
+
+        .results-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .results-actions {
+            width: 100%;
+        }
+
+            .results-actions form {
+                width: 100%;
+            }
+
+        .result-button {
+            flex: 1;
+        }
     }
 
     @@media (max-width: 767px) {
-    /* Form */
-    form.rainfall-form {
-    padding: 15px;
-    border-radius: 6px;
-    }
+        .rainfall-page {
+            padding: 18px 12px 40px;
+        }
 
-    form.rainfall-form fieldset {
-    padding: 12px;
-    }
-    /* 2-column grid → single column */
+        .rainfall-page-header {
+            text-align: center;
+            flex-direction: column;
+        }
 
-    form.rainfall-form .form-grid {
-    grid-template-columns: 1fr;
-    gap: 15px;
-    }
-    /* Address search row stacks vertically */
-    form.rainfall-form .address-row {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 8px !important;
-    }
+            .rainfall-page-header h1 {
+                font-size: 1.6rem;
+            }
 
-    form.rainfall-form .address-row input,
-    form.rainfall-form .address-row button {
-    width: 100% !important;
-    height: auto !important;
-    box-sizing: border-box;
-    }
-    /* Map height reduction on mobile */
-    #map {
-    height: 260px !important;
-    }
-    /* Results container */
-    .results-container {
-    padding: 0 5px;
-    }
-    /* Submit button full-width */
-    form.rainfall-form > button[type="submit"] {
-    width: 100%;
-    }
+            .rainfall-page-header p {
+                font-size: 0.85rem;
+            }
+
+        .rainfall-card {
+            padding: 18px;
+            border-radius: 15px;
+        }
+
+        #map {
+            height: 320px;
+        }
+
+        .address-search {
+            grid-template-columns: 1fr;
+        }
+
+        .coordinate-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .map-help {
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .search-button {
+            width: 100%;
+        }
+
+        .results-actions form {
+            flex-direction: column;
+        }
+
+        .result-button {
+            width: 100%;
+        }
     }
 </style>
