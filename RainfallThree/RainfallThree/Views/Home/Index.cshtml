@@ -2,57 +2,182 @@
     ViewData["Title"] = "Home";
 }
 
-<div class="container text-center pt-2 pb-4">
-    <div class="mb-4">
+<div class="mx-auto w-full max-w-7xl px-4 pt-2 pb-8 text-center">
+
+    <!-- Logo -->
+    <div class="mb-8">
         <picture>
             <!-- Dark mode image -->
             <source srcset="/Images/EDREDark.png"
                     media="(prefers-color-scheme: dark)">
 
-            <!-- Light mode default -->
+            <!-- Light mode image -->
             <img src="/Images/EDRELight.png"
-                 class="theme-logo"
-                 style="max-width:400px; width:100%; height:auto; margin-top:20px; margin-bottom:10px" />
+                 alt="EDRE - Ethekwini Design Rainfall Engine"
+                 class="mx-auto mt-5 mb-2 h-auto w-full max-w-[400px]" />
         </picture>
     </div>
 
-    <div class="row mt-4 mb-5 justify-content-center">
-        <div class="col-md-6 mb-4">
-            <div class="p-4 shadow-sm rounded-4 h-100" style="background-color: var(--card); card-theme;">
-                <h5>📍 Design Rainfall Data</h5>
-                <p>
-                    Enter geographic coordinates manually or select a location directly on an interactive map.
-                    The system retrieves and displays detailed rainfall data based on the selected location,
-                    helping users analyze precipitation patterns accurately.
-                </p>
-                <div class="mt-4">
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <a href="/Rainfall/Search" class="btn btn-primary btn-lg px-4">
-                            Design Rainfall Data
-                        </a>
-                    }
-                </div>
+
+    <!-- Feature Cards -->
+    <div class="home-feature-grid">
+
+        <!-- DESIGN RAINFALL DATA -->
+        <div class="home-feature-card">
+
+            <h5>
+                📍 Design Rainfall Data
+            </h5>
+
+            <p>
+                Enter geographic coordinates manually or select a location
+                directly on an interactive map. The system retrieves and
+                displays detailed rainfall data based on the selected
+                location, helping users analyze precipitation patterns
+                accurately.
+            </p>
+
+            <div class="home-feature-button-container">
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a href="/Rainfall/Search"
+                       class="home-feature-button">
+                        Design Rainfall Data
+                        <span aria-hidden="true">→</span>
+                    </a>
+                }
+
             </div>
+
         </div>
 
-        <div class="col-md-6 mb-4">
-            <div class="p-4 shadow-sm rounded-4 h-100" style="background-color: var(--card); card-theme;">
-                <h5>🌧 Storm Event Detection</h5>
-                <p>
-                    Upload CSV datasets along with rainfall depth and duration parameters to identify storm events.
-                    The application generates a visual bar chart of detected events and displays a satellite image
-                    of the storm’s midpoint for deeper analysis and insight.
-                </p>
-                <div class="mt-4">
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <a href="/Storm/Index" class="btn btn-primary btn-lg px-4">
-                            Storm Events
-                        </a>
-                    }
-                </div>
+
+        <!-- STORM EVENT DETECTION -->
+        <div class="home-feature-card">
+
+            <h5>
+                🌧 Storm Event Detection
+            </h5>
+
+            <p>
+                Upload CSV datasets along with rainfall depth and duration
+                parameters to identify storm events. The application
+                generates a visual bar chart of detected events and
+                displays a satellite image of the storm’s midpoint for
+                deeper analysis and insight.
+            </p>
+
+            <div class="home-feature-button-container">
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a href="/Storm/Index"
+                       class="home-feature-button">
+                        Storm Events
+                        <span aria-hidden="true">→</span>
+                    </a>
+                }
+
             </div>
+
         </div>
+
     </div>
+
 </div>
+
+<style>
+    /* HOME FEATURE CARDS */
+    .home-feature-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 32px;
+        width: 100%;
+        margin-top: 32px;
+        margin-bottom: 48px;
+    }
+
+    .home-feature-card {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        min-height: 300px;
+        padding: 32px;
+        box-sizing: border-box;
+        background: var(--card);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        /* Floating card effect */
+        box-shadow: 0 8px 20px var(--shadow);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .home-feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 14px 30px var(--shadow);
+        }
+
+        .home-feature-card h5 {
+            margin: 0;
+            color: var(--text);
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .home-feature-card p {
+            margin-top: 16px;
+            margin-bottom: 0;
+            color: var(--text);
+            line-height: 1.75;
+        }
+
+    .home-feature-button-container {
+        margin-top: auto;
+        padding-top: 32px;
+    }
+
+    .home-feature-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 24px;
+        background-color: var(--primary);
+        color: #ffffff !important;
+        border: 1px solid var(--primary);
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        text-decoration: none !important;
+        box-shadow: 0 5px 12px var(--shadow);
+        transition: all 0.2s ease;
+    }
+
+        .home-feature-button:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+            color: #ffffff !important;
+            transform: translateY(-3px);
+            box-shadow: 0 9px 20px var(--shadow);
+        }
+
+        .home-feature-button:active {
+            transform: translateY(-1px);
+        }
+
+    /* MOBILE */
+    @@media (max-width: 767.98px) {
+        .home-feature-grid {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .home-feature-card {
+            min-height: 0;
+            padding: 24px;
+        }
+    }
+</style>

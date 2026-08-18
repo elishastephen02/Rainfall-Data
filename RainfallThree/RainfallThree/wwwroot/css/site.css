@@ -14,6 +14,7 @@
     --row-hover: #d6e4ff;
     --shadow: rgba(0,0,0,0.1);
     --muted: #6c757d;
+    --button-text: #ffffff;
 }
 
 /* DARK MODE */
@@ -73,9 +74,15 @@ h1, h2, h3, h4, h5, h6 {
     background: var(--card);
     color: var(--text);
     border: 1px solid var(--border);
-    border-radius: 14px;
-    box-shadow: 0 4px 12px var(--shadow);
+    border-radius: 16px;
+    box-shadow: 0 8px 20px var(--shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
+
+    .card-theme:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 14px 30px var(--shadow);
+    }
 
 .btn:focus,
 .btn:active:focus,

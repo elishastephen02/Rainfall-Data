@@ -1,40 +1,47 @@
 ﻿@model StormViewModel
 
 <div class="container mt-4 px-3">
-    <div class="card shadow-lg p-3 p-md-4 rounded-4">
-        <h2 class="text-center mb-4" style="color:#005E83">🌧 Storm Event Finder</h2>
+    <div class="card shadow-lg p-3 p-md-4 rounded-4 storm-search-card">
+        <h2 class="text-center mb-4 storm-page-title">
+            🌧 Storm Event Finder
+        </h2>
         <form asp-action="Index" method="post" enctype="multipart/form-data">
             <div class="mb-3">
-                <label class="form-label fw-bold">Upload Rainfall CSV</label>
+                <label class="form-label fw-bold">
+                    Upload Rainfall CSV
+                </label>
                 <input type="file" asp-for="UploadedFile" class="form-control" />
                 <span asp-validation-for="UploadedFile" class="text-danger"></span>
             </div>
             <div class="row">
-                <div class="col-6 mb-3">
-                    <label class="form-label fw-bold">Rainfall Depth (mm)</label>
+                <div class="col-12 col-md-6 mb-3">
+                    <label class="form-label fw-bold">
+                        Rainfall Depth (mm)
+                    </label>
                     <input asp-for="Depth" type="number" step="0.1" class="form-control" placeholder="e.g. 100" />
                     <span asp-validation-for="Depth" class="text-danger"></span>
                 </div>
-                <div class="col-6 mb-3">
-                    <label class="form-label fw-bold">Duration (minutes)</label>
+                <div class="col-12 col-md-6 mb-3">
+                    <label class="form-label fw-bold">
+                        Duration (minutes)
+                    </label>
                     <input asp-for="DurationMinutes" type="number" class="form-control" placeholder="e.g. 30" />
                     <span asp-validation-for="DurationMinutes" class="text-danger"></span>
                 </div>
             </div>
-            <div class="d-grid">
-                <button type="submit" class="btn btn-primary btn-lg rounded-3">
+            <div class="d-grid mt-2">
+                <button type="submit" class="btn storm-primary-btn btn-lg">
                     🔍 Find Storm
                 </button>
             </div>
         </form>
     </div>
 </div>
-
 <br />
 
 @if (!string.IsNullOrEmpty(Model.Message))
 {
-    <div class="alert alert-success text-center mx-3">
+    <div class="alert storm-success-message text-center mx-3">
         @Model.Message
     </div>
 }
@@ -43,40 +50,59 @@
 {
     <div class="card border-0 shadow-lg rounded-4 mb-4 mx-3">
         <div class="card-body p-3 p-md-4">
-            <h5 class="fw-bold text-primary text-center mb-3">📍 Station Information</h5>
-
-            <!-- Stack vertically on mobile, side-by-side on md+ -->
-            <div class="row g-3">
+            <h5 class="storm-section-title text-center mb-4">
+                📍 Station Information
+            </h5>
+            <div class="row g-4">
+                <!-- Station details -->
                 <div class="col-12 col-md-6">
-                    <div class="mb-2">
-                        <div class="fw-bold text-secondary small">Rainfall Monitoring Station:</div>
-                        <div>@Model.StationName</div>
+                    <div class="station-info-item">
+                        <div class="station-info-label">
+                            Rainfall Monitoring Station
+                        </div>
+                        <div class="station-info-value">
+                            @Model.StationName
+                        </div>
                     </div>
-                    <div class="mb-2">
-                        <div class="fw-bold text-secondary small">Latitude:</div>
-                        <div>@Model.Latitude?.ToString("F6")</div>
+                    <div class="station-info-item">
+                        <div class="station-info-label">
+                            Latitude
+                        </div>
+                        <div class="station-info-value">
+                            @Model.Latitude?.ToString("F6")
+                        </div>
                     </div>
-                    <div class="mb-2">
-                        <div class="fw-bold text-secondary small">Longitude:</div>
-                        <div>@Model.Longitude?.ToString("F6")</div>
+                    <div class="station-info-item">
+                        <div class="station-info-label">
+                            Longitude
+                        </div>
+                        <div class="station-info-value">
+                            @Model.Longitude?.ToString("F6")
+                        </div>
                     </div>
-                    <div class="mb-2">
-                        <div class="fw-bold text-secondary small">Total Days:</div>
-                        <div>@Model.TotalDays days</div>
+                    <div class="station-info-item">
+                        <div class="station-info-label">
+                            Total Days
+                        </div>
+                        <div class="station-info-value">
+                            @Model.TotalDays days
+                        </div>
                     </div>
                 </div>
-
+                <!-- Station map -->
                 <div class="col-12 col-md-6">
-                    <div id="stationMap" class="station-map rounded"></div>
+                    <div id="stationMap"
+                         class="station-map rounded">
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Overview Chart -->
     <div class="card border-0 shadow-lg rounded-4 mb-4 mx-3">
         <div class="card-body p-3 p-md-4">
-            <h5 class="fw-bold text-primary text-center mb-3">📊 Overview</h5>
+            <h5 class="storm-section-title text-center mb-3">
+                📊 Overview
+            </h5>
             <div class="overview-chart-wrapper">
                 <canvas id="overviewChart"></canvas>
             </div>
@@ -86,63 +112,69 @@
 
 @if (Model.Results != null && Model.Results.Count > 0)
 {
-    <h4 class="mb-4 text-center px-3">
-        🌧 Storm Found: @Model.Results.Count storm(s) matching criteria
-    </h4>
+    <h4 class="storm-section-title mb-4 text-center px-3">
 
+        🌧 Storm Found:
+        @Model.Results.Count storm(s) matching criteria
+    </h4>
     <div id="stormCarousel" class="carousel slide px-1" data-bs-ride="false" data-bs-touch="false" data-bs-interval="false">
         <div class="carousel-inner">
-
             @for (int i = 0; i < Model.Results.Count; i++)
             {
                 var storm = Model.Results[i];
-
                 <div class="carousel-item @(i == 0 ? "active" : "")">
-                    <div class="card shadow-sm p-3 p-md-4 rounded-4 mb-4 mx-2">
-
-                        <h5 class="text-primary text-center mb-2 fs-6 fs-md-5">
-                            Storm @(i + 1): @storm.StartTime.ToString("dd/MM/yyyy") – @storm.EndTime.ToString("dd/MM/yyyy")
+                    <div class="storm-result-card shadow-sm p-3 p-md-4 mb-4 mx-2">
+                        <!-- Storm title -->
+                        <h5 class="storm-title text-center mb-3 fs-6 fs-md-5">
+                            Storm @(i + 1):
+                            @storm.StartTime.ToString("dd/MM/yyyy")
+                            –
+                            @storm.EndTime.ToString("dd/MM/yyyy")
                         </h5>
-
-                        <p class="text-center mb-3">
-                            <strong>Total Rainfall:</strong>
-                            <span class="fs-6">@Math.Round(storm.TotalRainfall, 2) mm</span>
-                        </p>
-                        
-                        <!-- Graph + Satellite Image Row -->
-                        <div class="row g-4 align-items-start mb-4">
-
-                            <!-- Rainfall Graph -->
-                            <div class="row g-4 mb-3">
-                                <div class="col-12">
-                                    <div class="chart-wrapper">
-                                        <canvas id="rainChart_@i"></canvas>
-                                    </div>
+                        <!-- Total rainfall -->
+                        <div class="text-center mb-4">
+                            <div class="storm-rainfall">
+                                <strong>
+                                    Total Rainfall:
+                                </strong>
+                                <span class="ms-1">
+                                    @Math.Round(storm.TotalRainfall, 2) mm
+                                </span>
+                            </div>
+                        </div>
+                        <div class="row g-4 mb-4">
+                            <div class="col-12">
+                                <div class="chart-wrapper">
+                                    <canvas id="rainChart_@i"></canvas>
                                 </div>
                             </div>
+                        </div>
+                        <div class="row g-4 mb-4">
+                            <div class="col-12 d-flex justify-content-center">
+                                <div class="satellite-section text-center w-100">
+                                    <div class="satellite-title mb-3">
+                                        Storm Satellite Image
+                                        <span class="small">
+                                            (@storm.MidTime.ToString("dd/MM/yyyy HH:mm"))
+                                        </span>
+                                    </div>
+                                    @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+                                    {
+                                        var lat = Model.Latitude.Value;
+                                        var lon = Model.Longitude.Value;
 
-                            <!-- Satellite Image -->
-                            <div class="row g-4 mb-4">
-                                <div class="col-12 d-flex justify-content-center">
-                                    <div class="text-center">
-                                        <div class="fw-bold mb-2 small">
-                                            Storm Satellite Image (@storm.MidTime.ToString("dd/MM/yyyy HH:mm"))
-                                        </div>
+                                        var minLatE = lat - 20;
+                                        var maxLatE = lat + 20;
+                                        var minLonE = lon - 20;
+                                        var maxLonE = lon + 20;
 
-                                        @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
-                                        {
-                                            var lat = Model.Latitude.Value;
-                                            var lon = Model.Longitude.Value;
+                                        //Eumetsat
+                                        var dtE = storm.MidTime.ToUniversalTime();
 
-                                            var minLatE = lat - 20;
-                                            var maxLatE = lat + 20;
-                                            var minLonE = lon - 20;
-                                            var maxLonE = lon + 20;
+                                        int minutesE = (dtE.Minute / 15) * 15;
 
-                                            var dtE = storm.MidTime.ToUniversalTime();
-                                            int minutesE = (dtE.Minute / 15) * 15;
-
-                                            var validTimeE = new DateTime(
+                                        var validTimeE =
+                                            new DateTime(
                                                 dtE.Year,
                                                 dtE.Month,
                                                 dtE.Day,
@@ -151,704 +183,1056 @@
                                                 0,
                                                 DateTimeKind.Utc);
 
-                                            var eumetsatTime = validTimeE.ToString("yyyy-MM-ddTHH:mmZ");
+                                        var eumetsatTime =
+                                            validTimeE.ToString(
+                                                "yyyy-MM-ddTHH:mmZ");
 
-                                            var eumetsatUrl =
-                                                "https://view.eumetsat.int/geoserver/wms" +
-                                                "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap" +
-                                                "&LAYERS=msg_fes:ir108&FORMAT=image/png&CRS=EPSG:4326" +
-                                                $"&BBOX={minLatE},{minLonE},{maxLatE},{maxLonE}" +
-                                                "&WIDTH=700&HEIGHT=500" +
-                                                $"&TIME={eumetsatTime}";
+                                        var eumetsatUrl =
+                                            "https://view.eumetsat.int/geoserver/wms" +
+                                            "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap" +
+                                            "&LAYERS=msg_fes:ir108&FORMAT=image/png&CRS=EPSG:4326" +
+                                            $"&BBOX={minLatE},{minLonE},{maxLatE},{maxLonE}" +
+                                            "&WIDTH=700&HEIGHT=500" +
+                                            $"&TIME={eumetsatTime}";
 
-                                            var dtN = storm.MidTime;
+                                        //NASA GIBS
+                                        var dtN = storm.MidTime;
 
-                                            int roundedMinutes =
-                                                (int)(Math.Round(dtN.Minute / 10.0) * 10);
+                                        int roundedMinutes = (int)(Math.Round(dtN.Minute / 10.0) * 10);
 
-                                            if (roundedMinutes == 60)
-                                            {
-                                                dtN = dtN.AddHours(1);
-                                                roundedMinutes = 0;
-                                            }
+                                        if (roundedMinutes == 60)
+                                        {
+                                            dtN = dtN.AddHours(1);
+                                            roundedMinutes = 0;
+                                        }
 
-                                            var roundedMid =
-                                                new DateTime(
-                                                    dtN.Year,
-                                                    dtN.Month,
-                                                    dtN.Day,
-                                                    dtN.Hour,
-                                                    0,
-                                                    0)
-                                                .AddMinutes(roundedMinutes);
+                                        var roundedMid =
+                                            new DateTime(
+                                                dtN.Year,
+                                                dtN.Month,
+                                                dtN.Day,
+                                                dtN.Hour,
+                                                0,
+                                                0)
+                                            .AddMinutes(roundedMinutes);
 
-                                            var gibsStartDate = new DateTime(2000, 2, 24);
+                                        var gibsStartDate =
+                                            new DateTime(2000, 2, 24);
 
-                                            var nasaGibsUrl =
-                                                "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi" +
-                                                "?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0" +
-                                                "&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor&FORMAT=image/jpeg&CRS=EPSG:4326" +
-                                                $"&BBOX={minLatE},{minLonE},{maxLatE},{maxLonE}" +
-                                                "&WIDTH=700&HEIGHT=500" +
-                                                $"&TIME={roundedMid:yyyy-MM-ddTHH:mm:ssZ}";
+                                        var nasaGibsUrl =
+                                            "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi" +
+                                            "?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0" +
+                                            "&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor" +
+                                            "&FORMAT=image/jpeg&CRS=EPSG:4326" +
+                                            $"&BBOX={minLatE},{minLonE},{maxLatE},{maxLonE}" +
+                                            "&WIDTH=700&HEIGHT=500" +
+                                            $"&TIME={roundedMid:yyyy-MM-ddTHH:mm:ssZ}";
 
-                                            var eumetsatStart = new DateTime(2020, 9, 1, 0, 0, 0, DateTimeKind.Utc);
-                                            var eumetsatEnd = new DateTime(2026, 4, 13, 8, 0, 0, DateTimeKind.Utc);
+                                        var eumetsatStart =
+                                            new DateTime(
+                                                2020,
+                                                9,
+                                                1,
+                                                0,
+                                                0,
+                                                0,
+                                                DateTimeKind.Utc);
 
-                                            bool showEumetsat = validTimeE >= eumetsatStart && validTimeE <= eumetsatEnd;
-                                            bool showNasa = roundedMid >= gibsStartDate;
+                                        var eumetsatEnd =
+                                            new DateTime(
+                                                2026,
+                                                4,
+                                                13,
+                                                8,
+                                                0,
+                                                0,
+                                                DateTimeKind.Utc);
 
-                                            @if (!Model.Latitude.HasValue || !Model.Longitude.HasValue)
-                                            {
-                                                <p class="text-muted">No Image Detected.</p>
-                                            }
-                                            else if (!showEumetsat && !showNasa)
-                                            {
-                                                <p class="text-muted fst-italic mt-4">
-                                                    No Satellite Image Available (Date too early or unsupported)
-                                                </p>
-                                            }
-                                            else
-                                            {
-                                                <div class="row g-3 justify-content-center">
+                                        bool showEumetsat = validTimeE >= eumetsatStart && validTimeE <= eumetsatEnd;
+                                        bool showNasa = roundedMid >= gibsStartDate;
 
-                                                    @if (showEumetsat)
-                                                    {
-                                                        <div class="col-12 @(showNasa ? "col-md-6" : "") text-center">
-                                                            <div class="fw-bold mb-2 small">
-                                                                EUMETSAT Satellite Image
-                                                            </div>
-
-                                                            <img src="@eumetsatUrl"
-                                                                    class="img-fluid shadow-sm satellite-img"
-                                                                    alt="EUMETSAT Satellite Image" />
-                                                        </div>
-                                                    }
-
-                                                    @if (showNasa)
-                                                    {
-                                                        <div class="col-12 @(showEumetsat ? "col-md-6" : "") text-center">
-                                                            <div class="fw-bold mb-2 small">
-                                                                NASA GIBS Satellite Image
-                                                            </div>
-
-                                                            <img src="@nasaGibsUrl"
-                                                                    class="img-fluid shadow-sm satellite-img"
-                                                                    alt="NASA GIBS Satellite Image" />
-                                                        </div>
-                                                    }
-
-                                                </div>
-                                            }
+                                        @if (!Model.Latitude.HasValue || !Model.Longitude.HasValue)
+                                        {
+                                            <p class="text-muted mt-3">
+                                                No Image Detected.
+                                            </p>
+                                        }
+                                        else if (!showEumetsat && !showNasa)
+                                        {
+                                            <p class="text-muted fst-italic mt-4">
+                                                No Satellite Image Available
+                                                (Date too early or unsupported)
+                                            </p>
                                         }
                                         else
                                         {
-                                            <p class="text-muted">No Image Detected.</p>
+                                            <div class="row g-3 justify-content-center">
+                                                <!-- EUMETSAT -->
+                                                @if (showEumetsat)
+                                                {
+                                                    <div class="col-12 @(showNasa ? "col-md-6" : "") text-center">
+                                                        <div class="fw-bold mb-2 small">
+                                                            EUMETSAT Satellite Image
+                                                        </div>
+                                                        <img src="@eumetsatUrl"
+                                                             class="img-fluid shadow-sm satellite-img"
+                                                             alt="EUMETSAT Satellite Image" />
+                                                    </div>
+                                                }
+                                                <!-- NASA -->
+                                                @if (showNasa)
+                                                {
+                                                    <div class="col-12 @(showEumetsat ? "col-md-6" : "") text-center">
+                                                        <div class="fw-bold mb-2 small">
+                                                            NASA GIBS Satellite Image
+                                                        </div>
+                                                        <img src="@nasaGibsUrl"
+                                                             class="img-fluid shadow-sm satellite-img"
+                                                             alt="NASA GIBS Satellite Image" />
+                                                    </div>
+                                                }
+                                            </div>
                                         }
-                                    </div>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted">
+                                            No Image Detected.
+                                        </p>
+                                    }
                                 </div>
                             </div>
-
                         </div>
-
-                        <!-- Download link -->
-                        <div class="text-center mb-3">
+                        <div class="text-center mb-4">
                             <form asp-action="Download" method="post">
                                 <input type="hidden" name="stormJson" value='@System.Text.Json.JsonSerializer.Serialize(storm)' />
                                 <input type="hidden" name="stormNumber" value="@(i + 1)" />
-                                <button type="submit" class="btn btn-link p-0">Download Data</button>
+                                <button type="submit" class="btn btn-link storm-download-btn">
+                                    ↓ Download Data
+                                </button>
                             </form>
                         </div>
-
-                        <!-- Scrollable data table -->
                         <div class="storm-table-container mt-2">
                             <table class="table table-sm table-striped table-bordered mb-0">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>Time</th>
-                                        <th>Rainfall (mm)</th>
+                                        <th>
+                                            Time
+                                        </th>
+                                        <th>
+                                            Rainfall (mm)
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach (var item in storm.EventData)
                                     {
                                         <tr>
-                                            <td>@item.Time.ToString("dd/MM/yyyy HH:mm")</td>
-                                            <td>@Math.Round(item.Rainfall, 2)</td>
+                                            <td>
+                                                @item.Time.ToString("dd/MM/yyyy HH:mm")
+                                            </td>
+                                            <td>
+                                                @Math.Round(item.Rainfall, 2)
+                                            </td>
                                         </tr>
                                     }
                                 </tbody>
                             </table>
                         </div>
-
-                    </div><!-- /card -->
-
-                    <div class="carousel-nav-row text-center mt-3 mb-4 d-flex justify-content-center gap-4">
+                    </div>
+                    <div class="carousel-nav-row text-center mt-3 mb-4 d-flex justify-content-center gap-3">
                         @if (i > 0)
                         {
-                            <button class="carousel-arrow-btn"
-                                    type="button"
-                                    data-bs-target="#stormCarousel"
-                                    data-bs-slide="prev">
+                            <button class="carousel-arrow-btn" type="button" data-bs-target="#stormCarousel" data-bs-slide="prev">
                                 ← Previous
                             </button>
                         }
 
                         @if (i < Model.Results.Count - 1)
                         {
-                            <button class="carousel-arrow-btn"
-                                    type="button"
-                                    data-bs-target="#stormCarousel"
-                                    data-bs-slide="next">
+                            <button class="carousel-arrow-btn" type="button" data-bs-target="#stormCarousel" data-bs-slide="next">
                                 Next →
                             </button>
                         }
-
                     </div>
-
-                </div><!-- /carousel-item -->
+                </div>
             }
-
-        </div><!-- /carousel-inner -->
+        </div>
     </div>
 }
 
 @section Scripts {
+
     <partial name="_ValidationScriptsPartial" />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- ── Leaflet map ── -->
     <script>
         @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
         {
             <text>
-            var map = L.map('stationMap').setView([@Model.Latitude.Value, @Model.Longitude.Value], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-            L.marker([@Model.Latitude.Value, @Model.Longitude.Value])
-                .addTo(map)
-                .bindPopup("@(Model.StationName ?? "Station")")
-                .openPopup();
+                    var map =
+                    L.map('stationMap')
+                    .setView(
+                    [@Model.Latitude.Value,@Model.Longitude.Value],
+                    13
+                    );
+
+                    L.tileLayer(
+                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    {
+                        attribution:
+                    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            }
+                    ).addTo(map);
+
+                    L.marker(
+                    [@Model.Latitude.Value,
+                                @Model.Longitude.Value]
+                    )
+                    .addTo(map)
+                    .bindPopup(
+                    "@(Model.StationName ?? "Station")"
+                    )
+                    .openPopup();
             </text>
         }
     </script>
 
-    <!-- ── Overview chart + storm charts ── -->
     @if (Model.DailyTotals != null && Model.DailyTotals.Count > 0)
     {
         <script>
-        (function () {
-
-            // helpers: read CSS variables from :root at call-time 
-            function cssVar(name) {
-                return getComputedStyle(document.documentElement)
-                       .getPropertyValue(name).trim();
-            }
-
-            function themeColors() {
-                return {
-                    text:    cssVar('--text')    || '#212529',
-                    muted:   cssVar('--muted')   || '#6c757d',
-                    border:  cssVar('--border')  || '#dee2e6',
-                    primary: cssVar('--primary') || '#007bff',
-                    card:    cssVar('--card')     || '#f7f7f7'
-                };
-            }
-
-            // data from server 
-            const dailyLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                Model.DailyTotals.Select(d => d.Date)));
-
-            const dailyValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                Model.DailyTotals.Select(d => d.Total)));
-
-            const stormWindows = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                (Model.Results ?? new List<StormResult>()).Select(s => new {
-                    start = s.StartTime.ToString("yyyy-MM-dd"),
-                    end   = s.EndTime.ToString("yyyy-MM-dd")
-                })));
-
-            // highlight plugin 
-            let activeStormIndex = 0;
-
-            const highlightPlugin = {
-                id: 'stormHighlight',
-                afterDraw(chart) {
-                    if (!stormWindows.length) return;
-                    const { ctx, chartArea, scales } = chart;
-                    const xScale = scales.x;
-                    const totalBars = dailyLabels.length;
-                    if (totalBars < 2) return;
-
-                    // In Chart.js v3+, use getPixelForValue(numericIndex)
-                    const px0 = xScale.getPixelForValue(0);
-                    const px1 = xScale.getPixelForValue(1);
-                    const slotW = Math.abs(px1 - px0);
-                    const half  = slotW / 2;
-
-                    stormWindows.forEach((storm, idx) => {
-                        const si = dailyLabels.findIndex(d => d >= storm.start);
-                        if (si < 0) return;
-
-                        let ei = si;
-                        for (let k = dailyLabels.length - 1; k >= si; k--) {
-                            if (dailyLabels[k] <= storm.end) { ei = k; break; }
-                        }
-
-                        const x1 = xScale.getPixelForValue(si)  - half;
-                        const x2 = xScale.getPixelForValue(ei)  + half;
-                        const w  = Math.max(slotW, x2 - x1);
-                        const y  = chartArea.top;
-                        const h  = chartArea.bottom - chartArea.top;
-
-                        const isActive = idx === activeStormIndex;
-
-                        ctx.save();
-                        ctx.fillStyle   = isActive
-                            ? 'rgba(255, 200, 0, 0.30)'
-                            : 'rgba(255, 200, 0, 0.08)';
-                        ctx.strokeStyle = isActive
-                            ? 'rgba(255, 180, 0, 1)'
-                            : 'rgba(255, 200, 0, 0.40)';
-                        ctx.lineWidth   = isActive ? 2 : 1;
-                        ctx.fillRect  (x1, y, w, h);
-                        ctx.strokeRect(x1, y, w, h);
-                        ctx.restore();
-                    });
+            (function() {
+                function cssVar(name) {
+                    return getComputedStyle(document.documentElement)
+                    .getPropertyValue(name)
+                    .trim();
                 }
-            };
 
-            // build overview chart 
-            function buildOverviewChart() {
-                const c = themeColors();
-                const canvas = document.getElementById('overviewChart');
-                if (!canvas) return null;
+                function themeColors() {
+                    return {
+                        text:
+                            cssVar('--text') ||
+                            '#212529',
+                        muted:
+                            cssVar('--muted') ||
+                            '#6c757d',
+                        border:
+                            cssVar('--border') ||
+                            '#dee2e6',
+                        primary:
+                            cssVar('--primary') ||
+                            '#007bff',
+                        card:
+                            cssVar('--card') ||
+                            '#f7f7f7'
+                    };
+                }
 
-                return new Chart(canvas.getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: dailyLabels,
-                        datasets: [{
-                            label: 'Daily Rainfall (mm)',
-                            data: dailyValues,
-                            backgroundColor: c.primary.replace(')', ', 0.75)').replace('rgb', 'rgba'),
-                            borderColor:     c.primary,
-                            borderWidth: 0,
-                            barPercentage: 1.0,
-                            categoryPercentage: 1.0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        animation: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                labels: {
-                                    color: themeColors().text,
-                                    font: { size: 11 },
-                                    boxWidth: 12,
-                                    padding: 10,
-                                    generateLabels(chart) {
-                                        const defaults = Chart.defaults.plugins.legend.labels.generateLabels(chart);
-                                        defaults.push({
-                                            text: 'Storm Event',
-                                            fillStyle: 'rgba(255, 200, 0, 0.30)',
-                                            strokeStyle: 'rgba(255, 180, 0, 1)',
-                                            lineWidth: 2,
-                                            hidden: false,
-                                            index: -1
-                                        });
-                                        return defaults;
+                const dailyLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                    Model.DailyTotals.Select(d => d.Date))
+                );
+
+                const dailyValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                    Model.DailyTotals.Select(d => d.Total))
+                );
+
+                const stormWindows = @Html.Raw(
+                    System.Text.Json.JsonSerializer.Serialize(
+                        (Model.Results ?? new List<StormResult>()).Select(s => new
+                        {
+                            start = s.StartTime.ToString("yyyy-MM-dd"),
+                            end = s.EndTime.ToString("yyyy-MM-dd")
+                        })
+                    )
+                );
+
+                let activeStormIndex = 0;
+                const highlightPlugin = {id: 'stormHighlight',
+                    afterDraw(chart) {
+                        if (!stormWindows.length)
+                            return;
+
+                        const {
+                            ctx,
+                            chartArea,
+                            scales
+                        } = chart;
+
+                        const xScale = scales.x;
+                        const totalBars = dailyLabels.length;
+
+                        if (totalBars < 2)
+                            return;
+
+                        const px0 = xScale.getPixelForValue(0);
+                        const px1 = xScale.getPixelForValue(1);
+
+                        const slotW = Math.abs(px1 - px0);
+                        const half = slotW / 2;
+
+                        stormWindows.forEach(
+                            (storm, idx) => {const si = dailyLabels.findIndex(d => d >= storm.start);
+
+                                if (si < 0)
+                                    return;
+
+                                let ei = si;
+
+                                for (
+                                    let k =
+                                        dailyLabels.length - 1;
+                                    k >= si;
+                                    k--
+                                ) {
+                                    if (
+                                        dailyLabels[k] <=
+                                        storm.end
+                                    ) {
+                                        ei = k;
+                                        break;
                                     }
                                 }
-                            },
-                            title: {
-                                display: true,
-                                text: '@Html.Raw(Model.StationName?.Replace("'", "\\'") ?? "") — Complete Rainfall Record',
-                                color: themeColors().text,
-                                font: { size: 13 }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    title: items => items[0].label,
-                                    label: item  => `${Number(item.raw).toFixed(2)} mm`
-                                }
+
+                                const x1 = xScale.getPixelForValue(si) - half;
+                                const x2 = xScale.getPixelForValue(ei) + half;
+
+                                const w = Math.max(slotW, x2 - x1);
+                                const y = chartArea.top;
+
+                                const h = chartArea.bottom - chartArea.top;
+
+                                const isActive = idx === activeStormIndex;
+
+                                ctx.save();
+                                ctx.fillStyle = isActive
+                                ? 'rgba(255, 200, 0, 0.30)'
+                                : 'rgba(255, 200, 0, 0.08)';
+
+                                ctx.strokeStyle = isActive
+                                ? 'rgba(255, 180, 0, 1)'
+                                : 'rgba(255, 200, 0, 0.40)';
+
+                                ctx.lineWidth = isActive ? 2 : 1;
+                                ctx.fillRect(x1, y, w, h);
+                                ctx.strokeRect(x1, y, w, h);
+                                ctx.restore();
                             }
-                        },
-                        scales: {
-                            x: {
-                                ticks: {
-                                    color: themeColors().muted,
-                                    autoSkip: true,
-                                    maxTicksLimit: window.innerWidth < 600 ? 5 : 15,
-                                    maxRotation: 45,
-                                    minRotation: 0,
-                                    font: { size: window.innerWidth < 600 ? 9 : 11 },
-                                    callback(val, idx) {
-                                        const raw = dailyLabels[idx];
-                                        if (!raw) return '';
+                        );
+                    }
+                };
 
-                                        const d = new Date(raw);
-                                        if (isNaN(d)) return raw.substring(0, 7); // fallback: YYYY-MM
-
-                                        return d.toLocaleString('en-GB', {
-                                            month: 'short',
-                                            year: 'numeric'
-                                        }); // e.g. "May 1988"
-                                    }
-                                },
-                                grid: { display: false }
-                            },
-                                                        y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: window.innerWidth >= 480,
-                                    text: 'Rainfall (mm)',
-                                    color: themeColors().muted,
-                                    font: { size: 11 }
-                                },
-                                ticks: {
-                                    color: themeColors().muted,
-                                    font: { size: window.innerWidth < 600 ? 9 : 11 },
-                                    callback: v => Number(v).toFixed(0)
-                                },
-                                grid: {
-                                    color: themeColors().border
-                                }
-                            }
-                        }
-                    },
-                    plugins: [highlightPlugin]
-                });
-            }
-
-            let overviewChart = buildOverviewChart();
-
-            // re-build chart when OS theme changes (dark ↔ light) 
-            if (window.matchMedia) {
-                window.matchMedia('(prefers-color-scheme: dark)')
-                      .addEventListener('change', () => {
-                    if (overviewChart) overviewChart.destroy();
-                    overviewChart = buildOverviewChart();
-                    // restore active highlight after rebuild
-                    overviewChart.update();
-                });
-            }
-
-            // carousel sync 
-            const carousel = document.getElementById('stormCarousel');
-            if (carousel) {
-                carousel.addEventListener('slid.bs.carousel', function (e) {
-                    activeStormIndex = e.to;
-                    if (overviewChart) overviewChart.update();
-                    // also lazy-create individual storm chart
-                    createChart(e.to);
-                });
-            }
-
-            window.overviewChart    = overviewChart;
-            window.setActiveStorm   = function (idx) {
-                activeStormIndex = idx;
-                if (overviewChart) overviewChart.update();
-            };
-
-            // individual storm charts
-            @if (Model.Results != null && Model.Results.Count > 0)
-            {
-                <text>
-                const storms = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                    Model.Results.Select(storm => new {
-                        labels       = storm.EventData.Select(d => d.Time.ToString("HH:mm")),
-                        values       = storm.EventData.Select(d => Math.Round(d.Rainfall, 2)),
-                        returnPeriod = storm.ReturnPeriod
-                    })
-                ));
-
-                const charts = {};
-
-                function createChart(index) {
-                    if (charts[index]) return;
-                    const storm  = storms[index];
-                    const canvas = document.getElementById(`rainChart_${index}`);
-                    if (!canvas) return;
+                function buildOverviewChart() {
                     const c = themeColors();
 
-                    charts[index] = new Chart(canvas.getContext('2d'), {
-                        type: 'bar',
-                        data: {
-                            labels: storm.labels,
-                            datasets: [{
-                                label: 'Rainfall (mm)',
-                                data: storm.values,
-                                backgroundColor: c.primary.replace(')', ', 0.75)').replace('rgb', 'rgba'),
-                                borderColor: c.primary,
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                title: {
-                                    display: true,
-                                    text: storm.returnPeriod,
-                                    color: c.text,
-                                    font: { size: 15 }
-                                },
-                                legend: { display: false }
+                    const canvas = document.getElementById('overviewChart');
+
+                    if (!canvas)
+                        return null;
+
+                    return new Chart(
+                        canvas.getContext('2d'),
+                        {
+                            type: 'bar',
+                            data: {
+                                labels:
+                                    dailyLabels,
+                                datasets: [
+                                    {
+                                        label: 'Daily Rainfall (mm)',
+                                        data: dailyValues,
+                                        backgroundColor: c.primary.replace(')',', 0.75)').replace('rgb','rgba'),
+                                        borderColor: c.primary,
+                                        borderWidth: 0,
+                                        barPercentage: 1.0,
+                                        categoryPercentage: 1.0
+                                    }
+                                ]
                             },
-                            scales: {
-                                x: {
-                                    ticks: {
-                                        color: c.muted,
-                                        autoSkip: true,
-                                        maxTicksLimit: 10,
-                                        maxRotation: 45,
-                                        minRotation: 0,
-                                        font: { size: 11 }
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                animation: false,
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        labels: {
+                                            color: themeColors().text,
+                                            font: {
+                                                size: 11
+                                            },
+                                            boxWidth: 12,
+                                            padding: 10,
+                                            generateLabels(chart) {
+                                                const defaults =
+                                                    Chart
+                                                        .defaults
+                                                        .plugins
+                                                        .legend
+                                                        .labels
+                                                        .generateLabels(
+                                                            chart
+                                                        );
+                                                defaults.push({
+                                                    text: 'Storm Event',
+                                                    fillStyle: 'rgba(255, 200, 0, 0.30)',
+                                                    strokeStyle: 'rgba(255, 180, 0, 1)',
+                                                    lineWidth: 2,
+                                                    hidden: false,
+                                                    index: -1
+                                                });
+                                                return defaults;
+                                            }
+                                        }
                                     },
-                                    grid: { color: c.border }
+                                    title: {
+                                        display: true,
+                                        text: '@Html.Raw(Model.StationName?.Replace("'", "\\'") ?? "") — Complete Rainfall Record',
+                                        color: themeColors().text,
+                                        font: {
+                                            size: 13
+                                        }
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            title: items => items[0].label,
+                                            label: item => `${Number(item.raw).toFixed(2)} mm`
+                                        }
+                                    }
                                 },
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                        color: c.muted,
-                                        callback: value => Number(value).toFixed(2),
-                                        font: { size: 11 }
+                                scales: {
+                                    x: {
+                                        ticks: {
+                                            color: themeColors().muted,
+                                            autoSkip: true,
+                                            maxTicksLimit: window.innerWidth < 600 ? 5 : 15,
+                                            maxRotation: 45,
+                                            minRotation: 0,
+                                            font: {
+                                                size: window.innerWidth < 600 ? 9 : 11
+                                            },
+                                            callback(val, idx) {
+                                                const raw = dailyLabels[idx];
+                                                if (!raw)
+                                                    return '';
+
+                                                const d = new Date(raw);
+
+                                                if (isNaN(d))
+                                                    return raw.substring(0,7);
+
+                                                return d.toLocaleString('en-GB',
+                                                    {
+                                                        month:'short',
+                                                        year:'numeric'
+                                                    }
+                                                );
+                                            }
+                                        },
+                                        grid: {
+                                            display: false
+                                        }
                                     },
-                                    grid: { color: c.border }
+                                    y: {
+                                        beginAtZero: true,
+                                        title: {
+                                            display: window.innerWidth >= 480,
+                                            text:'Rainfall (mm)',
+                                            color:themeColors().muted,
+                                            font: {
+                                                size: 11
+                                            }
+                                        },
+                                        ticks: {
+                                            color:
+                                                themeColors().muted,
+                                            font: {
+                                                size:window.innerWidth < 600 ? 9 : 11
+                                            },
+                                            callback: v => Number(v).toFixed(0)
+                                        },
+                                        grid: {
+                                            color: themeColors().border
+                                        }
+                                    }
                                 }
-                            }
+                            },
+                            plugins: [highlightPlugin]
                         }
-                    });
+                    );
                 }
 
-                createChart(0);
+                let overviewChart = buildOverviewChart();
 
-                // Prevent table scroll triggering carousel swipe
-                document.querySelectorAll('.storm-table-container').forEach(function (table) {
-                    table.addEventListener('wheel',     function (e) { e.stopPropagation(); }, { passive: true });
-                    table.addEventListener('touchmove', function (e) { e.stopPropagation(); }, { passive: true });
-                });
-                </text>
-            }
+                if (window.matchMedia) {
+                    window.matchMedia('(prefers-color-scheme: dark)')
+                        .addEventListener(
+                            'change',
+                            () => {
+                                if (overviewChart)
+                                    overviewChart.destroy();
 
-        })();
+                                overviewChart =
+                                    buildOverviewChart();
+
+                                overviewChart.update();
+                            }
+                        );
+                }
+
+                const carousel = document.getElementById('stormCarousel');
+
+                if (carousel) {
+                    carousel.addEventListener('slid.bs.carousel',
+                        function(e) {
+                            activeStormIndex = e.to;
+                            if (overviewChart)
+                                overviewChart.update();
+                            createChart(e.to);
+                        }
+                    );
+                }
+
+                window.overviewChart = overviewChart;
+
+                window.setActiveStorm = function(idx) {
+                    activeStormIndex = idx;
+
+                    if (overviewChart) {
+                        overviewChart.update();
+                    }
+                };
+
+                @if (Model.Results != null && Model.Results.Count > 0)
+                {
+                    <text>
+                        const storms = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                            Model.Results.Select(storm => new {
+                                labels = storm.EventData.Select(d => d.Time.ToString("HH:mm")),
+                                values = storm.EventData.Select(d => Math.Round(d.Rainfall,2)),
+                                returnPeriod = storm.ReturnPeriod
+                            })
+                        )
+                        );
+
+                        const charts = {};
+
+                        function createChart(index) {
+                            if (charts[index])
+                            return;
+
+                            const storm = storms[index];
+
+                            const canvas = document.getElementById(`rainChart_${index}`);
+
+                            if (!canvas)
+                            return;
+
+                            const c = themeColors();
+
+                            charts[index] = new Chart(canvas.getContext('2d'),
+                            {
+                                type: 'bar',
+                                data: {
+                                    labels:storm.labels,
+                                    datasets: [
+                                    {
+                                        label:'Rainfall (mm)',
+                                        data: storm.values,
+                                        backgroundColor: c.primary.replace(')',', 0.75)').replace('rgb','rgba'),
+                                        borderColor: c.primary,
+                                        borderWidth:1
+                                    }]
+                                },
+                                options:{
+                                    responsive: true,
+                                    maintainAspectRatio:false,
+                                    plugins:{
+                                        title:{
+                                            display: true,
+                                            text:storm.returnPeriod,
+                                            color: c.text,
+                                            font:{
+                                                size: 15
+                                            }
+                                        },
+                                        legend:{
+                                            display: false
+                                        }
+                                    },
+                                    scales:{
+                                        x:{
+                                            ticks:{
+                                                color: c.muted,
+                                                autoSkip:true,
+                                                maxTicksLimit:10,
+                                                maxRotation:45,
+                                                minRotation:0,
+                                                font: {
+                                                    size: 11
+                                                }
+                                            },
+                                            grid: {
+                                                color:c.border
+                                            }
+                                        },
+                                        y:{
+                                            beginAtZero: true,
+                                            ticks:{
+                                                color:c.muted,
+                                                callback:value => Number(value).toFixed(2),
+                                                font:{
+                                                    size: 11
+                                                }
+                                            },
+                                            grid:{
+                                                color:c.border
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                            
+                        createChart(0);
+                            
+                        document.querySelectorAll('.storm-table-container')
+                        .forEach(
+                            function (table) {
+                                table.addEventListener('wheel',
+                                function(e) {
+                                    e.stopPropagation();
+                                },
+                                {
+                                    passive: true
+                                });
+                                table.addEventListener('touchmove',
+                                function (e) {
+                                    e.stopPropagation();
+                                },
+                                {
+                                    passive: true
+                                });
+                            }
+                        );
+
+                    </text>
+                }
+            })();
         </script>
     }
 }
 
 <style>
-    /* ── Station map ── */
+    body {
+        background: var(--bg);
+        color: var(--text);
+    }
+
+    .card {
+        background: var(--card);
+        color: var(--text);
+        border: 1px solid var(--border);
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .card-body {
+        color: var(--text);
+    }
+
+    .card h1,
+    .card h2,
+    .card h3,
+    .card h4,
+    .card h5,
+    .card h6,
+    .card p,
+    .card div,
+    .card span,
+    .card strong,
+    .card label {
+        color: var(--text);
+    }
+
+    .storm-search-card {
+        border-radius: 16px !important;
+    }
+
+    .storm-page-title {
+        color: var(--primary) !important;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+    }
+
+    .form-label {
+        color: var(--text);
+        font-weight: 600;
+    }
+
+    .form-control,
+    .form-select {
+        background: var(--card-inner);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        min-height: 44px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+        .form-control:hover,
+        .form-select:hover {
+            border-color: var(--primary);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background: var(--card-inner);
+            color: var(--text);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.15rem rgba(78, 161, 255, 0.20);
+        }
+
+        .form-control::placeholder {
+            color: var(--muted);
+        }
+
+        .form-control[type="file"] {
+            background: var(--card-inner);
+            color: var(--text);
+            padding: 0.55rem 0.75rem;
+        }
+
+    .storm-primary-btn {
+        background: var(--primary);
+        border: 1px solid var(--primary);
+        color: #fff !important;
+        font-weight: 600;
+        border-radius: 10px;
+        min-height: 48px;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    }
+
+        .storm-primary-btn:hover {
+            color: #fff !important;
+            opacity: 0.92;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .storm-primary-btn:active {
+            transform: translateY(0);
+        }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .storm-success-message {
+        background: var(--card);
+        color: var(--text) !important;
+        border: 1px solid #28a745;
+        border-left: 5px solid #28a745;
+        border-radius: 10px;
+        padding: 12px 16px;
+    }
+
+    .storm-section-title {
+        color: var(--primary) !important;
+        font-weight: 700;
+    }
+
+    .station-info-item {
+        background: var(--card-inner);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-bottom: 10px;
+    }
+
+    .station-info-label {
+        color: var(--muted) !important;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 2px;
+    }
+
+
+    .station-info-value {
+        color: var(--text) !important;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
     .station-map {
         width: 100%;
         height: 260px;
-        border: 1px solid #dee2e6;
+        border: 1px solid var(--border);
+        border-radius: 12px !important;
+        overflow: hidden;
     }
 
     @@media (min-width: 768px) {
-        .station-map { height: 300px; }
+
+        .station-map {
+            height: 300px;
+        }
     }
 
-    /* ── Chart wrapper: tall enough to read on all screens ── */
-   .chart-wrapper {
+    .overview-chart-wrapper {
+        position: relative;
+        width: 100%;
+        height: 280px;
+    }
+
+    @@media (min-width: 768px) {
+
+        .overview-chart-wrapper {
+            height: 380px;
+        }
+    }
+
+    .chart-wrapper {
         position: relative;
         width: 100%;
         height: 420px;
+        background: var(--card-inner);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px;
     }
 
-   @@media (max-width: 991px) {
-    .chart-wrapper {
+    @@media (max-width: 991px) {
+        .chart-wrapper {
             height: 320px;
         }
     }
 
-    /* ── Satellite image: cap size so it doesn't dominate on desktop ── */
+    .storm-result-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+        .storm-result-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.10) !important;
+        }
+
+    .storm-title {
+        color: var(--primary) !important;
+        font-weight: 700;
+    }
+
+    .storm-rainfall {
+        background: var(--card-inner);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        display: inline-block;
+        padding: 8px 16px;
+    }
+
+        .storm-rainfall strong {
+            color: var(--text) !important;
+        }
+
+    .satellite-section {
+        background: var(--card-inner);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 15px;
+    }
+
+    .satellite-title {
+        color: var(--text) !important;
+        font-weight: 600;
+    }
+
     .satellite-img {
         width: 100%;
         height: 420px;
         object-fit: cover;
-        border-radius: 14px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
     }
 
     @@media (max-width: 991px) {
         .satellite-img {
-                height: 320px;
-            }
+            height: 320px;
         }
+    }
 
-    /* ── Scrollable data table ── */
     .storm-table-container {
         max-height: 300px;
         overflow-y: auto;
-        overflow-x: auto;          /* allow horizontal scroll on tiny screens */
+        overflow-x: auto;
         position: relative;
         z-index: 10;
         scroll-behavior: smooth;
         -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--border);
+        border-radius: 10px;
     }
 
-    .storm-table-container::-webkit-scrollbar { width: 8px; height: 8px; }
-    .storm-table-container::-webkit-scrollbar-track { background: #f1f1f1; }
-    .storm-table-container::-webkit-scrollbar-thumb { background: #6c757d; border-radius: 6px; }
-    .storm-table-container::-webkit-scrollbar-thumb:hover { background: #495057; }
+        .storm-table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
 
-    /* Make table cells wrap-friendly on small screens */
+        .storm-table-container::-webkit-scrollbar-track {
+            background: var(--card-inner);
+        }
+
+        .storm-table-container::-webkit-scrollbar-thumb {
+            background: var(--muted);
+            border-radius: 6px;
+        }
+
+            .storm-table-container::-webkit-scrollbar-thumb:hover {
+                background: var(--primary);
+            }
+
+        .storm-table-container table {
+            margin-bottom: 0;
+        }
+
+    .table {
+        color: var(--text);
+        background: var(--card);
+        border-color: var(--border);
+    }
+
+        .table thead {
+            background: var(--table-header);
+            color: #fff;
+        }
+
+            .table thead th {
+                color: #fff !important;
+                background: var(--table-header);
+                border-color: var(--border);
+                font-weight: 600;
+                font-size: 0.85rem;
+            }
+
+        .table tbody td {
+            color: var(--text) !important;
+            background: var(--card);
+            border-color: var(--border);
+            font-size: 0.85rem;
+        }
+
+    .table-striped > tbody > tr:nth-of-type(odd) > * {
+        background-color: var(--row-alt);
+        color: var(--text);
+    }
+
     .storm-table-container td,
     .storm-table-container th {
         white-space: nowrap;
-        font-size: 0.85rem;
     }
 
-    /* ── Carousel nav buttons (text-based, touch-friendly) ── */
+    .storm-download-btn {
+        color: var(--primary) !important;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 7px 14px !important;
+        display: inline-block;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+        .storm-download-btn:hover {
+            background: var(--card-inner);
+            border-color: var(--primary);
+            text-decoration: none;
+        }
+
+    .carousel-nav-row {
+        margin-top: 15px;
+    }
+
     .carousel-arrow-btn {
-        background: none;
-        border: 1px solid #6c757d;
-        border-radius: 6px;
-        padding: 6px 16px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        padding: 8px 18px;
         font-size: 0.9rem;
-        color: #333;
+        color: var(--text);
         cursor: pointer;
-        min-width: 80px;
+        min-width: 100px;
         touch-action: manipulation;
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
     }
 
-    .carousel-arrow-btn:hover {
-        background: #f0f0f0;
-    }
+        .carousel-arrow-btn:hover {
+            background: var(--card-inner);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
 
-    /* Remove Bootstrap's default overlay arrows entirely */
+        .carousel-arrow-btn:active {
+            transform: translateY(0);
+        }
+
     .carousel-control-prev,
     .carousel-control-next {
         display: none !important;
     }
 
-/* Make ALL bootstrap cards follow theme */
-.card {
-    background: var(--card);
-    color: var(--text);
-    border-color: var(--border);
-}
-
-/* Force text inside cards to follow theme */
-.card h1,
-.card h2,
-.card h3,
-.card h4,
-.card h5,
-.card p,
-.card div,
-.card span,
-.card strong,
-.card label {
-    color: var(--text);
-}
-
-/* Fix Bootstrap text-primary in dark mode */
-.text-primary {
-    color: var(--primary) !important;
-}
-
-/* Fix muted text (THIS is why you lose visibility in dark mode) */
-.text-muted {
-    color: var(--muted) !important;
-}
-
-/* Tables inside storm page */
-.table {
-    color: var(--text);
-    background: var(--card);
-}
-
-.table thead {
-    background: var(--table-header);
-    color: #fff;
-}
-
-/* Table rows adapt to theme */
-.table-striped > tbody > tr:nth-of-type(odd) {
-    background-color: var(--row-alt);
-}
-
-/* Buttons inside cards */
-.card .btn-link {
-    color: var(--primary);
-}
-
-/* Carousel arrows stay readable */
-.carousel-arrow-btn {
-    color: var(--text);
-    border-color: var(--border);
-}
-
-/* Station card + storm cards already bootstrap -> fix consistency */
-.card.shadow-lg,
-.card.shadow-sm,
-.card.border-0 {
-    background: var(--card);
-    color: var(--text);
-}
-
-/* Ensure container backgrounds don't override */
-body {
-    background: var(--bg);
-    color: var(--text);
-}
-
-/* ALL input fields */
-.form-control {
-    background: var(--card-inner);
-    color: var(--text);
-    border: 1px solid var(--border);
-}
-
-/* Focus state */
-.form-control:focus {
-    background: var(--card-inner);
-    color: var(--text);
-    border-color: var(--primary);
-    box-shadow: 0 0 0 0.15rem rgba(78, 161, 255, 0.25);
-}
-
-/* File input (special case in Bootstrap) */
-.form-control[type="file"] {
-    background: var(--card-inner);
-    color: var(--text);
-}
-
-/* Placeholder text */
-.form-control::placeholder {
-    color: var(--muted);
-}
-
-/* Labels already OK but reinforce readability */
-.form-label {
-    color: var(--text);
-}
-
-/* Dropdowns (if ever used later) */
-select.form-control,
-.form-select {
-    background: var(--card-inner);
-    color: var(--text);
-    border: 1px solid var(--border);
-}
-
-.overview-chart-wrapper {
-    position: relative;
-    width: 100%;
-    height: 280px;
-}
-
-@@media (min-width: 768px) {
-    .overview-chart-wrapper {
-        height: 380px;
+    .text-primary {
+        color: var(--primary) !important;
     }
-}
+
+    .text-muted {
+        color: var(--muted) !important;
+    }
+
+    .text-secondary {
+        color: var(--muted) !important;
+    }
+
+    .card .btn-link {
+        color: var(--primary);
+    }
+
+    @@media (max-width: 575px) {
+        .container {
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+        }
+
+        .card {
+            border-radius: 13px !important;
+        }
+
+        .storm-page-title {
+            font-size: 1.45rem;
+        }
+
+        .chart-wrapper {
+            height: 280px;
+            padding: 5px;
+        }
+
+        .satellite-img {
+            height: 250px;
+        }
+
+        .storm-result-card {
+            border-radius: 13px;
+        }
+
+        .carousel-arrow-btn {
+            padding: 7px 12px;
+            min-width: 90px;
+        }
+    }
 </style>
