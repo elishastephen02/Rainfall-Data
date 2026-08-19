@@ -2,140 +2,220 @@
     ViewData["Title"] = "Home";
 }
 
-<div class="mx-auto w-full max-w-7xl px-4 pt-2 pb-8 text-center">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Logo -->
-    <div class="mb-8">
-        <picture>
-            <!-- Dark mode image -->
-            <source srcset="/Images/EDREDark.png"
-                    media="(prefers-color-scheme: dark)">
+<div class="home-page">
+    <!-- HERO SECTION -->
+    <div class="home-hero-section">
+        <div class="eyebrow">eThekwini Municipality</div>
 
-            <!-- Light mode image -->
-            <img src="/Images/EDRELight.png"
-                 alt="EDRE - Ethekwini Design Rainfall Engine"
-                 class="mx-auto mt-5 mb-2 h-auto w-full max-w-[400px]" />
-        </picture>
+        <!-- Logo -->
+        <div class="hero-logo-wrapper">
+            <picture>
+                <!-- Dark mode image -->
+                <source srcset="/Images/EDREDark.png" media="(prefers-color-scheme: dark)">
+                <!-- Light mode image -->
+                <img src="/Images/EDRELight.png"
+                     alt="EDRE - Ethekwini Design Rainfall Engine"
+                     class="hero-logo" />
+            </picture>
+        </div>
+
+        <p class="hero-description">
+            Advanced hydrological analysis suite for processing design rainfall data, grid-based estimations, and detecting historical storm events across eThekwini.
+        </p>
     </div>
 
-
-    <!-- Feature Cards -->
+    <!-- FEATURE CARDS -->
     <div class="home-feature-grid">
 
         <!-- DESIGN RAINFALL DATA -->
         <div class="home-feature-card">
-
-            <h5>
-                📍 Design Rainfall Data
-            </h5>
+            <div class="card-header-group">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
+                </div>
+                <h3>Design Rainfall Data</h3>
+            </div>
 
             <p>
-                Enter geographic coordinates manually or select a location
-                directly on an interactive map. The system retrieves and
-                displays detailed rainfall data based on the selected
-                location, helping users analyze precipitation patterns
-                accurately.
+                Enter geographic coordinates manually or select a location directly on an interactive map. The system retrieves and displays detailed rainfall depth-duration-frequency statistics based on your chosen grid point.
             </p>
 
             <div class="home-feature-button-container">
-
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <a href="/Rainfall/Search"
-                       class="home-feature-button">
+                    <a href="/Rainfall/Search" class="home-feature-button">
                         Design Rainfall Data
-                        <span aria-hidden="true">→</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
                     </a>
                 }
-
             </div>
-
         </div>
-
 
         <!-- STORM EVENT DETECTION -->
         <div class="home-feature-card">
-
-            <h5>
-                🌧 Storm Event Detection
-            </h5>
+            <div class="card-header-group">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9" /><path d="M12 18v3M8 18v3M16 18v2" /></svg>
+                </div>
+                <h3>Storm Event Detection</h3>
+            </div>
 
             <p>
-                Upload CSV datasets along with rainfall depth and duration
-                parameters to identify storm events. The application
-                generates a visual bar chart of detected events and
-                displays a satellite image of the storm’s midpoint for
-                deeper analysis and insight.
+                Upload CSV datasets along with rainfall depth and duration parameters to isolate significant storm events. Visualise event hyetographs and review mid-point satellite imagery for deeper meteorological insights.
             </p>
 
             <div class="home-feature-button-container">
-
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <a href="/Storm/Index"
-                       class="home-feature-button">
+                    <a href="/Storm/Index" class="home-feature-button">
                         Storm Events
-                        <span aria-hidden="true">→</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
                     </a>
                 }
-
             </div>
-
         </div>
 
     </div>
-
 </div>
 
 <style>
-    /* HOME FEATURE CARDS */
+    .home-page {
+        --primary-soft: rgba(13, 110, 253, 0.09);
+        --primary-soft-strong: rgba(13, 110, 253, 0.16);
+        width: 100%;
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 30px 24px 70px;
+        font-family: 'Inter', sans-serif;
+        color: var(--text);
+        background: var(--bg);
+    }
+
+        .home-page h1, .home-page h2, .home-page h3, .home-page h4,
+        .home-feature-button {
+            font-family: 'Manrope', sans-serif;
+        }
+
+    .icon {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+        vertical-align: middle;
+    }
+
+    .icon-sm {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* HERO SECTION */
+    .home-hero-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-top: 10px;
+        margin-bottom: 48px;
+    }
+
+    .eyebrow {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+    }
+
+    .hero-logo-wrapper {
+        margin-bottom: 20px;
+    }
+
+    .hero-logo {
+        height: auto;
+        width: 100%;
+        max-width: 420px;
+        display: block;
+        margin: 0 auto;
+    }
+
+    .hero-description {
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.6;
+        max-width: 680px;
+    }
+
+    /* FEATURE CARDS GRID */
     .home-feature-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 32px;
+        gap: 28px;
         width: 100%;
-        margin-top: 32px;
-        margin-bottom: 48px;
     }
 
     .home-feature-card {
         display: flex;
         flex-direction: column;
         width: 100%;
-        min-height: 300px;
+        min-height: 280px;
         padding: 32px;
         box-sizing: border-box;
         background: var(--card);
         color: var(--text);
         border: 1px solid var(--border);
-        border-radius: 16px;
-        /* Floating card effect */
-        box-shadow: 0 8px 20px var(--shadow);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        border-radius: 18px;
+        box-shadow: 0 6px 20px var(--shadow);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     }
 
         .home-feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 14px 30px var(--shadow);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px var(--shadow);
+            border-color: var(--primary-soft-strong);
         }
 
-        .home-feature-card h5 {
-            margin: 0;
-            color: var(--text);
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
+    .card-header-group {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 16px;
+    }
 
-        .home-feature-card p {
-            margin-top: 16px;
-            margin-bottom: 0;
-            color: var(--text);
-            line-height: 1.75;
-        }
+    .feature-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .home-feature-card h3 {
+        margin: 0;
+        color: var(--text);
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+
+    .home-feature-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.65;
+    }
 
     .home-feature-button-container {
         margin-top: auto;
-        padding-top: 32px;
+        padding-top: 28px;
     }
 
     .home-feature-button {
@@ -146,38 +226,40 @@
         padding: 12px 24px;
         background-color: var(--primary);
         color: #ffffff !important;
-        border: 1px solid var(--primary);
-        border-radius: 50px;
-        font-size: 1rem;
-        font-weight: 600;
-        letter-spacing: 0.2px;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        font-weight: 700;
         text-decoration: none !important;
-        box-shadow: 0 5px 12px var(--shadow);
-        transition: all 0.2s ease;
+        box-shadow: 0 6px 16px var(--primary-soft-strong);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
     }
 
         .home-feature-button:hover {
-            background-color: var(--primary-hover);
-            border-color: var(--primary-hover);
+            background-color: var(--primary-hover, var(--primary));
             color: #ffffff !important;
-            transform: translateY(-3px);
-            box-shadow: 0 9px 20px var(--shadow);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px var(--primary-soft-strong);
         }
 
         .home-feature-button:active {
-            transform: translateY(-1px);
+            transform: translateY(0);
         }
 
-    /* MOBILE */
+    /* RESPONSIVE */
     @@media (max-width: 767.98px) {
         .home-feature-grid {
             grid-template-columns: 1fr;
-            gap: 24px;
+            gap: 20px;
         }
 
         .home-feature-card {
             min-height: 0;
             padding: 24px;
+        }
+
+        .hero-logo {
+            max-width: 300px;
         }
     }
 </style>
