@@ -19,22 +19,11 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9" /><path d="M12 18v3M8 18v3M16 18v2" /></svg>
                 </div>
                 <div>
-                    <div class="eyebrow">Hydrology Analysis</div>
                     <h1>Storm Event Finder</h1>
                 </div>
             </div>
-            <div class="header-badge">
-                <span class="badge-dot"></span>
-                <span>Storm Finder Tool</span>
-            </div>
-        </div>
-        <div class="header-main-content">
-            <p>
-                Upload your historical rainfall CSV data, set filter thresholds, and isolate significant rainfall events along with satellite imagery and historical station data.
-            </p>
         </div>
     </div>
-
     <!-- SEARCH & FILTERS FORM -->
     <form asp-action="Index" method="post" enctype="multipart/form-data" class="storm-form">
         <section class="storm-card">
@@ -43,17 +32,12 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg>
                 </div>
                 <div>
-                    <h2>Upload & Parameters</h2>
                     <p>Select your CSV file and specify minimum depth and duration thresholds.</p>
                 </div>
             </div>
 
             <div class="upload-area mb-4">
-                <div class="upload-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg>
-                </div>
                 <div class="upload-text">
-                    <strong>Upload Rainfall CSV</strong>
                     <span>Select a valid CSV file containing station rainfall records</span>
                     <input type="file" asp-for="UploadedFile" class="file-input mt-2" />
                 </div>
@@ -773,6 +757,7 @@
         color: var(--text);
         border: 1px solid #22c55e;
         border-left: 5px solid #22c55e;
+        border-right: 5px solid #22c55e;
         border-radius: 10px;
         padding: 14px;
     }

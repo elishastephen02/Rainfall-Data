@@ -21,19 +21,9 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9" /><path d="M12 18v3M8 18v3M16 18v2" /></svg>
                 </div>
                 <div>
-                    <div class="eyebrow">eThekwini Municipality</div>
                     <h1>Design Rainfall Data</h1>
                 </div>
             </div>
-            <div class="header-badge">
-                <span class="badge-dot"></span>
-                <span>Hydrology tool</span>
-            </div>
-        </div>
-        <div class="header-main-content">
-            <p>
-                Select a location on the map, choose your return periods and durations, and retrieve depth&ndash;duration&ndash;frequency data ready for export to PCSWMM.
-            </p>
         </div>
     </div>
     <!-- SEARCH FORM -->
@@ -58,30 +48,27 @@
                 </div>
             </div>
             <div id="addressMessage" class="address-message"></div>
-            <details class="advanced">
-                <summary>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm chevron"><path d="m6 9 6 6 6-6" /></svg>
-                    Enter coordinates manually
-                </summary>
-                <div class="coordinate-grid">
-                    <div class="input-group-modern">
-                        <label asp-for="LATDEG">Latitude Degree</label>
-                        <input asp-for="LATDEG" id="LATDEG" class="modern-input" placeholder="Degrees" />
-                    </div>
-                    <div class="input-group-modern">
-                        <label asp-for="LATMIN">Latitude Minute</label>
-                        <input asp-for="LATMIN" id="LATMIN" class="modern-input" placeholder="Minutes" />
-                    </div>
-                    <div class="input-group-modern">
-                        <label asp-for="LONGDEG">Longitude Degree</label>
-                        <input asp-for="LONGDEG" id="LONGDEG" class="modern-input" placeholder="Degrees" />
-                    </div>
-                    <div class="input-group-modern">
-                        <label asp-for="LONGMIN">Longitude Minute</label>
-                        <input asp-for="LONGMIN" id="LONGMIN" class="modern-input" placeholder="Minutes" />
-                    </div>
+            <div class="coordinate-grid">
+                <div class="input-group-modern">
+                    <label asp-for="LATDEG">Latitude Degree</label>
+                    <input asp-for="LATDEG" id="LATDEG" class="modern-input" placeholder="Degrees" />
                 </div>
-            </details>
+
+                <div class="input-group-modern">
+                    <label asp-for="LATMIN">Latitude Minute</label>
+                    <input asp-for="LATMIN" id="LATMIN" class="modern-input" placeholder="Minutes" />
+                </div>
+
+                <div class="input-group-modern">
+                    <label asp-for="LONGDEG">Longitude Degree</label>
+                    <input asp-for="LONGDEG" id="LONGDEG" class="modern-input" placeholder="Degrees" />
+                </div>
+
+                <div class="input-group-modern">
+                    <label asp-for="LONGMIN">Longitude Minute</label>
+                    <input asp-for="LONGMIN" id="LONGMIN" class="modern-input" placeholder="Minutes" />
+                </div>
+            </div>
         </section>
         <div class="step-label">
             <div>
@@ -97,23 +84,16 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg>
                     </div>
                     <div>
-                        <h2>Upload Area</h2>
-                        <p>Upload a polygon defining the area to analyse.</p>
+                        <h2>Upload Area Files</h2>
+                        <p>GeoJSON, JSON, KML or KMZ Format</p>
                     </div>
                 </div>
                 <div class="upload-area">
-                    <div class="upload-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg>
-                    </div>
-                    <div class="upload-text">
-                        <strong>Upload an area file</strong>
-                        <span>GeoJSON, JSON, KML or KMZ</span>
-                    </div>
                     <input type="file" id="areaFileInput" accept=".geojson,.json,.kml,.kmz" class="file-input" />
                 </div>
                 <button type="button" id="uploadAreaBtn" class="modern-button secondary-button">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg>
-                    Upload Area
+                    Upload File
                 </button>
             </section>
             <!-- RAINFALL OPTIONS -->
@@ -598,7 +578,6 @@
     </div>
 </div>
 
-<!-- JAVASCRIPT -->
 <script>
     window.addEventListener("load", function() {
         //MAP
@@ -980,6 +959,18 @@
             "click",
             function(e) {
                 clearPolygon();
+
+                // Clear the address search bar and its status
+                // message whenever the user selects a point
+                // manually on the map
+                var addressField =
+                    document.getElementById("Address");
+
+                if (addressField) {
+                    addressField.value = "";
+                }
+
+                showMessage("");
 
                 placeMarker(
                     e.latlng.lat,
@@ -1588,8 +1579,11 @@
         background: var(--bg);
     }
 
-        .rainfall-page h1, .rainfall-page h2, .rainfall-page h3,
-        .search-button, .modern-button {
+        .rainfall-page h1,
+        .rainfall-page h2,
+        .rainfall-page h3,
+        .search-button,
+        .modern-button {
             font-family: 'Manrope', sans-serif;
         }
 
@@ -1718,7 +1712,8 @@
             font-size: .82rem;
         }
 
-    .rainfall-card, .results-card {
+    .rainfall-card,
+    .results-card {
         background: var(--card);
         color: var(--text);
         border: 1px solid var(--border);
@@ -1740,10 +1735,15 @@
 
     .rainfall-two-column {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0,1fr));
+        grid-template-columns: 1fr;
         gap: 22px;
         margin-bottom: 22px;
     }
+
+        .rainfall-two-column > .rainfall-card {
+            width: 100%;
+            box-sizing: border-box;
+        }
 
     .section-header {
         display: flex;
@@ -1795,17 +1795,19 @@
     .map-search-overlay {
         position: absolute;
         top: 14px;
-        left: 140px;
-        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
         z-index: 1000;
         display: flex;
+        justify-content: center;
         pointer-events: none;
+        width: 100%;
     }
 
     .map-search-box {
         pointer-events: auto;
         width: 520px;
-        max-width: 520px;
+        max-width: calc(100% - 30px);
         height: 48px;
         box-sizing: border-box;
         background: var(--card);
@@ -1895,39 +1897,10 @@
             color: var(--primary);
         }
 
-    .advanced {
-        margin-top: 18px;
-        padding-top: 16px;
-        border-top: 1px solid var(--border);
-    }
-
-        .advanced summary {
-            cursor: pointer;
-            list-style: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: .85rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-            .advanced summary::-webkit-details-marker {
-                display: none;
-            }
-
-        .advanced .chevron {
-            transition: transform .2s ease;
-        }
-
-        .advanced[open] .chevron {
-            transform: rotate(180deg);
-        }
-
     .coordinate-grid {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0,1fr));
-        gap: 16px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
         margin-top: 16px;
     }
 
@@ -1937,7 +1910,8 @@
         gap: 7px;
     }
 
-        .input-group-modern label, .modern-label {
+        .input-group-modern label,
+        .modern-label {
             color: var(--text);
             font-size: .74rem;
             font-weight: 700;
@@ -1970,7 +1944,10 @@
             background: var(--card);
         }
 
-    .modern-button, .search-button, .result-button, .modal-button {
+    .modern-button,
+    .search-button,
+    .result-button,
+    .modal-button {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -1998,8 +1975,9 @@
         }
 
     .secondary-button {
-        margin-top: 15px;
-    }
+    display: flex;
+    margin: 15px auto 0;
+}
 
     .search-button-container {
         display: flex;
@@ -2037,33 +2015,6 @@
 
         .upload-area:hover {
             border-color: var(--primary);
-        }
-
-    .upload-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        background: var(--primary-soft);
-        color: var(--primary);
-        flex-shrink: 0;
-    }
-
-    .upload-text {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-    }
-
-        .upload-text strong {
-            font-size: .88rem;
-        }
-
-        .upload-text span {
-            color: var(--muted);
-            font-size: .78rem;
         }
 
     .file-input {
@@ -2186,14 +2137,21 @@
             color: #fff !important;
         }
 
-    .table-scroll, .table-scroll-xy {
+    .table-scroll,
+    .table-scroll-xy {
         width: 100%;
-        overflow: auto;
-        padding: 20px 26px 26px;
+        box-sizing: border-box;
+        overflow-x: auto;
+        overflow-y: auto;
+        max-height: 600px;
+        padding: 0 26px 26px;
+        position: relative;
+        /* Create a clean scrolling container */
+        isolation: isolate;
     }
 
     .table-scroll-xy {
-        max-height: 500px;
+        max-height: 600px;
     }
 
     .modern-table {
@@ -2205,28 +2163,40 @@
         font-variant-numeric: tabular-nums;
     }
 
-        .modern-table th {
-            position: sticky;
-            top: 0;
-            z-index: 5;
-            padding: 12px 15px;
-            background: var(--table-header);
-            color: #fff;
-            font-size: .76rem;
-            font-weight: 700;
-            letter-spacing: .02em;
-            text-align: right;
-            white-space: nowrap;
+        .modern-table thead {
+            position: relative;
+            z-index: 20;
         }
 
-            .modern-table th:first-child {
-                text-align: left;
-                border-radius: 10px 0 0 0;
+            .modern-table thead th {
+                position: sticky !important;
+                top: 0 !important;
+                z-index: 30 !important;
+                padding: 12px 15px;
+                background: var(--table-header) !important;
+                color: #fff;
+                font-size: .76rem;
+                font-weight: 700;
+                letter-spacing: .02em;
+                text-align: right;
+                white-space: nowrap;
+                opacity: 1;
+                box-shadow: 0 2px 0 var(--table-header);
             }
 
-            .modern-table th:last-child {
-                border-radius: 0 10px 0 0;
-            }
+                .modern-table thead th:first-child {
+                    text-align: left;
+                    border-radius: 10px 0 0 0;
+                }
+
+                .modern-table thead th:last-child {
+                    border-radius: 0 10px 0 0;
+                }
+
+        .modern-table tbody {
+            position: relative;
+            z-index: 1;
+        }
 
         .modern-table td {
             padding: 12px 15px;
@@ -2252,22 +2222,39 @@
                 background: var(--row-hover);
             }
 
-    .summary-table thead tr:first-child th {
-        text-align: center;
-        border-left: 1px solid rgba(255,255,255,.25);
+    .summary-table thead {
+        position: relative;
+        z-index: 20;
     }
 
-        .summary-table thead tr:first-child th.rp-col {
-            text-align: left;
-            border-left: none;
-            vertical-align: bottom;
+        .summary-table thead tr:first-child th {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 31 !important;
+            text-align: center;
+            background: var(--table-header) !important;
+            border-left: 1px solid rgba(255,255,255,.25);
         }
 
-    .summary-table thead tr.sub th {
-        background: var(--primary-hover);
-        font-size: .68rem;
-        padding: 8px 12px;
-    }
+            .summary-table thead tr:first-child th.rp-col {
+                text-align: left;
+                border-left: none;
+                vertical-align: bottom;
+            }
+
+        .summary-table thead tr.sub th {
+            position: sticky !important;
+            /*
+               Second header row sits directly below the
+               first header row.
+            */
+            top: 41px !important;
+            z-index: 30 !important;
+            background: var(--primary-hover) !important;
+            color: #fff;
+            font-size: .68rem;
+            padding: 8px 12px;
+        }
 
     .return-period-badge {
         display: inline-block;
@@ -2285,17 +2272,20 @@
         background: var(--primary-soft);
     }
 
-    .table-scroll::-webkit-scrollbar, .table-scroll-xy::-webkit-scrollbar {
-        width: 9px;
-        height: 9px;
+    .table-scroll::-webkit-scrollbar,
+    .table-scroll-xy::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
     }
 
-    .table-scroll::-webkit-scrollbar-thumb, .table-scroll-xy::-webkit-scrollbar-thumb {
+    .table-scroll::-webkit-scrollbar-thumb,
+    .table-scroll-xy::-webkit-scrollbar-thumb {
         background: var(--primary);
         border-radius: 20px;
     }
 
-    .table-scroll::-webkit-scrollbar-track, .table-scroll-xy::-webkit-scrollbar-track {
+    .table-scroll::-webkit-scrollbar-track,
+    .table-scroll-xy::-webkit-scrollbar-track {
         background: var(--row-alt);
     }
 
@@ -2312,7 +2302,8 @@
             padding: 20px 22px;
         }
 
-            .modern-modal .modal-header h5, .modern-modal .modal-title {
+            .modern-modal .modal-header h5,
+            .modern-modal .modal-title {
                 margin: 0;
                 font-weight: 700;
                 display: flex;
@@ -2479,6 +2470,7 @@
     }
 
     @@media (max-width: 900px) {
+
         .rainfall-two-column {
             grid-template-columns: 1fr;
         }
@@ -2506,6 +2498,7 @@
     }
 
     @@media (max-width: 767px) {
+
         .rainfall-page {
             padding: 20px 14px 50px;
         }
@@ -2533,13 +2526,15 @@
         }
 
         .map-search-overlay {
-            left: 14px;
-            right: 14px;
+            left: 50%;
+            right: auto;
+            transform: translateX(-50%);
+            width: 100%;
         }
 
         .map-search-box {
             width: 100%;
-            max-width: none;
+            max-width: calc(100% - 28px);
             height: 46px;
         }
 
@@ -2566,6 +2561,14 @@
 
         .result-button {
             width: 100%;
+        }
+        /*
+               Smaller table scroll area on mobile
+            */
+        .table-scroll,
+        .table-scroll-xy {
+            max-height: 500px;
+            padding: 0 14px 18px;
         }
     }
 </style>
