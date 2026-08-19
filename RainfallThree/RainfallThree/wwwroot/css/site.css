@@ -197,8 +197,11 @@ h1, h2, h3, h4, h5, h6 {
 
 .footer-text {
     color: rgba(255, 255, 255, 0.85);
-    font-size: 0.8rem;
-    line-height: 1.7;
+    font-size: clamp(8px, 0.75vw, 12px);
+    line-height: 1.2;
+    white-space: nowrap;
+    text-align: center;
+    margin: 0;
 }
 
 .footer-sep {
@@ -211,6 +214,6 @@ h1, h2, h3, h4, h5, h6 {
     }
 
     .footer-text {
-        font-size: 0.75rem;
+        font-size: clamp(7px, 2vw, 10px);
     }
 }
