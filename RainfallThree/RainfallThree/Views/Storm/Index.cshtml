@@ -1,294 +1,232 @@
 ﻿@model StormViewModel
 
-<div class="container mt-4 px-3">
-    <div class="card shadow-lg p-3 p-md-4 rounded-4 storm-search-card">
-        <h2 class="text-center mb-4 storm-page-title">
-            🌧 Storm Event Finder
-        </h2>
-        <form asp-action="Index" method="post" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label class="form-label fw-bold">
-                    Upload Rainfall CSV
-                </label>
-                <input type="file" asp-for="UploadedFile" class="form-control" />
-                <span asp-validation-for="UploadedFile" class="text-danger"></span>
-            </div>
-            <div class="row">
-                <div class="col-12 col-md-6 mb-3">
-                    <label class="form-label fw-bold">
-                        Rainfall Depth (mm)
-                    </label>
-                    <input asp-for="Depth" type="number" step="0.1" class="form-control" placeholder="e.g. 100" />
-                    <span asp-validation-for="Depth" class="text-danger"></span>
-                </div>
-                <div class="col-12 col-md-6 mb-3">
-                    <label class="form-label fw-bold">
-                        Duration (minutes)
-                    </label>
-                    <input asp-for="DurationMinutes" type="number" class="form-control" placeholder="e.g. 30" />
-                    <span asp-validation-for="DurationMinutes" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="d-grid mt-2">
-                <button type="submit" class="btn storm-primary-btn btn-lg">
-                    🔍 Find Storm
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-<br />
-
-@if (!string.IsNullOrEmpty(Model.Message))
-{
-    <div class="alert storm-success-message text-center mx-3">
-        @Model.Message
-    </div>
+@{
+    ViewData["Title"] = "Storm Event Finder";
 }
 
-@if (Model != null && Model.StationName != null)
-{
-    <div class="card border-0 shadow-lg rounded-4 mb-4 mx-3">
-        <div class="card-body p-3 p-md-4">
-            <h5 class="storm-section-title text-center mb-4">
-                📍 Station Information
-            </h5>
-            <div class="row g-4">
-                <!-- Station details -->
-                <div class="col-12 col-md-6">
-                    <div class="station-info-item">
-                        <div class="station-info-label">
-                            Rainfall Monitoring Station
-                        </div>
-                        <div class="station-info-value">
-                            @Model.StationName
-                        </div>
-                    </div>
-                    <div class="station-info-item">
-                        <div class="station-info-label">
-                            Latitude
-                        </div>
-                        <div class="station-info-value">
-                            @Model.Latitude?.ToString("F6")
-                        </div>
-                    </div>
-                    <div class="station-info-item">
-                        <div class="station-info-label">
-                            Longitude
-                        </div>
-                        <div class="station-info-value">
-                            @Model.Longitude?.ToString("F6")
-                        </div>
-                    </div>
-                    <div class="station-info-item">
-                        <div class="station-info-label">
-                            Total Days
-                        </div>
-                        <div class="station-info-value">
-                            @Model.TotalDays days
-                        </div>
-                    </div>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="storm-page">
+    <!-- PAGE HEADER -->
+    <div class="storm-page-header">
+        <div class="header-top-bar">
+            <div class="header-brand">
+                <div class="storm-title-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9" /><path d="M12 18v3M8 18v3M16 18v2" /></svg>
                 </div>
-                <!-- Station map -->
-                <div class="col-12 col-md-6">
-                    <div id="stationMap"
-                         class="station-map rounded">
-                    </div>
+                <div>
+                    <div class="eyebrow">Hydrology Analysis</div>
+                    <h1>Storm Event Finder</h1>
                 </div>
             </div>
+            <div class="header-badge">
+                <span class="badge-dot"></span>
+                <span>Storm Finder Tool</span>
+            </div>
+        </div>
+        <div class="header-main-content">
+            <p>
+                Upload your historical rainfall CSV data, set filter thresholds, and isolate significant rainfall events along with satellite imagery and historical station data.
+            </p>
         </div>
     </div>
-    <div class="card border-0 shadow-lg rounded-4 mb-4 mx-3">
-        <div class="card-body p-3 p-md-4">
-            <h5 class="storm-section-title text-center mb-3">
-                📊 Overview
-            </h5>
+
+    <!-- SEARCH & FILTERS FORM -->
+    <form asp-action="Index" method="post" enctype="multipart/form-data" class="storm-form">
+        <section class="storm-card">
+            <div class="section-header compact">
+                <div class="section-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg>
+                </div>
+                <div>
+                    <h2>Upload & Parameters</h2>
+                    <p>Select your CSV file and specify minimum depth and duration thresholds.</p>
+                </div>
+            </div>
+
+            <div class="upload-area mb-4">
+                <div class="upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg>
+                </div>
+                <div class="upload-text">
+                    <strong>Upload Rainfall CSV</strong>
+                    <span>Select a valid CSV file containing station rainfall records</span>
+                    <input type="file" asp-for="UploadedFile" class="file-input mt-2" />
+                </div>
+                <span asp-validation-for="UploadedFile" class="text-danger small"></span>
+            </div>
+
+            <div class="coordinate-grid">
+                <div class="input-group-modern">
+                    <label class="modern-label" asp-for="Depth">Rainfall Depth (mm)</label>
+                    <input asp-for="Depth" type="number" step="0.1" class="modern-input" placeholder="e.g. 100" />
+                    <span asp-validation-for="Depth" class="text-danger small"></span>
+                </div>
+                <div class="input-group-modern">
+                    <label class="modern-label" asp-for="DurationMinutes">Duration (minutes)</label>
+                    <input asp-for="DurationMinutes" type="number" class="modern-input" placeholder="e.g. 30" />
+                    <span asp-validation-for="DurationMinutes" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="search-button-container mt-4 mb-0">
+                <button type="submit" class="search-button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                    Find Storm Events
+                </button>
+            </div>
+        </section>
+    </form>
+
+    @if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div class="alert storm-success-message text-center mb-4">
+            @Model.Message
+        </div>
+    }
+
+    <!-- STATION INFORMATION & OVERVIEW CHART -->
+    @if (Model != null && Model.StationName != null)
+    {
+        <section class="storm-card">
+            <div class="section-header">
+                <div class="section-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
+                <div>
+                    <h2>Station Information</h2>
+                    <p>Details and geolocation of the selected monitoring station.</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-12 col-md-6">
+                    <div class="station-info-grid">
+                        <div class="station-info-item">
+                            <div class="station-info-label">Rainfall Monitoring Station</div>
+                            <div class="station-info-value">@Model.StationName</div>
+                        </div>
+                        <div class="station-info-item">
+                            <div class="station-info-label">Latitude</div>
+                            <div class="station-info-value">@Model.Latitude?.ToString("F6")</div>
+                        </div>
+                        <div class="station-info-item">
+                            <div class="station-info-label">Longitude</div>
+                            <div class="station-info-value">@Model.Longitude?.ToString("F6")</div>
+                        </div>
+                        <div class="station-info-item">
+                            <div class="station-info-label">Total Days Record</div>
+                            <div class="station-info-value">@Model.TotalDays days</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div id="stationMap" class="station-map"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="storm-card">
+            <div class="section-header">
+                <div class="section-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+                </div>
+                <div>
+                    <h2>Rainfall Overview</h2>
+                    <p>Complete historical daily totals with detected storm events highlighted.</p>
+                </div>
+            </div>
             <div class="overview-chart-wrapper">
                 <canvas id="overviewChart"></canvas>
             </div>
-        </div>
-    </div>
-}
+        </section>
+    }
 
-@if (Model.Results != null && Model.Results.Count > 0)
-{
-    <h4 class="storm-section-title mb-4 text-center px-3">
+    <!-- STORM RESULTS CAROUSEL -->
+    @if (Model.Results != null && Model.Results.Count > 0)
+    {
+        <section class="results-card">
+            <div class="results-header">
+                <div>
+                    <h2>Storm Results Found</h2>
+                    <p>@Model.Results.Count storm event(s) matching your criteria</p>
+                </div>
+            </div>
 
-        🌧 Storm Found:
-        @Model.Results.Count storm(s) matching criteria
-    </h4>
-    <div id="stormCarousel" class="carousel slide px-1" data-bs-ride="false" data-bs-touch="false" data-bs-interval="false">
-        <div class="carousel-inner">
-            @for (int i = 0; i < Model.Results.Count; i++)
-            {
-                var storm = Model.Results[i];
-                <div class="carousel-item @(i == 0 ? "active" : "")">
-                    <div class="storm-result-card shadow-sm p-3 p-md-4 mb-4 mx-2">
-                        <!-- Storm title -->
-                        <h5 class="storm-title text-center mb-3 fs-6 fs-md-5">
-                            Storm @(i + 1):
-                            @storm.StartTime.ToString("dd/MM/yyyy")
-                            –
-                            @storm.EndTime.ToString("dd/MM/yyyy")
-                        </h5>
-                        <!-- Total rainfall -->
-                        <div class="text-center mb-4">
-                            <div class="storm-rainfall">
-                                <strong>
-                                    Total Rainfall:
-                                </strong>
-                                <span class="ms-1">
-                                    @Math.Round(storm.TotalRainfall, 2) mm
-                                </span>
-                            </div>
-                        </div>
-                        <div class="row g-4 mb-4">
-                            <div class="col-12">
-                                <div class="chart-wrapper">
+            <div id="stormCarousel" class="carousel slide p-3" data-bs-ride="false" data-bs-touch="false" data-bs-interval="false">
+                <div class="carousel-inner">
+                    @for (int i = 0; i < Model.Results.Count; i++)
+                    {
+                        var storm = Model.Results[i];
+                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                            <div class="storm-result-inner">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4 pb-3 border-bottom">
+                                    <h3 class="storm-title m-0">
+                                        Storm @(i + 1): @storm.StartTime.ToString("dd/MM/yyyy") – @storm.EndTime.ToString("dd/MM/yyyy")
+                                    </h3>
+                                    <div class="storm-rainfall-badge">
+                                        Total Rainfall: <strong>@Math.Round(storm.TotalRainfall, 2) mm</strong>
+                                    </div>
+                                </div>
+
+                                <div class="chart-wrapper mb-4">
                                     <canvas id="rainChart_@i"></canvas>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row g-4 mb-4">
-                            <div class="col-12 d-flex justify-content-center">
-                                <div class="satellite-section text-center w-100">
+
+                                <!-- SATELLITE SECTION -->
+                                <div class="satellite-section mb-4">
                                     <div class="satellite-title mb-3">
-                                        Storm Satellite Image
-                                        <span class="small">
-                                            (@storm.MidTime.ToString("dd/MM/yyyy HH:mm"))
-                                        </span>
+                                        Storm Satellite Imagery
+                                        <span class="text-muted fs-6 fw-normal">(@storm.MidTime.ToString("dd/MM/yyyy HH:mm"))</span>
                                     </div>
                                     @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
                                     {
                                         var lat = Model.Latitude.Value;
                                         var lon = Model.Longitude.Value;
+                                        var minLatE = lat - 20; var maxLatE = lat + 20;
+                                        var minLonE = lon - 20; var maxLonE = lon + 20;
 
-                                        var minLatE = lat - 20;
-                                        var maxLatE = lat + 20;
-                                        var minLonE = lon - 20;
-                                        var maxLonE = lon + 20;
-
-                                        //Eumetsat
                                         var dtE = storm.MidTime.ToUniversalTime();
-
                                         int minutesE = (dtE.Minute / 15) * 15;
+                                        var validTimeE = new DateTime(dtE.Year, dtE.Month, dtE.Day, dtE.Hour, minutesE, 0, DateTimeKind.Utc);
+                                        var eumetsatTime = validTimeE.ToString("yyyy-MM-ddTHH:mmZ");
+                                        var eumetsatUrl = $"https://view.eumetsat.int/geoserver/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=msg_fes:ir108&FORMAT=image/png&CRS=EPSG:4326&BBOX={minLatE},{minLonE},{maxLatE},{maxLonE}&WIDTH=700&HEIGHT=500&TIME={eumetsatTime}";
 
-                                        var validTimeE =
-                                            new DateTime(
-                                                dtE.Year,
-                                                dtE.Month,
-                                                dtE.Day,
-                                                dtE.Hour,
-                                                minutesE,
-                                                0,
-                                                DateTimeKind.Utc);
-
-                                        var eumetsatTime =
-                                            validTimeE.ToString(
-                                                "yyyy-MM-ddTHH:mmZ");
-
-                                        var eumetsatUrl =
-                                            "https://view.eumetsat.int/geoserver/wms" +
-                                            "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap" +
-                                            "&LAYERS=msg_fes:ir108&FORMAT=image/png&CRS=EPSG:4326" +
-                                            $"&BBOX={minLatE},{minLonE},{maxLatE},{maxLonE}" +
-                                            "&WIDTH=700&HEIGHT=500" +
-                                            $"&TIME={eumetsatTime}";
-
-                                        //NASA GIBS
                                         var dtN = storm.MidTime;
-
                                         int roundedMinutes = (int)(Math.Round(dtN.Minute / 10.0) * 10);
+                                        if (roundedMinutes == 60) { dtN = dtN.AddHours(1); roundedMinutes = 0; }
+                                        var roundedMid = new DateTime(dtN.Year, dtN.Month, dtN.Day, dtN.Hour, 0, 0).AddMinutes(roundedMinutes);
+                                        var gibsStartDate = new DateTime(2000, 2, 24);
+                                        var nasaGibsUrl = $"https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor&FORMAT=image/jpeg&CRS=EPSG:4326&BBOX={minLatE},{minLonE},{maxLatE},{maxLonE}&WIDTH=700&HEIGHT=500&TIME={roundedMid:yyyy-MM-ddTHH:mm:ssZ}";
 
-                                        if (roundedMinutes == 60)
-                                        {
-                                            dtN = dtN.AddHours(1);
-                                            roundedMinutes = 0;
-                                        }
-
-                                        var roundedMid =
-                                            new DateTime(
-                                                dtN.Year,
-                                                dtN.Month,
-                                                dtN.Day,
-                                                dtN.Hour,
-                                                0,
-                                                0)
-                                            .AddMinutes(roundedMinutes);
-
-                                        var gibsStartDate =
-                                            new DateTime(2000, 2, 24);
-
-                                        var nasaGibsUrl =
-                                            "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi" +
-                                            "?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0" +
-                                            "&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor" +
-                                            "&FORMAT=image/jpeg&CRS=EPSG:4326" +
-                                            $"&BBOX={minLatE},{minLonE},{maxLatE},{maxLonE}" +
-                                            "&WIDTH=700&HEIGHT=500" +
-                                            $"&TIME={roundedMid:yyyy-MM-ddTHH:mm:ssZ}";
-
-                                        var eumetsatStart =
-                                            new DateTime(
-                                                2020,
-                                                9,
-                                                1,
-                                                0,
-                                                0,
-                                                0,
-                                                DateTimeKind.Utc);
-
-                                        var eumetsatEnd =
-                                            new DateTime(
-                                                2026,
-                                                4,
-                                                13,
-                                                8,
-                                                0,
-                                                0,
-                                                DateTimeKind.Utc);
+                                        var eumetsatStart = new DateTime(2020, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+                                        var eumetsatEnd = new DateTime(2026, 4, 13, 8, 0, 0, DateTimeKind.Utc);
 
                                         bool showEumetsat = validTimeE >= eumetsatStart && validTimeE <= eumetsatEnd;
                                         bool showNasa = roundedMid >= gibsStartDate;
 
-                                        @if (!Model.Latitude.HasValue || !Model.Longitude.HasValue)
+                                        if (!showEumetsat && !showNasa)
                                         {
-                                            <p class="text-muted mt-3">
-                                                No Image Detected.
-                                            </p>
-                                        }
-                                        else if (!showEumetsat && !showNasa)
-                                        {
-                                            <p class="text-muted fst-italic mt-4">
-                                                No Satellite Image Available
-                                                (Date too early or unsupported)
-                                            </p>
+                                            <p class="text-muted fst-italic my-3">No Satellite Image Available (Date too early or unsupported)</p>
                                         }
                                         else
                                         {
                                             <div class="row g-3 justify-content-center">
-                                                <!-- EUMETSAT -->
                                                 @if (showEumetsat)
                                                 {
                                                     <div class="col-12 @(showNasa ? "col-md-6" : "") text-center">
-                                                        <div class="fw-bold mb-2 small">
-                                                            EUMETSAT Satellite Image
-                                                        </div>
-                                                        <img src="@eumetsatUrl"
-                                                             class="img-fluid shadow-sm satellite-img"
-                                                             alt="EUMETSAT Satellite Image" />
+                                                        <div class="fw-bold mb-2 small text-muted">EUMETSAT Satellite Image</div>
+                                                        <img src="@eumetsatUrl" class="img-fluid satellite-img" alt="EUMETSAT Satellite Image" />
                                                     </div>
                                                 }
-                                                <!-- NASA -->
                                                 @if (showNasa)
                                                 {
                                                     <div class="col-12 @(showEumetsat ? "col-md-6" : "") text-center">
-                                                        <div class="fw-bold mb-2 small">
-                                                            NASA GIBS Satellite Image
-                                                        </div>
-                                                        <img src="@nasaGibsUrl"
-                                                             class="img-fluid shadow-sm satellite-img"
-                                                             alt="NASA GIBS Satellite Image" />
+                                                        <div class="fw-bold mb-2 small text-muted">NASA GIBS Satellite Image</div>
+                                                        <img src="@nasaGibsUrl" class="img-fluid satellite-img" alt="NASA GIBS Satellite Image" />
                                                     </div>
                                                 }
                                             </div>
@@ -296,106 +234,78 @@
                                     }
                                     else
                                     {
-                                        <p class="text-muted">
-                                            No Image Detected.
-                                        </p>
+                                        <p class="text-muted my-2">No coordinates detected for imagery.</p>
                                     }
                                 </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h4 class="m-0 fs-6 fw-bold">Event Time-Series Data</h4>
+                                    <form asp-action="Download" method="post" class="m-0">
+                                        <input type="hidden" name="stormJson" value='@System.Text.Json.JsonSerializer.Serialize(storm)' />
+                                        <input type="hidden" name="stormNumber" value="@(i + 1)" />
+                                        <button type="submit" class="result-button">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+                                            Download Data
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <div class="table-scroll-xy">
+                                    <table class="modern-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align: left;">Time</th>
+                                                <th>Rainfall (mm)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in storm.EventData)
+                                            {
+                                                <tr>
+                                                    <td style="text-align: left;">@item.Time.ToString("dd/MM/yyyy HH:mm")</td>
+                                                    <td>@Math.Round(item.Rainfall, 2)</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="carousel-nav-row text-center mt-4 d-flex justify-content-center gap-3">
+                                @if (i > 0)
+                                {
+                                    <button class="result-button" type="button" data-bs-target="#stormCarousel" data-bs-slide="prev">
+                                        &larr; Previous Storm
+                                    </button>
+                                }
+                                @if (i < Model.Results.Count - 1)
+                                {
+                                    <button class="result-button primary-result-button" type="button" data-bs-target="#stormCarousel" data-bs-slide="next">
+                                        Next Storm &rarr;
+                                    </button>
+                                }
                             </div>
                         </div>
-                        <div class="text-center mb-4">
-                            <form asp-action="Download" method="post">
-                                <input type="hidden" name="stormJson" value='@System.Text.Json.JsonSerializer.Serialize(storm)' />
-                                <input type="hidden" name="stormNumber" value="@(i + 1)" />
-                                <button type="submit" class="btn btn-link storm-download-btn">
-                                    ↓ Download Data
-                                </button>
-                            </form>
-                        </div>
-                        <div class="storm-table-container mt-2">
-                            <table class="table table-sm table-striped table-bordered mb-0">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>
-                                            Time
-                                        </th>
-                                        <th>
-                                            Rainfall (mm)
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var item in storm.EventData)
-                                    {
-                                        <tr>
-                                            <td>
-                                                @item.Time.ToString("dd/MM/yyyy HH:mm")
-                                            </td>
-                                            <td>
-                                                @Math.Round(item.Rainfall, 2)
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="carousel-nav-row text-center mt-3 mb-4 d-flex justify-content-center gap-3">
-                        @if (i > 0)
-                        {
-                            <button class="carousel-arrow-btn" type="button" data-bs-target="#stormCarousel" data-bs-slide="prev">
-                                ← Previous
-                            </button>
-                        }
-
-                        @if (i < Model.Results.Count - 1)
-                        {
-                            <button class="carousel-arrow-btn" type="button" data-bs-target="#stormCarousel" data-bs-slide="next">
-                                Next →
-                            </button>
-                        }
-                    </div>
+                    }
                 </div>
-            }
-        </div>
-    </div>
-}
+            </div>
+        </section>
+    }
+</div>
 
 @section Scripts {
-
     <partial name="_ValidationScriptsPartial" />
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script>
         @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
         {
             <text>
-                    var map =
-                    L.map('stationMap')
-                    .setView(
-                    [@Model.Latitude.Value,@Model.Longitude.Value],
-                    13
-                    );
-
-                    L.tileLayer(
-                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    {
-                        attribution:
-                    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                            }
-                    ).addTo(map);
-
-                    L.marker(
-                    [@Model.Latitude.Value,
-                                @Model.Longitude.Value]
-                    )
+                var map = L.map('stationMap').setView([@Model.Latitude.Value, @Model.Longitude.Value], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+                L.marker([@Model.Latitude.Value, @Model.Longitude.Value])
                     .addTo(map)
-                    .bindPopup(
-                    "@(Model.StationName ?? "Station")"
-                    )
+                    .bindPopup("@(Model.StationName ?? "Station")")
                     .openPopup();
             </text>
         }
@@ -406,304 +316,134 @@
         <script>
             (function() {
                 function cssVar(name) {
-                    return getComputedStyle(document.documentElement)
-                    .getPropertyValue(name)
-                    .trim();
+                    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
                 }
 
                 function themeColors() {
                     return {
-                        text:
-                            cssVar('--text') ||
-                            '#212529',
-                        muted:
-                            cssVar('--muted') ||
-                            '#6c757d',
-                        border:
-                            cssVar('--border') ||
-                            '#dee2e6',
-                        primary:
-                            cssVar('--primary') ||
-                            '#007bff',
-                        card:
-                            cssVar('--card') ||
-                            '#f7f7f7'
+                        text: cssVar('--text') || '#212529',
+                        muted: cssVar('--muted') || '#6c757d',
+                        border: cssVar('--border') || '#dee2e6',
+                        primary: cssVar('--primary') || '#0d6efd',
+                        card: cssVar('--card') || '#ffffff'
                     };
                 }
 
-                const dailyLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                    Model.DailyTotals.Select(d => d.Date))
-                );
-
-                const dailyValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                    Model.DailyTotals.Select(d => d.Total))
-                );
-
-                const stormWindows = @Html.Raw(
-                    System.Text.Json.JsonSerializer.Serialize(
-                        (Model.Results ?? new List<StormResult>()).Select(s => new
-                        {
-                            start = s.StartTime.ToString("yyyy-MM-dd"),
-                            end = s.EndTime.ToString("yyyy-MM-dd")
-                        })
-                    )
-                );
+                const dailyLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyTotals.Select(d => d.Date)));
+                const dailyValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyTotals.Select(d => d.Total)));
+                const stormWindows = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                    (Model.Results ?? new List<StormResult>()).Select(s => new {
+                        start = s.StartTime.ToString("yyyy-MM-dd"),
+                        end = s.EndTime.ToString("yyyy-MM-dd")
+                    })
+                ));
 
                 let activeStormIndex = 0;
-                const highlightPlugin = {id: 'stormHighlight',
+                const highlightPlugin = {
+                    id: 'stormHighlight',
                     afterDraw(chart) {
-                        if (!stormWindows.length)
-                            return;
-
-                        const {
-                            ctx,
-                            chartArea,
-                            scales
-                        } = chart;
-
+                        if (!stormWindows.length) return;
+                        const { ctx, chartArea, scales } = chart;
                         const xScale = scales.x;
-                        const totalBars = dailyLabels.length;
-
-                        if (totalBars < 2)
-                            return;
+                        if (dailyLabels.length < 2) return;
 
                         const px0 = xScale.getPixelForValue(0);
                         const px1 = xScale.getPixelForValue(1);
-
                         const slotW = Math.abs(px1 - px0);
                         const half = slotW / 2;
 
-                        stormWindows.forEach(
-                            (storm, idx) => {const si = dailyLabels.findIndex(d => d >= storm.start);
-
-                                if (si < 0)
-                                    return;
-
-                                let ei = si;
-
-                                for (
-                                    let k =
-                                        dailyLabels.length - 1;
-                                    k >= si;
-                                    k--
-                                ) {
-                                    if (
-                                        dailyLabels[k] <=
-                                        storm.end
-                                    ) {
-                                        ei = k;
-                                        break;
-                                    }
-                                }
-
-                                const x1 = xScale.getPixelForValue(si) - half;
-                                const x2 = xScale.getPixelForValue(ei) + half;
-
-                                const w = Math.max(slotW, x2 - x1);
-                                const y = chartArea.top;
-
-                                const h = chartArea.bottom - chartArea.top;
-
-                                const isActive = idx === activeStormIndex;
-
-                                ctx.save();
-                                ctx.fillStyle = isActive
-                                ? 'rgba(255, 200, 0, 0.30)'
-                                : 'rgba(255, 200, 0, 0.08)';
-
-                                ctx.strokeStyle = isActive
-                                ? 'rgba(255, 180, 0, 1)'
-                                : 'rgba(255, 200, 0, 0.40)';
-
-                                ctx.lineWidth = isActive ? 2 : 1;
-                                ctx.fillRect(x1, y, w, h);
-                                ctx.strokeRect(x1, y, w, h);
-                                ctx.restore();
+                        stormWindows.forEach((storm, idx) => {
+                            const si = dailyLabels.findIndex(d => d >= storm.start);
+                            if (si < 0) return;
+                            let ei = si;
+                            for (let k = dailyLabels.length - 1; k >= si; k--) {
+                                if (dailyLabels[k] <= storm.end) { ei = k; break; }
                             }
-                        );
+                            const x1 = xScale.getPixelForValue(si) - half;
+                            const x2 = xScale.getPixelForValue(ei) + half;
+                            const w = Math.max(slotW, x2 - x1);
+                            const y = chartArea.top;
+                            const h = chartArea.bottom - chartArea.top;
+                            const isActive = idx === activeStormIndex;
+
+                            ctx.save();
+                            ctx.fillStyle = isActive ? 'rgba(255, 193, 7, 0.35)' : 'rgba(255, 193, 7, 0.12)';
+                            ctx.strokeStyle = isActive ? '#ffc107' : 'rgba(255, 193, 7, 0.5)';
+                            ctx.lineWidth = isActive ? 2 : 1;
+                            ctx.fillRect(x1, y, w, h);
+                            ctx.strokeRect(x1, y, w, h);
+                            ctx.restore();
+                        });
                     }
                 };
 
                 function buildOverviewChart() {
                     const c = themeColors();
-
                     const canvas = document.getElementById('overviewChart');
+                    if (!canvas) return null;
 
-                    if (!canvas)
-                        return null;
-
-                    return new Chart(
-                        canvas.getContext('2d'),
-                        {
-                            type: 'bar',
-                            data: {
-                                labels:
-                                    dailyLabels,
-                                datasets: [
-                                    {
-                                        label: 'Daily Rainfall (mm)',
-                                        data: dailyValues,
-                                        backgroundColor: c.primary.replace(')',', 0.75)').replace('rgb','rgba'),
-                                        borderColor: c.primary,
-                                        borderWidth: 0,
-                                        barPercentage: 1.0,
-                                        categoryPercentage: 1.0
-                                    }
-                                ]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                animation: false,
-                                plugins: {
-                                    legend: {
-                                        display: true,
-                                        labels: {
-                                            color: themeColors().text,
-                                            font: {
-                                                size: 11
-                                            },
-                                            boxWidth: 12,
-                                            padding: 10,
-                                            generateLabels(chart) {
-                                                const defaults =
-                                                    Chart
-                                                        .defaults
-                                                        .plugins
-                                                        .legend
-                                                        .labels
-                                                        .generateLabels(
-                                                            chart
-                                                        );
-                                                defaults.push({
-                                                    text: 'Storm Event',
-                                                    fillStyle: 'rgba(255, 200, 0, 0.30)',
-                                                    strokeStyle: 'rgba(255, 180, 0, 1)',
-                                                    lineWidth: 2,
-                                                    hidden: false,
-                                                    index: -1
-                                                });
-                                                return defaults;
-                                            }
-                                        }
-                                    },
-                                    title: {
-                                        display: true,
-                                        text: '@Html.Raw(Model.StationName?.Replace("'", "\\'") ?? "") — Complete Rainfall Record',
-                                        color: themeColors().text,
-                                        font: {
-                                            size: 13
-                                        }
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            title: items => items[0].label,
-                                            label: item => `${Number(item.raw).toFixed(2)} mm`
-                                        }
-                                    }
-                                },
-                                scales: {
-                                    x: {
-                                        ticks: {
-                                            color: themeColors().muted,
-                                            autoSkip: true,
-                                            maxTicksLimit: window.innerWidth < 600 ? 5 : 15,
-                                            maxRotation: 45,
-                                            minRotation: 0,
-                                            font: {
-                                                size: window.innerWidth < 600 ? 9 : 11
-                                            },
-                                            callback(val, idx) {
-                                                const raw = dailyLabels[idx];
-                                                if (!raw)
-                                                    return '';
-
-                                                const d = new Date(raw);
-
-                                                if (isNaN(d))
-                                                    return raw.substring(0,7);
-
-                                                return d.toLocaleString('en-GB',
-                                                    {
-                                                        month:'short',
-                                                        year:'numeric'
-                                                    }
-                                                );
-                                            }
-                                        },
-                                        grid: {
-                                            display: false
-                                        }
-                                    },
-                                    y: {
-                                        beginAtZero: true,
-                                        title: {
-                                            display: window.innerWidth >= 480,
-                                            text:'Rainfall (mm)',
-                                            color:themeColors().muted,
-                                            font: {
-                                                size: 11
-                                            }
-                                        },
-                                        ticks: {
-                                            color:
-                                                themeColors().muted,
-                                            font: {
-                                                size:window.innerWidth < 600 ? 9 : 11
-                                            },
-                                            callback: v => Number(v).toFixed(0)
-                                        },
-                                        grid: {
-                                            color: themeColors().border
-                                        }
+                    return new Chart(canvas.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: dailyLabels,
+                            datasets: [{
+                                label: 'Daily Rainfall (mm)',
+                                data: dailyValues,
+                                backgroundColor: c.primary,
+                                borderRadius: 4,
+                                barPercentage: 1.0,
+                                categoryPercentage: 1.0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            animation: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        title: items => items[0].label,
+                                        label: item => `${Number(item.raw).toFixed(2)} mm`
                                     }
                                 }
                             },
-                            plugins: [highlightPlugin]
-                        }
-                    );
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        color: c.muted,
+                                        autoSkip: true,
+                                        maxTicksLimit: 12,
+                                        callback(val, idx) {
+                                            const raw = dailyLabels[idx];
+                                            if (!raw) return '';
+                                            const d = new Date(raw);
+                                            return isNaN(d) ? raw.substring(0,7) : d.toLocaleString('en-GB', { month:'short', year:'numeric' });
+                                        }
+                                    },
+                                    grid: { display: false }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { color: c.muted, callback: v => Number(v).toFixed(0) },
+                                    grid: { color: c.border }
+                                }
+                            }
+                        },
+                        plugins: [highlightPlugin]
+                    });
                 }
 
                 let overviewChart = buildOverviewChart();
 
-                if (window.matchMedia) {
-                    window.matchMedia('(prefers-color-scheme: dark)')
-                        .addEventListener(
-                            'change',
-                            () => {
-                                if (overviewChart)
-                                    overviewChart.destroy();
-
-                                overviewChart =
-                                    buildOverviewChart();
-
-                                overviewChart.update();
-                            }
-                        );
-                }
-
                 const carousel = document.getElementById('stormCarousel');
-
                 if (carousel) {
-                    carousel.addEventListener('slid.bs.carousel',
-                        function(e) {
-                            activeStormIndex = e.to;
-                            if (overviewChart)
-                                overviewChart.update();
-                            createChart(e.to);
-                        }
-                    );
+                    carousel.addEventListener('slid.bs.carousel', function(e) {
+                        activeStormIndex = e.to;
+                        if (overviewChart) overviewChart.update();
+                        createChart(e.to);
+                    });
                 }
-
-                window.overviewChart = overviewChart;
-
-                window.setActiveStorm = function(idx) {
-                    activeStormIndex = idx;
-
-                    if (overviewChart) {
-                        overviewChart.update();
-                    }
-                };
 
                 @if (Model.Results != null && Model.Results.Count > 0)
                 {
@@ -714,110 +454,39 @@
                                 values = storm.EventData.Select(d => Math.Round(d.Rainfall,2)),
                                 returnPeriod = storm.ReturnPeriod
                             })
-                        )
-                        );
-
+                        ));
                         const charts = {};
 
                         function createChart(index) {
-                            if (charts[index])
-                            return;
-
+                            if (charts[index]) return;
                             const storm = storms[index];
-
                             const canvas = document.getElementById(`rainChart_${index}`);
-
-                            if (!canvas)
-                            return;
-
+                            if (!canvas) return;
                             const c = themeColors();
 
-                            charts[index] = new Chart(canvas.getContext('2d'),
-                            {
+                            charts[index] = new Chart(canvas.getContext('2d'), {
                                 type: 'bar',
                                 data: {
-                                    labels:storm.labels,
-                                    datasets: [
-                                    {
-                                        label:'Rainfall (mm)',
+                                    labels: storm.labels,
+                                    datasets: [{
+                                        label: 'Rainfall (mm)',
                                         data: storm.values,
-                                        backgroundColor: c.primary.replace(')',', 0.75)').replace('rgb','rgba'),
-                                        borderColor: c.primary,
-                                        borderWidth:1
+                                        backgroundColor: c.primary,
+                                        borderRadius: 4
                                     }]
                                 },
-                                options:{
+                                options: {
                                     responsive: true,
-                                    maintainAspectRatio:false,
-                                    plugins:{
-                                        title:{
-                                            display: true,
-                                            text:storm.returnPeriod,
-                                            color: c.text,
-                                            font:{
-                                                size: 15
-                                            }
-                                        },
-                                        legend:{
-                                            display: false
-                                        }
-                                    },
-                                    scales:{
-                                        x:{
-                                            ticks:{
-                                                color: c.muted,
-                                                autoSkip:true,
-                                                maxTicksLimit:10,
-                                                maxRotation:45,
-                                                minRotation:0,
-                                                font: {
-                                                    size: 11
-                                                }
-                                            },
-                                            grid: {
-                                                color:c.border
-                                            }
-                                        },
-                                        y:{
-                                            beginAtZero: true,
-                                            ticks:{
-                                                color:c.muted,
-                                                callback:value => Number(value).toFixed(2),
-                                                font:{
-                                                    size: 11
-                                                }
-                                            },
-                                            grid:{
-                                                color:c.border
-                                            }
-                                        }
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { display: false } },
+                                    scales: {
+                                        x: { ticks: { color: c.muted }, grid: { color: c.border } },
+                                        y: { beginAtZero: true, ticks: { color: c.muted }, grid: { color: c.border } }
                                     }
                                 }
                             });
                         }
-                            
                         createChart(0);
-                            
-                        document.querySelectorAll('.storm-table-container')
-                        .forEach(
-                            function (table) {
-                                table.addEventListener('wheel',
-                                function(e) {
-                                    e.stopPropagation();
-                                },
-                                {
-                                    passive: true
-                                });
-                                table.addEventListener('touchmove',
-                                function (e) {
-                                    e.stopPropagation();
-                                },
-                                {
-                                    passive: true
-                                });
-                            }
-                        );
-
                     </text>
                 }
             })();
@@ -826,413 +495,424 @@
 }
 
 <style>
-    body {
-        background: var(--bg);
+    .storm-page {
+        --primary-soft: rgba(13, 110, 253, .09);
+        --primary-soft-strong: rgba(13, 110, 253, .16);
+        --muted-soft: #93a1b5;
+        width: 100%;
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 30px 24px 70px;
+        font-family: 'Inter', sans-serif;
         color: var(--text);
+        background: var(--bg);
     }
 
-    .card {
+    .storm-page h1, .storm-page h2, .storm-page h3, .storm-page h4,
+    .search-button, .result-button {
+        font-family: 'Manrope', sans-serif;
+    }
+
+    .icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        vertical-align: middle;
+    }
+
+    .icon-sm {
+        width: 16px;
+        height: 16px;
+    }
+
+    .storm-page-header {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+        margin-bottom: 36px;
+        text-align: left;
+    }
+
+    .header-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .header-brand {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .storm-title-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: var(--primary);
+        color: #fff;
+        flex-shrink: 0;
+        box-shadow: 0 8px 18px var(--primary-soft-strong);
+    }
+
+    .storm-title-icon .icon {
+        width: 26px;
+        height: 26px;
+    }
+
+    .eyebrow {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+
+    .header-brand h1 {
+        margin: 0;
+        font-size: 1.65rem;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -0.02em;
+    }
+
+    .header-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        border-radius: 30px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-size: 0.88rem;
+        font-weight: 500;
+        box-shadow: 0 2px 6px var(--shadow);
+    }
+
+    .badge-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #22c55e;
+    }
+
+    .header-main-content p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.5;
+        max-width: 850px;
+    }
+
+    .storm-card, .results-card {
         background: var(--card);
         color: var(--text);
         border: 1px solid var(--border);
-        transition: background-color 0.2s ease, border-color 0.2s ease;
+        border-radius: 18px;
+        padding: 26px;
+        box-shadow: 0 6px 20px var(--shadow);
+        transition: transform .2s ease, box-shadow .2s ease;
+        margin-bottom: 22px;
     }
 
-    .card-body {
-        color: var(--text);
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        margin-bottom: 18px;
     }
 
-    .card h1,
-    .card h2,
-    .card h3,
-    .card h4,
-    .card h5,
-    .card h6,
-    .card p,
-    .card div,
-    .card span,
-    .card strong,
-    .card label {
-        color: var(--text);
+    .section-header.compact {
+        margin-bottom: 16px;
     }
 
-    .storm-search-card {
-        border-radius: 16px !important;
+    .section-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+        border-radius: 12px;
+        background: var(--primary-soft);
+        color: var(--primary);
     }
 
-    .storm-page-title {
-        color: var(--primary) !important;
+    .section-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
         font-weight: 700;
-        letter-spacing: 0.2px;
     }
 
-    .form-label {
+    .section-header p {
+        margin: 3px 0 0;
+        color: var(--muted);
+        font-size: .82rem;
+    }
+
+    .upload-area {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 20px;
+        border: 1.5px dashed var(--border);
+        border-radius: 14px;
+        background: var(--card-inner);
+    }
+
+    .upload-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    .upload-text {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .upload-text strong {
+        font-size: .88rem;
+    }
+
+    .upload-text span {
+        color: var(--muted);
+        font-size: .78rem;
+    }
+
+    .file-input {
+        width: 100%;
         color: var(--text);
-        font-weight: 600;
+        font-size: .8rem;
     }
 
-    .form-control,
-    .form-select {
+    .coordinate-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0,1fr));
+        gap: 16px;
+    }
+
+    .input-group-modern {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .modern-label {
+        color: var(--text);
+        font-size: .74rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+    .modern-input {
+        width: 100%;
+        box-sizing: border-box;
+        min-height: 44px;
+        padding: 10px 13px;
         background: var(--card-inner);
         color: var(--text);
         border: 1px solid var(--border);
         border-radius: 10px;
-        min-height: 44px;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        font-size: .92rem;
+        outline: none;
+        transition: border-color .15s ease, box-shadow .15s ease;
     }
 
-        .form-control:hover,
-        .form-select:hover {
-            border-color: var(--primary);
-        }
+    .modern-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px var(--primary-soft);
+        background: var(--card);
+    }
 
-        .form-control:focus,
-        .form-select:focus {
-            background: var(--card-inner);
-            color: var(--text);
-            border-color: var(--primary);
-            box-shadow: 0 0 0 0.15rem rgba(78, 161, 255, 0.20);
-        }
+    .search-button-container {
+        display: flex;
+        justify-content: center;
+    }
 
-        .form-control::placeholder {
-            color: var(--muted);
-        }
-
-        .form-control[type="file"] {
-            background: var(--card-inner);
-            color: var(--text);
-            padding: 0.55rem 0.75rem;
-        }
-
-    .storm-primary-btn {
+    .search-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: none;
+        cursor: pointer;
+        min-width: 250px;
+        min-height: 50px;
+        padding: 0 30px;
         background: var(--primary);
-        border: 1px solid var(--primary);
         color: #fff !important;
-        font-weight: 600;
-        border-radius: 10px;
-        min-height: 48px;
-        transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        font-size: 0.95rem;
+        font-weight: 700;
+        border-radius: 12px;
+        box-shadow: 0 10px 24px var(--primary-soft-strong);
+        transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
     }
 
-        .storm-primary-btn:hover {
-            color: #fff !important;
-            opacity: 0.92;
-            transform: translateY(-1px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-        }
-
-        .storm-primary-btn:active {
-            transform: translateY(0);
-        }
-
-    .text-danger {
-        color: #dc3545 !important;
+    .search-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 28px var(--primary-soft-strong);
     }
 
     .storm-success-message {
         background: var(--card);
-        color: var(--text) !important;
-        border: 1px solid #28a745;
-        border-left: 5px solid #28a745;
+        color: var(--text);
+        border: 1px solid #22c55e;
+        border-left: 5px solid #22c55e;
         border-radius: 10px;
-        padding: 12px 16px;
+        padding: 14px;
     }
 
-    .storm-section-title {
-        color: var(--primary) !important;
-        font-weight: 700;
+    .station-info-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
     }
 
     .station-info-item {
         background: var(--card-inner);
         border: 1px solid var(--border);
         border-radius: 10px;
-        padding: 10px 14px;
-        margin-bottom: 10px;
+        padding: 12px 16px;
     }
 
     .station-info-label {
-        color: var(--muted) !important;
-        font-size: 0.78rem;
+        color: var(--muted);
+        font-size: 0.72rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.4px;
-        margin-bottom: 2px;
     }
 
-
     .station-info-value {
-        color: var(--text) !important;
+        color: var(--text);
         font-size: 0.95rem;
-        font-weight: 500;
+        font-weight: 600;
+        margin-top: 2px;
     }
 
     .station-map {
         width: 100%;
-        height: 260px;
+        height: 280px;
         border: 1px solid var(--border);
-        border-radius: 12px !important;
+        border-radius: 12px;
         overflow: hidden;
-    }
-
-    @@media (min-width: 768px) {
-
-        .station-map {
-            height: 300px;
-        }
     }
 
     .overview-chart-wrapper {
         position: relative;
         width: 100%;
-        height: 280px;
-    }
-
-    @@media (min-width: 768px) {
-
-        .overview-chart-wrapper {
-            height: 380px;
-        }
+        height: 350px;
     }
 
     .chart-wrapper {
         position: relative;
         width: 100%;
-        height: 420px;
+        height: 380px;
         background: var(--card-inner);
         border: 1px solid var(--border);
         border-radius: 12px;
-        padding: 10px;
+        padding: 14px;
     }
 
-    @@media (max-width: 991px) {
-        .chart-wrapper {
-            height: 320px;
-        }
-    }
-
-    .storm-result-card {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        transition: box-shadow 0.2s ease, border-color 0.2s ease;
-    }
-
-        .storm-result-card:hover {
-            border-color: var(--primary);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.10) !important;
-        }
-
-    .storm-title {
-        color: var(--primary) !important;
-        font-weight: 700;
-    }
-
-    .storm-rainfall {
+    .storm-rainfall-badge {
+        padding: 6px 14px;
+        border-radius: 20px;
         background: var(--card-inner);
         border: 1px solid var(--border);
-        border-radius: 10px;
-        display: inline-block;
-        padding: 8px 16px;
+        font-size: 0.85rem;
     }
-
-        .storm-rainfall strong {
-            color: var(--text) !important;
-        }
 
     .satellite-section {
         background: var(--card-inner);
         border: 1px solid var(--border);
         border-radius: 14px;
-        padding: 15px;
+        padding: 18px;
     }
 
     .satellite-title {
-        color: var(--text) !important;
-        font-weight: 600;
+        font-weight: 700;
+        font-size: 0.95rem;
     }
 
     .satellite-img {
         width: 100%;
-        height: 420px;
+        height: 320px;
         object-fit: cover;
-        border-radius: 12px;
+        border-radius: 10px;
         border: 1px solid var(--border);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
     }
 
-    @@media (max-width: 991px) {
-        .satellite-img {
-            height: 320px;
-        }
+    .result-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: var(--card);
+        color: var(--primary) !important;
+        border: 1.5px solid var(--primary);
+        border-radius: 10px;
+        font-size: .85rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform .15s ease, background-color .15s ease;
     }
 
-    .storm-table-container {
+    .result-button:hover {
+        background: var(--primary);
+        color: #fff !important;
+        transform: translateY(-1px);
+    }
+
+    .primary-result-button {
+        background: var(--primary);
+        color: #fff !important;
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        color: var(--text);
+    }
+
+    .modern-table th {
+        position: sticky;
+        top: 0;
+        padding: 12px 15px;
+        background: var(--table-header, #212529);
+        color: #fff;
+        font-size: .76rem;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    .modern-table td {
+        padding: 10px 15px;
+        border-bottom: 1px solid var(--border);
+        text-align: right;
+        font-size: .85rem;
+    }
+
+    .table-scroll-xy {
         max-height: 300px;
-        overflow-y: auto;
-        overflow-x: auto;
-        position: relative;
-        z-index: 10;
-        scroll-behavior: smooth;
-        -webkit-overflow-scrolling: touch;
+        overflow: auto;
         border: 1px solid var(--border);
         border-radius: 10px;
-    }
-
-        .storm-table-container::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        .storm-table-container::-webkit-scrollbar-track {
-            background: var(--card-inner);
-        }
-
-        .storm-table-container::-webkit-scrollbar-thumb {
-            background: var(--muted);
-            border-radius: 6px;
-        }
-
-            .storm-table-container::-webkit-scrollbar-thumb:hover {
-                background: var(--primary);
-            }
-
-        .storm-table-container table {
-            margin-bottom: 0;
-        }
-
-    .table {
-        color: var(--text);
-        background: var(--card);
-        border-color: var(--border);
-    }
-
-        .table thead {
-            background: var(--table-header);
-            color: #fff;
-        }
-
-            .table thead th {
-                color: #fff !important;
-                background: var(--table-header);
-                border-color: var(--border);
-                font-weight: 600;
-                font-size: 0.85rem;
-            }
-
-        .table tbody td {
-            color: var(--text) !important;
-            background: var(--card);
-            border-color: var(--border);
-            font-size: 0.85rem;
-        }
-
-    .table-striped > tbody > tr:nth-of-type(odd) > * {
-        background-color: var(--row-alt);
-        color: var(--text);
-    }
-
-    .storm-table-container td,
-    .storm-table-container th {
-        white-space: nowrap;
-    }
-
-    .storm-download-btn {
-        color: var(--primary) !important;
-        font-weight: 600;
-        text-decoration: none;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 7px 14px !important;
-        display: inline-block;
-        transition: background-color 0.2s ease, border-color 0.2s ease;
-    }
-
-        .storm-download-btn:hover {
-            background: var(--card-inner);
-            border-color: var(--primary);
-            text-decoration: none;
-        }
-
-    .carousel-nav-row {
-        margin-top: 15px;
-    }
-
-    .carousel-arrow-btn {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 9px;
-        padding: 8px 18px;
-        font-size: 0.9rem;
-        color: var(--text);
-        cursor: pointer;
-        min-width: 100px;
-        touch-action: manipulation;
-        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
-    }
-
-        .carousel-arrow-btn:hover {
-            background: var(--card-inner);
-            border-color: var(--primary);
-            color: var(--primary);
-            transform: translateY(-1px);
-        }
-
-        .carousel-arrow-btn:active {
-            transform: translateY(0);
-        }
-
-    .carousel-control-prev,
-    .carousel-control-next {
-        display: none !important;
-    }
-
-    .text-primary {
-        color: var(--primary) !important;
-    }
-
-    .text-muted {
-        color: var(--muted) !important;
-    }
-
-    .text-secondary {
-        color: var(--muted) !important;
-    }
-
-    .card .btn-link {
-        color: var(--primary);
-    }
-
-    @@media (max-width: 575px) {
-        .container {
-            padding-left: 10px !important;
-            padding-right: 10px !important;
-        }
-
-        .card {
-            border-radius: 13px !important;
-        }
-
-        .storm-page-title {
-            font-size: 1.45rem;
-        }
-
-        .chart-wrapper {
-            height: 280px;
-            padding: 5px;
-        }
-
-        .satellite-img {
-            height: 250px;
-        }
-
-        .storm-result-card {
-            border-radius: 13px;
-        }
-
-        .carousel-arrow-btn {
-            padding: 7px 12px;
-            min-width: 90px;
-        }
     }
 </style>

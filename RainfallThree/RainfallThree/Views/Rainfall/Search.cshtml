@@ -4,6 +4,8 @@
     ViewData["Title"] = "Design Rainfall Data";
 }
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
 <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCOOGU5sHBREmUAIpPYv1THtaM-t0SgE8I&libraries=places"></script>
@@ -13,169 +15,121 @@
 
 <div class="rainfall-page">
     <div class="rainfall-page-header">
-        <div class="rainfall-title-icon">
-            ☔
+        <div class="header-top-bar">
+            <div class="header-brand">
+                <div class="rainfall-title-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9" /><path d="M12 18v3M8 18v3M16 18v2" /></svg>
+                </div>
+                <div>
+                    <div class="eyebrow">eThekwini Municipality</div>
+                    <h1>Design Rainfall Data</h1>
+                </div>
+            </div>
+            <div class="header-badge">
+                <span class="badge-dot"></span>
+                <span>Hydrology tool</span>
+            </div>
         </div>
-        <div>
-            <h1>Design Rainfall Data</h1>
+        <div class="header-main-content">
             <p>
-                Select a location, define an area, and retrieve detailed
-                rainfall information for your selected return periods and durations.
+                Select a location on the map, choose your return periods and durations, and retrieve depth&ndash;duration&ndash;frequency data ready for export to PCSWMM.
             </p>
         </div>
     </div>
-
     <!-- SEARCH FORM -->
     <form class="rainfall-form" method="post" asp-action="Search" asp-controller="Rainfall" enctype="multipart/form-data">
         <input type="hidden" asp-for="PolygonGeoJson" id="PolygonGeoJson" />
+        <div class="step-label">
+            <div>
+                <h3>Select a location</h3>
+                <p>Search an address, click the map, or draw a catchment boundary.</p>
+            </div>
+        </div>
         <!-- MAP CARD -->
         <section class="rainfall-card map-card">
-            <div class="section-header">
-                <div class="section-icon">
-                    📍
-                </div>
-                <div>
-                    <h2>Select Location</h2>
-                    <p>
-                        Select a location on the map or draw an area polygon.
-                    </p>
-                </div>
-            </div>
             <div class="map-wrapper">
                 <div id="map"></div>
+                <!-- ADDRESS SEARCH OVERLAY -->
+                <div class="map-search-overlay">
+                    <div class="map-search-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                        <input asp-for="Address" id="Address" placeholder="Search an address within eThekwini…" autocomplete="off" style="margin-left: 10px" />
+                    </div>
+                </div>
             </div>
-            <div class="map-help">
-                <span>
-                    🖱️ Click the map to select a location
-                </span>
-                <span>
-                    ✏️ Use the polygon tool to define an area
-                </span>
-            </div>
-        </section>
-
-        <!-- ADDRESS + COORDINATES -->
-        <div class="rainfall-two-column">
-            <!-- ADDRESS CARD -->
-            <section class="rainfall-card">
-                <div class="section-header compact">
-                    <div class="section-icon">
-                        🔎
-                    </div>
-                    <div>
-                        <h2>Search by Address</h2>
-                        <p>
-                            Find a location within the eThekwini region.
-                        </p>
-                    </div>
-                </div>
-                <div id="addressMessage"
-                     class="address-message">
-                </div>
-                <div class="address-search">
-                    <input asp-for="Address" id="Address" class="modern-input" placeholder="Enter an address within the eThekwini region" autocomplete="off" />
-                    <button type="button" id="searchAddressBtn" class="modern-button">
-                        <span>🔎</span>
-                        Find Address
-                    </button>
-                </div>
-            </section>
-
-            <!-- COORDINATES CARD -->
-            <section class="rainfall-card">
-                <div class="section-header compact">
-                    <div class="section-icon">
-                        🧭
-                    </div>
-                    <div>
-                        <h2>Location Coordinates</h2>
-                        <p>
-                            Enter latitude and longitude manually.
-                        </p>
-                    </div>
-                </div>
+            <div id="addressMessage" class="address-message"></div>
+            <details class="advanced">
+                <summary>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm chevron"><path d="m6 9 6 6 6-6" /></svg>
+                    Enter coordinates manually
+                </summary>
                 <div class="coordinate-grid">
                     <div class="input-group-modern">
-                        <label asp-for="LATDEG">
-                            Latitude Degree
-                        </label>
+                        <label asp-for="LATDEG">Latitude Degree</label>
                         <input asp-for="LATDEG" id="LATDEG" class="modern-input" placeholder="Degrees" />
                     </div>
                     <div class="input-group-modern">
-                        <label asp-for="LATMIN">
-                            Latitude Minute
-                        </label>
+                        <label asp-for="LATMIN">Latitude Minute</label>
                         <input asp-for="LATMIN" id="LATMIN" class="modern-input" placeholder="Minutes" />
                     </div>
                     <div class="input-group-modern">
-                        <label asp-for="LONGDEG">
-                            Longitude Degree
-                        </label>
+                        <label asp-for="LONGDEG">Longitude Degree</label>
                         <input asp-for="LONGDEG" id="LONGDEG" class="modern-input" placeholder="Degrees" />
                     </div>
                     <div class="input-group-modern">
-                        <label asp-for="LONGMIN">
-                            Longitude Minute
-                        </label>
-                        <input asp-for="LONGMIN" id="LONGMIN" class="modern-input"placeholder="Minutes" />
+                        <label asp-for="LONGMIN">Longitude Minute</label>
+                        <input asp-for="LONGMIN" id="LONGMIN" class="modern-input" placeholder="Minutes" />
                     </div>
                 </div>
-            </section>
+            </details>
+        </section>
+        <div class="step-label">
+            <div>
+                <p>Optionally upload a boundary file, then pick return periods and durations.</p>
+            </div>
         </div>
-
         <!-- UPLOAD + RAINFALL OPTIONS -->
         <div class="rainfall-two-column">
             <!-- UPLOAD AREA -->
             <section class="rainfall-card">
                 <div class="section-header compact">
                     <div class="section-icon">
-                        🗺️
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg>
                     </div>
                     <div>
                         <h2>Upload Area</h2>
-                        <p>
-                            Upload a polygon defining the area to analyse.
-                        </p>
+                        <p>Upload a polygon defining the area to analyse.</p>
                     </div>
                 </div>
                 <div class="upload-area">
                     <div class="upload-icon">
-                        📁
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg>
                     </div>
                     <div class="upload-text">
-                        <strong>
-                            Upload an area file
-                        </strong>
-                        <span>
-                            GeoJSON, JSON, KML or KMZ
-                        </span>
+                        <strong>Upload an area file</strong>
+                        <span>GeoJSON, JSON, KML or KMZ</span>
                     </div>
                     <input type="file" id="areaFileInput" accept=".geojson,.json,.kml,.kmz" class="file-input" />
                 </div>
                 <button type="button" id="uploadAreaBtn" class="modern-button secondary-button">
-                    📤 Upload Area
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg>
+                    Upload Area
                 </button>
             </section>
-
             <!-- RAINFALL OPTIONS -->
             <section class="rainfall-card">
                 <div class="section-header compact">
                     <div class="section-icon">
-                        🌧️
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9" /></svg>
                     </div>
                     <div>
                         <h2>Rainfall Options</h2>
-                        <p>
-                            Select the return periods and durations required.
-                        </p>
+                        <p>Select the return periods and durations required.</p>
                     </div>
                 </div>
-
                 <!-- RETURN PERIODS -->
                 <div class="option-section">
-                    <h3>
-                        Return Period
-                    </h3>
+                    <h3>Return Period</h3>
                     <div class="checkbox-grid">
                         @foreach (var rp in Model.ReturnPeriodOptions.Where(x => !string.IsNullOrEmpty(x.Value)))
                         {
@@ -188,12 +142,9 @@
                         }
                     </div>
                 </div>
-
                 <!-- DURATIONS -->
                 <div class="option-section">
-                    <h3>
-                        Duration
-                    </h3>
+                    <h3>Duration</h3>
                     <div class="checkbox-grid">
                         @foreach (var d in Model.DurationOptions.Where(x => !string.IsNullOrEmpty(x.Value)))
                         {
@@ -208,28 +159,22 @@
                 </div>
             </section>
         </div>
-
         <!-- SEARCH BUTTON -->
         <div class="search-button-container">
             <button type="submit" class="search-button">
-                <span>🔍</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
                 Search Rainfall Data
             </button>
         </div>
     </form>
-
     <!-- RESULTS -->
     @if (Model.Results != null && Model.Results.Any())
     {
         <section class="results-card">
             <div class="results-header">
                 <div>
-                    <h2>
-                        Rainfall Results
-                    </h2>
-                    <p>
-                        @Model.Results.Count result(s) found
-                    </p>
+                    <h2>Rainfall Results</h2>
+                    <p>@Model.Results.Count result(s) found</p>
                 </div>
                 <div class="results-actions">
                     <form method="post" asp-action="Download" onsubmit="prepareDownload()">
@@ -238,7 +183,7 @@
                         <input type="hidden" name="LATMIN" value="@Model.LATMIN" />
                         <input type="hidden" name="LONGDEG" value="@Model.LONGDEG" />
                         <input type="hidden" name="LONGMIN" value="@Model.LONGMIN" />
-                        
+
                         @foreach (var rp in Model.SelectedReturnPeriods)
                         {
                             <input type="hidden" name="SelectedReturnPeriods" value="@rp" />
@@ -251,15 +196,16 @@
 
                         <input type="hidden" name="ResultsJson" id="ResultsJson" />
                         <button type="submit" class="result-button">
-                            ⬇ Download CSV
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="m7 10 5 5 5-5" /><path d="M12 15V3" /></svg>
+                            Download CSV
                         </button>
                         <button type="button" id="btnExportPCSWMM" class="result-button primary-result-button">
-                            ⚡ Export to PCSWMM
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+                            Export to PCSWMM
                         </button>
                     </form>
                 </div>
             </div>
-
             <!-- DETAIL TABLE -->
             <div class="table-scroll-xy">
                 <table class="modern-table">
@@ -371,9 +317,7 @@
                     <h2>
                         @(string.IsNullOrEmpty(Model.PolygonGeoJson) ? "Point Summary Statistics" : "Area Summary Statistics")
                     </h2>
-                    <p>
-                        Minimum, maximum and average rainfall values.
-                    </p>
+                    <p>Minimum, maximum and average rainfall values — by return period.</p>
                 </div>
             </div>
             <div class="table-scroll">
@@ -382,9 +326,7 @@
                         @if (!Model.SelectedDurations.Any())
                         {
                             <tr>
-                                <th rowspan="2">
-                                    Return Period
-                                </th>
+                                <th rowspan="2" class="rp-col">Return Period</th>
                                 <th colspan="3">5 Min</th>
                                 <th colspan="3">10 Min</th>
                                 <th colspan="3">15 Min</th>
@@ -395,7 +337,7 @@
                                 <th colspan="3">3 Days</th>
                                 <th colspan="3">7 Days</th>
                             </tr>
-                            <tr>
+                            <tr class="sub">
                                 @for (int i = 0; i < 9; i++)
                                 {
                                     <th>Min</th>
@@ -407,20 +349,12 @@
                         else
                         {
                             <tr>
-                                <th>
-                                    Return Period
-                                </th>
+                                <th class="rp-col">Return Period</th>
                                 @foreach (var duration in Model.SelectedDurations)
                                 {
-                                    <th>
-                                        Min @duration
-                                    </th>
-                                    <th>
-                                        Max @duration
-                                    </th>
-                                    <th>
-                                        Avg @duration
-                                    </th>
+                                    <th>Min @duration</th>
+                                    <th>Max @duration</th>
+                                    <th>Avg @duration</th>
                                 }
                             </tr>
                         }
@@ -543,32 +477,21 @@
             <div class="modal-header">
                 <div>
                     <h5 class="modal-title">
-                        ⚡ Export to PCSWMM
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+                        Export to PCSWMM
                     </h5>
-                    <small>
-                        Configure your PCSWMM storm export.
-                    </small>
+                    <small>Configure your PCSWMM storm export.</small>
                 </div>
             </div>
             <div class="modal-body">
-                <label for="stormType"class="modern-label">
-                    South African SCS Type
-                </label>
+                <label for="stormType" class="modern-label">South African SCS Type</label>
                 <select id="stormType" class="modern-input">
-                    <option value="Type_1">
-                        South Africa SCS Type 1
-                    </option>
-                    <option value="Type_2">
-                        South Africa SCS Type 2
-                    </option>
-                    <option value="Both">
-                        Both
-                    </option>
+                    <option value="Type_1">South Africa SCS Type 1</option>
+                    <option value="Type_2">South Africa SCS Type 2</option>
+                    <option value="Both">Both</option>
                 </select>
                 <div class="modal-field">
-                    <label for="modelFolderPath" class="modern-label">
-                        PCSWMM Model Directory
-                    </label>
+                    <label for="modelFolderPath" class="modern-label">PCSWMM Model Directory</label>
                     <input type="text" id="modelFolderPath" class="modern-input" placeholder="C:\Users\YourName\Documents\YourModel" autocomplete="off" />
                     <small>
                         Copy the address from the Windows Explorer address bar
@@ -576,13 +499,12 @@
                     </small>
                 </div>
                 <div class="modern-info">
-                    <strong>ℹ Export Information</strong>
-                    <p>
-                        The generated PCSWMM files will be packaged into:
-                    </p>
                     <strong>
-                        Generated_SWMM_Storms.zip
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><circle cx="12" cy="12" r="9" /><path d="M12 16v-4M12 8h.01" /></svg>
+                        Export Information
                     </strong>
+                    <p>The generated PCSWMM files will be packaged into:</p>
+                    <strong>Generated_SWMM_Storms.zip</strong>
                     <p>
                         The ZIP contains the generated
                         <strong>.dat</strong> files,
@@ -593,11 +515,10 @@
                 </div>
             </div>
             <div class="modal-footer">
-               <button class="modal-button secondary" data-bs-dismiss="modal">
-                    Cancel
-                </button>
+                <button class="modal-button secondary" data-bs-dismiss="modal">Cancel</button>
                 <button class="modal-button primary" id="btnGenerate">
-                    ⚡ Generate Files
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+                    Generate Files
                 </button>
             </div>
         </div>
@@ -610,17 +531,14 @@
         <div class="modal-content modern-modal">
             <div class="modal-header">
                 <h5>
-                    ⚡ Generating PCSWMM Files
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+                    Generating PCSWMM Files
                 </h5>
             </div>
             <div class="modal-body">
-                <p id="progressText">
-                    Preparing export...
-                </p>
+                <p id="progressText">Preparing export...</p>
                 <div class="modern-progress">
-                    <div id="progressBar">
-                        0%
-                    </div>
+                    <div id="progressBar">0%</div>
                 </div>
                 <div class="progress-details">
                     <div>
@@ -633,9 +551,7 @@
                     </div>
                     <div>
                         <span>Current File</span>
-                        <strong id="currentFile">
-                            Preparing...
-                        </strong>
+                        <strong id="currentFile">Preparing...</strong>
                     </div>
                 </div>
             </div>
@@ -649,13 +565,15 @@
         <div class="modal-content modern-modal">
             <div class="modal-header">
                 <h5>
-                    ✅ Export Complete
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><path d="M20 6 9 17l-5-5" /></svg>
+                    Export Complete
                 </h5>
             </div>
             <div class="modal-body">
                 <div class="success-message">
                     <strong>
-                        ✔ Export completed successfully.
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><path d="M20 6 9 17l-5-5" /></svg>
+                        Export completed successfully.
                     </strong>
                     <br />
                     <span>
@@ -667,17 +585,14 @@
                     Click <strong>Download ZIP Files</strong> and save the ZIP
                     file inside your <strong>PCSWMM Model</strong> folder.
                 </p>
-                <div class="zip-name">
-                    Generated_SWMM_Storms.zip
-                </div>
+                <div class="zip-name">Generated_SWMM_Storms.zip</div>
                 <button class="modal-button success full-width" id="btnDownloadZip">
-                    ⬇ Download ZIP Files
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="m7 10 5 5 5-5" /><path d="M12 15V3" /></svg>
+                    Download ZIP Files
                 </button>
             </div>
             <div class="modal-footer">
-                <button class="modal-button primary" id="btnContinue" disabled>
-                    Continue to Instructions →
-                </button>
+                <button class="modal-button primary" id="btnContinue" disabled>Continue to Instructions &rarr;</button>
             </div>
         </div>
     </div>
@@ -714,7 +629,7 @@
             }
         ).addTo(map);
 
-        //DRAWING 
+        //DRAWING
         var drawnItems =
             new L.FeatureGroup();
         map.addLayer(drawnItems);
@@ -751,7 +666,7 @@
             ).value = "";
         }
 
-        // UPLOAD AREA 
+        // UPLOAD AREA
 
         document
             .getElementById("uploadAreaBtn")
@@ -1060,7 +975,7 @@
             }
         }
 
-        // MAP CLICK 
+        // MAP CLICK
         map.on(
             "click",
             function(e) {
@@ -1223,7 +1138,7 @@
             }
         );
 
-        // RESTORE SAVED POLYGON 
+        // RESTORE SAVED POLYGON
         var savedPolygon =
             document.getElementById(
                 "PolygonGeoJson"
@@ -1372,10 +1287,10 @@
 
         // PCSWMM EXPORT
         const exportResults =
-            @Html.Raw(Json.Serialize(Model.Results));
+                    @Html.Raw(Json.Serialize(Model.Results));
 
         const selectedDurations =
-            @Html.Raw(Json.Serialize(Model.SelectedDurations));
+                    @Html.Raw(Json.Serialize(Model.SelectedDurations));
 
         let generatedZip = null;
         let downloaded = false;
@@ -1658,63 +1573,165 @@
         }
     });
 </script>
+
 <style>
     .rainfall-page {
+        --primary-soft: rgba(13, 110, 253, .09);
+        --primary-soft-strong: rgba(13, 110, 253, .16);
+        --muted-soft: #93a1b5;
         width: 100%;
-        max-width: 1400px;
+        max-width: 1180px;
         margin: 0 auto;
-        padding: 25px 30px 60px;
+        padding: 30px 24px 70px;
+        font-family: 'Inter', sans-serif;
+        color: var(--text);
+        background: var(--bg);
+    }
+
+        .rainfall-page h1, .rainfall-page h2, .rainfall-page h3,
+        .search-button, .modern-button {
+            font-family: 'Manrope', sans-serif;
+        }
+
+    .icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        vertical-align: middle;
+    }
+
+    .icon-sm {
+        width: 16px;
+        height: 16px;
     }
 
     .rainfall-page-header {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 18px;
-        margin-bottom: 35px;
+        flex-direction: column;
+        gap: 28px;
+        margin-bottom: 36px;
         text-align: left;
+    }
+
+    .header-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .header-brand {
+        display: flex;
+        align-items: center;
+        gap: 16px;
     }
 
     .rainfall-title-icon {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 58px;
-        height: 58px;
-        border-radius: 16px;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
         background: var(--primary);
-        color: white;
-        font-size: 28px;
-        box-shadow: 0 8px 20px var(--shadow);
+        color: var(--button-text, #fff);
+        flex-shrink: 0;
+        box-shadow: 0 8px 18px var(--primary-soft-strong);
     }
 
-    .rainfall-page-header h1 {
-        margin: 0;
-        color: var(--text);
-        font-size: 2rem;
+        .rainfall-title-icon .icon {
+            width: 26px;
+            height: 26px;
+        }
+
+    .eyebrow {
+        font-size: 0.75rem;
         font-weight: 700;
-    }
-
-    .rainfall-page-header p {
-        margin: 5px 0 0;
         color: var(--muted);
-        font-size: 0.95rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 2px;
     }
 
-    .rainfall-card,
-    .results-card {
+    .header-brand h1 {
+        margin: 0;
+        font-size: 1.65rem;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -0.02em;
+    }
+
+    .header-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        border-radius: 30px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-size: 0.88rem;
+        font-weight: 500;
+        box-shadow: 0 2px 6px var(--shadow);
+    }
+
+    .badge-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #22c55e;
+    }
+
+    .header-main-content h2 {
+        margin: 0 0 10px;
+        font-size: 2.1rem;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -0.025em;
+    }
+
+    .header-main-content p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.5;
+        max-width: 850px;
+    }
+
+    .step-label {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 6px 0 16px;
+    }
+
+        .step-label h3 {
+            margin: 0;
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .step-label p {
+            margin: 2px 0 0;
+            color: var(--muted);
+            font-size: .82rem;
+        }
+
+    .rainfall-card, .results-card {
         background: var(--card);
         color: var(--text);
         border: 1px solid var(--border);
         border-radius: 18px;
         padding: 26px;
-        box-shadow: 0 8px 24px var(--shadow);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        box-shadow: 0 6px 20px var(--shadow);
+        transition: transform .2s ease, box-shadow .2s ease;
+        margin-bottom: 22px;
     }
 
         .rainfall-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 30px var(--shadow);
+            box-shadow: 0 16px 34px var(--shadow);
         }
 
     .map-card {
@@ -1723,68 +1740,210 @@
 
     .rainfall-two-column {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 24px;
-        margin-bottom: 24px;
+        grid-template-columns: repeat(2, minmax(0,1fr));
+        gap: 22px;
+        margin-bottom: 22px;
     }
 
     .section-header {
         display: flex;
         align-items: center;
-        gap: 14px;
-        margin-bottom: 20px;
+        gap: 13px;
+        margin-bottom: 18px;
     }
 
         .section-header.compact {
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
 
     .section-icon {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 46px;
-        height: 46px;
+        width: 44px;
+        height: 44px;
         flex-shrink: 0;
-        border-radius: 13px;
-        background: rgba(0, 123, 255, 0.12);
-        font-size: 22px;
+        border-radius: 12px;
+        background: var(--primary-soft);
+        color: var(--primary);
     }
 
     .section-header h2 {
         margin: 0;
-        color: var(--text);
-        font-size: 1.2rem;
-        font-weight: 650;
+        font-size: 1.1rem;
+        font-weight: 700;
     }
 
     .section-header p {
-        margin: 4px 0 0;
+        margin: 3px 0 0;
         color: var(--muted);
-        font-size: 0.85rem;
+        font-size: .82rem;
     }
 
     .map-wrapper {
+        position: relative;
         overflow: hidden;
         border-radius: 14px;
         border: 1px solid var(--border);
-        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
     }
 
     #map {
         width: 100%;
-        height: 460px;
+        height: 440px;
+    }
+
+    .map-search-overlay {
+        position: absolute;
+        top: 14px;
+        left: 140px;
+        right: auto;
+        z-index: 1000;
+        display: flex;
+        pointer-events: none;
+    }
+
+    .map-search-box {
+        pointer-events: auto;
+        width: 520px;
+        max-width: 520px;
+        height: 48px;
+        box-sizing: border-box;
+        background: var(--card);
+        border-radius: 12px;
+        box-shadow: 0 8px 22px rgba(15,23,42,.16);
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 0 14px;
+    }
+
+        .map-search-box .icon {
+            color: var(--muted-soft);
+        }
+
+        .map-search-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: 'Inter', sans-serif;
+            font-size: .9rem;
+            color: var(--text);
+        }
+
+            .map-search-box input::placeholder {
+                color: var(--muted-soft);
+            }
+
+    .map-wrapper .leaflet-control-container {
+        z-index: 900;
+    }
+
+    .map-wrapper .leaflet-control {
+        z-index: 900;
+    }
+
+    .map-search-btn {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        height: 48px;
+        padding: 0 18px;
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+        font-size: .85rem;
+        cursor: pointer;
+        box-shadow: 0 8px 20px rgba(13,110,253,.3);
+        flex-shrink: 0;
+    }
+
+        .map-search-btn:hover {
+            background: var(--primary-hover);
+        }
+
+    .address-message {
+        min-height: 18px;
+        margin-top: 10px;
+        font-size: .85rem;
+        font-weight: 600;
     }
 
     .map-help {
         display: flex;
-        justify-content: center;
         flex-wrap: wrap;
-        gap: 25px;
+        gap: 10px;
         margin-top: 14px;
-        color: var(--muted);
-        font-size: 0.82rem;
     }
+
+        .map-help span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            border-radius: 20px;
+            background: var(--card-inner);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: .8rem;
+        }
+
+        .map-help .icon {
+            color: var(--primary);
+        }
+
+    .advanced {
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+    }
+
+        .advanced summary {
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: .85rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+            .advanced summary::-webkit-details-marker {
+                display: none;
+            }
+
+        .advanced .chevron {
+            transition: transform .2s ease;
+        }
+
+        .advanced[open] .chevron {
+            transform: rotate(180deg);
+        }
+
+    .coordinate-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0,1fr));
+        gap: 16px;
+        margin-top: 16px;
+    }
+
+    .input-group-modern {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+        .input-group-modern label, .modern-label {
+            color: var(--text);
+            font-size: .74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+        }
 
     .modern-input {
         width: 100%;
@@ -1795,57 +1954,23 @@
         color: var(--text);
         border: 1px solid var(--border);
         border-radius: 10px;
-        font-size: 0.95rem;
+        font-size: .92rem;
         outline: none;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        font-family: 'Inter', sans-serif;
+        transition: border-color .15s ease, box-shadow .15s ease;
     }
 
         .modern-input::placeholder {
-            color: var(--muted);
+            color: var(--muted-soft);
         }
 
         .modern-input:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12);
+            box-shadow: 0 0 0 4px var(--primary-soft);
+            background: var(--card);
         }
 
-    .input-group-modern {
-        display: flex;
-        flex-direction: column;
-        gap: 7px;
-    }
-
-        .input-group-modern label,
-        .modern-label {
-            color: var(--text);
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-    .address-search {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 10px;
-        align-items: center;
-    }
-
-    .address-message {
-        min-height: 20px;
-        margin-bottom: 8px;
-        font-size: 0.85rem;
-        font-weight: 500;
-    }
-
-    .coordinate-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 18px;
-    }
-
-    .modern-button,
-    .search-button,
-    .result-button,
-    .modal-button {
+    .modern-button, .search-button, .result-button, .modal-button {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -1853,24 +1978,23 @@
         border: none;
         border-radius: 10px;
         cursor: pointer;
-        font-weight: 600;
+        font-weight: 700;
         text-decoration: none;
-        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
     }
 
     .modern-button {
         min-height: 44px;
         padding: 0 18px;
         background: var(--primary);
-        color: white !important;
-        box-shadow: 0 5px 12px var(--shadow);
+        color: #fff !important;
+        box-shadow: 0 6px 14px var(--shadow);
     }
 
         .modern-button:hover {
             background: var(--primary-hover);
-            color: white !important;
             transform: translateY(-2px);
-            box-shadow: 0 8px 18px var(--shadow);
+            box-shadow: 0 10px 20px var(--shadow);
         }
 
     .secondary-button {
@@ -1880,44 +2004,51 @@
     .search-button-container {
         display: flex;
         justify-content: center;
-        margin: 30px 0 45px;
+        margin: 8px 0 44px;
     }
 
     .search-button {
         min-width: 250px;
-        min-height: 52px;
-        padding: 0 28px;
+        min-height: 54px;
+        padding: 0 30px;
         background: var(--primary);
-        color: white !important;
+        color: #fff !important;
         font-size: 1rem;
-        box-shadow: 0 8px 20px var(--shadow);
+        border-radius: 14px;
+        box-shadow: 0 14px 28px rgba(13,110,253,.32);
     }
 
         .search-button:hover {
             background: var(--primary-hover);
             transform: translateY(-3px);
-            box-shadow: 0 12px 25px var(--shadow);
+            box-shadow: 0 18px 34px rgba(13,110,253,.36);
         }
 
     .upload-area {
         display: flex;
         align-items: center;
         gap: 14px;
-        padding: 18px;
-        border: 2px dashed var(--border);
-        border-radius: 13px;
+        padding: 20px;
+        border: 1.5px dashed var(--border);
+        border-radius: 14px;
         background: var(--card-inner);
+        transition: border-color .15s ease;
     }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+        }
 
     .upload-icon {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 45px;
-        height: 45px;
+        width: 44px;
+        height: 44px;
         border-radius: 12px;
-        background: rgba(0,123,255,0.1);
-        font-size: 22px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        flex-shrink: 0;
     }
 
     .upload-text {
@@ -1927,18 +2058,19 @@
     }
 
         .upload-text strong {
-            color: var(--text);
+            font-size: .88rem;
         }
 
         .upload-text span {
             color: var(--muted);
-            font-size: 0.8rem;
+            font-size: .78rem;
         }
 
     .file-input {
         width: 100%;
         color: var(--text);
-        font-size: 0.8rem;
+        font-size: .8rem;
+        margin-top: 10px;
     }
 
     .option-section {
@@ -1946,16 +2078,17 @@
     }
 
         .option-section h3 {
-            margin: 0 0 10px;
-            color: var(--text);
-            font-size: 0.85rem;
-            font-weight: 650;
+            margin: 0 0 11px;
+            font-size: .78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .03em;
         }
 
     .checkbox-grid {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 9px;
     }
 
     .checkbox-item {
@@ -1971,13 +2104,14 @@
 
         .checkbox-item span {
             display: block;
-            padding: 8px 13px;
-            border: 1px solid var(--border);
+            padding: 8px 15px;
+            border: 1.5px solid var(--border);
             border-radius: 20px;
             background: var(--card-inner);
             color: var(--text);
-            font-size: 0.82rem;
-            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+            font-size: .83rem;
+            font-weight: 500;
+            transition: .15s ease;
         }
 
         .checkbox-item:hover span {
@@ -1988,8 +2122,9 @@
         .checkbox-item input:checked + span {
             background: var(--primary);
             border-color: var(--primary);
-            color: white;
-            box-shadow: 0 4px 10px var(--shadow);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 5px 12px rgba(13,110,253,.28);
         }
 
     .results-card {
@@ -2001,22 +2136,23 @@
     .results-header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-        padding: 25px 26px;
+        align-items: flex-start;
+        gap: 18px;
+        flex-wrap: wrap;
+        padding: 24px 26px;
         border-bottom: 1px solid var(--border);
     }
 
         .results-header h2 {
-            margin: 0;
-            color: var(--text);
-            font-size: 1.3rem;
+            margin: 0 0 4px;
+            font-size: 1.2rem;
+            font-weight: 700;
         }
 
         .results-header p {
-            margin: 4px 0 0;
+            margin: 0;
             color: var(--muted);
-            font-size: 0.85rem;
+            font-size: .82rem;
         }
 
     .results-actions form {
@@ -2026,34 +2162,34 @@
     }
 
     .result-button {
-        padding: 9px 15px;
-        background: transparent;
+        padding: 9px 16px;
+        background: var(--card);
         color: var(--primary) !important;
-        border: 1px solid var(--primary);
-        font-size: 0.85rem;
+        border: 1.5px solid var(--primary);
+        font-size: .85rem;
     }
 
         .result-button:hover {
             background: var(--primary);
-            color: white !important;
+            color: #fff !important;
             transform: translateY(-2px);
-            box-shadow: 0 5px 12px var(--shadow);
+            box-shadow: 0 6px 14px var(--shadow);
         }
 
     .primary-result-button {
         background: var(--primary);
-        color: white !important;
+        color: #fff !important;
     }
 
         .primary-result-button:hover {
             background: var(--primary-hover);
-            color: white !important;
+            color: #fff !important;
         }
 
-    .table-scroll,
-    .table-scroll-xy {
+    .table-scroll, .table-scroll-xy {
         width: 100%;
         overflow: auto;
+        padding: 20px 26px 26px;
     }
 
     .table-scroll-xy {
@@ -2062,76 +2198,104 @@
 
     .modern-table {
         width: 100%;
-        min-width: 1200px;
+        min-width: 1100px;
         border-collapse: separate;
         border-spacing: 0;
         color: var(--text);
+        font-variant-numeric: tabular-nums;
     }
 
         .modern-table th {
             position: sticky;
             top: 0;
             z-index: 5;
-            padding: 13px 15px;
+            padding: 12px 15px;
             background: var(--table-header);
-            color: white;
-            font-size: 0.8rem;
-            font-weight: 650;
-            text-align: center;
+            color: #fff;
+            font-size: .76rem;
+            font-weight: 700;
+            letter-spacing: .02em;
+            text-align: right;
             white-space: nowrap;
         }
+
+            .modern-table th:first-child {
+                text-align: left;
+                border-radius: 10px 0 0 0;
+            }
+
+            .modern-table th:last-child {
+                border-radius: 0 10px 0 0;
+            }
 
         .modern-table td {
             padding: 12px 15px;
             border-bottom: 1px solid var(--border);
-            text-align: center;
+            text-align: right;
             white-space: nowrap;
-            font-size: 0.85rem;
+            font-size: .85rem;
         }
+
+            .modern-table td:first-child {
+                text-align: left;
+            }
 
         .modern-table tbody tr {
             background: var(--card);
-            transition: background-color 0.15s ease;
         }
 
             .modern-table tbody tr:nth-child(even) {
                 background: var(--row-alt);
             }
 
-
             .modern-table tbody tr:hover {
                 background: var(--row-hover);
             }
 
+    .summary-table thead tr:first-child th {
+        text-align: center;
+        border-left: 1px solid rgba(255,255,255,.25);
+    }
+
+        .summary-table thead tr:first-child th.rp-col {
+            text-align: left;
+            border-left: none;
+            vertical-align: bottom;
+        }
+
+    .summary-table thead tr.sub th {
+        background: var(--primary-hover);
+        font-size: .68rem;
+        padding: 8px 12px;
+    }
+
     .return-period-badge {
         display: inline-block;
-        padding: 4px 9px;
+        padding: 4px 11px;
         border-radius: 20px;
-        background: rgba(0,123,255,0.12);
-        color: var(--primary);
-        font-weight: 600;
-        font-size: 0.78rem;
+        background: var(--primary-soft-strong);
+        color: var(--primary-hover);
+        font-weight: 700;
+        font-size: .78rem;
     }
 
     .average-value {
         font-weight: 700;
-        color: var(--primary);
+        color: var(--primary-hover);
+        background: var(--primary-soft);
     }
 
-    .table-scroll::-webkit-scrollbar,
-    .table-scroll-xy::-webkit-scrollbar {
+    .table-scroll::-webkit-scrollbar, .table-scroll-xy::-webkit-scrollbar {
         width: 9px;
         height: 9px;
     }
 
-    .table-scroll::-webkit-scrollbar-thumb,
-    .table-scroll-xy::-webkit-scrollbar-thumb {
+    .table-scroll::-webkit-scrollbar-thumb, .table-scroll-xy::-webkit-scrollbar-thumb {
         background: var(--primary);
         border-radius: 20px;
     }
 
-    .table-scroll::-webkit-scrollbar-track,
-    .table-scroll-xy::-webkit-scrollbar-track {
+    .table-scroll::-webkit-scrollbar-track, .table-scroll-xy::-webkit-scrollbar-track {
         background: var(--row-alt);
     }
 
@@ -2140,7 +2304,7 @@
         color: var(--text);
         border: 1px solid var(--border);
         border-radius: 18px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        box-shadow: 0 20px 60px rgba(0,0,0,.25);
     }
 
         .modern-modal .modal-header {
@@ -2148,11 +2312,12 @@
             padding: 20px 22px;
         }
 
-            .modern-modal .modal-header h5,
-            .modern-modal .modal-title {
+            .modern-modal .modal-header h5, .modern-modal .modal-title {
                 margin: 0;
-                color: var(--text);
                 font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
 
             .modern-modal .modal-header small {
@@ -2185,12 +2350,17 @@
         margin-top: 20px;
         padding: 15px;
         border-radius: 12px;
-        background: rgba(0,123,255,0.08);
-        border: 1px solid rgba(0,123,255,0.2);
-        color: var(--text);
-        font-size: 0.85rem;
+        background: var(--primary-soft);
+        border: 1px solid var(--primary-soft-strong);
+        font-size: .85rem;
         line-height: 1.6;
     }
+
+        .modern-info strong {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
         .modern-info p {
             margin: 8px 0;
@@ -2203,12 +2373,12 @@
 
         .modal-button.primary {
             background: var(--primary);
-            color: white;
+            color: #fff;
         }
 
             .modal-button.primary:hover {
                 background: var(--primary-hover);
-                color: white;
+                color: #fff;
                 transform: translateY(-1px);
             }
 
@@ -2220,12 +2390,12 @@
 
         .modal-button.success {
             background: #198754;
-            color: white;
+            color: #fff;
         }
 
             .modal-button.success:hover {
                 background: #157347;
-                color: white;
+                color: #fff;
                 transform: translateY(-1px);
             }
 
@@ -2250,10 +2420,10 @@
             align-items: center;
             justify-content: center;
             background: var(--primary);
-            color: white;
-            font-size: 0.7rem;
-            font-weight: 600;
-            transition: width 0.3s ease;
+            color: #fff;
+            font-size: .7rem;
+            font-weight: 700;
+            transition: width .3s ease;
         }
 
     .progress-details {
@@ -2285,11 +2455,17 @@
         padding: 16px;
         margin-bottom: 20px;
         border-radius: 12px;
-        background: rgba(25,135,84,0.1);
-        border: 1px solid rgba(25,135,84,0.25);
-        color: var(--text);
+        background: rgba(25,135,84,.1);
+        border: 1px solid rgba(25,135,84,.25);
         line-height: 1.7;
     }
+
+        .success-message strong {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #198754;
+        }
 
     .zip-name {
         padding: 12px;
@@ -2305,6 +2481,10 @@
     @@media (max-width: 900px) {
         .rainfall-two-column {
             grid-template-columns: 1fr;
+        }
+
+        .coordinate-grid {
+            grid-template-columns: 1fr 1fr;
         }
 
         .results-header {
@@ -2327,7 +2507,7 @@
 
     @@media (max-width: 767px) {
         .rainfall-page {
-            padding: 18px 12px 40px;
+            padding: 20px 14px 50px;
         }
 
         .rainfall-page-header {
@@ -2340,7 +2520,7 @@
             }
 
             .rainfall-page-header p {
-                font-size: 0.85rem;
+                font-size: .85rem;
             }
 
         .rainfall-card {
@@ -2352,8 +2532,19 @@
             height: 320px;
         }
 
-        .address-search {
-            grid-template-columns: 1fr;
+        .map-search-overlay {
+            left: 14px;
+            right: 14px;
+        }
+
+        .map-search-box {
+            width: 100%;
+            max-width: none;
+            height: 46px;
+        }
+
+        .map-wrapper .leaflet-control-container .leaflet-top.leaflet-right {
+            top: 68px;
         }
 
         .coordinate-grid {
@@ -2362,8 +2553,7 @@
 
         .map-help {
             flex-direction: column;
-            align-items: center;
-            gap: 6px;
+            align-items: stretch;
         }
 
         .search-button {

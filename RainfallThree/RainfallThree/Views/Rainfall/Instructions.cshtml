@@ -2,557 +2,512 @@
     ViewData["Title"] = "Instructions";
 }
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
 <div class="instructions-page">
-    <div class="card instructions-main-card shadow-lg border-0 mb-4">
+    <div class="instructions-card">
+
+        <!-- HEADER -->
         <div class="instructions-header">
             <div class="instructions-header-icon">
-                <i class="bi bi-info-circle"></i>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
             </div>
             <div>
-                <h4 class="mb-1">
-                    PCSWMM Import Instructions
-                </h4>
-                <p class="mb-0">
-                    Follow the steps below to import the generated rainfall data into your PCSWMM model.
-                </p>
+                <h2>PCSWMM Import Instructions</h2>
+                <p>Follow the step-by-step procedure below to integrate generated rainfall data into your local PCSWMM model directory.</p>
             </div>
         </div>
-        <div class="card-body p-3 p-md-4">
-            <div class="instruction-intro mb-4">
+
+        <div class="instructions-body">
+
+            <!-- BEFORE YOU BEGIN ALERT -->
+            <div class="instruction-intro">
                 <div class="intro-icon">
-                    <i class="bi bi-lightbulb"></i>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" /><path d="M9 18h6" /><path d="M10 22h4" /></svg>
                 </div>
                 <div>
                     <strong>Before you begin</strong>
-                    <p class="mb-0 mt-1">
-                        Make sure you have downloaded the generated folder and have access
-                        to your PCSWMM model directory.
-                    </p>
+                    <p>Ensure you have downloaded and unzipped the generated dataset folder and have write access to your local PCSWMM project path.</p>
                 </div>
             </div>
-            <div class="instruction-step">
-                <div class="step-number">
-                    1
-                </div>
-                <div class="step-content">
-                    <h5>Unzip the generated folder</h5>
-                    <p>
-                        Unzip the downloaded folder within your PCSWMM model folder.
-                    </p>
-                </div>
-            </div>
-            <div class="instruction-step">
-                <div class="step-number">
-                    2
-                </div>
-                <div class="step-content">
-                    <h5>Locate your model file</h5>
-                    <p>
-                        In your PCSWMM model directory, locate your
-                        <strong><code>.INP</code></strong> file.
-                    </p>
-                </div>
-            </div>
-            <div class="instruction-step">
-                <div class="step-number">
-                    3
-                </div>
-                <div class="step-content">
-                    <h5>Open the <strong>.INP</strong> file</h5>
-                    <p>
-                        Open the <strong><code>.INP</code></strong> file using
-                        <strong>TextEdit</strong> or <strong>Notepad</strong>.
-                    </p>
-                </div>
-            </div>
-            <div class="instruction-group">
-                <div class="group-heading">
-                    <span class="group-number">
-                        4–6
-                    </span>
-                    <h5>
-                        Add the Raingages
-                    </h5>
-                </div>
-                <ol>
-                    <li>
-                        From the SWMM <strong>Raingages</strong> list, copy all
-                        raingages.
-                    </li>
-                    <li>
-                        In the <strong><code>.INP</code></strong> file, locate the heading
-                        <code>[RAINGAGES]</code>.
-                    </li>
-                    <li>
-                        Paste the copied raingages underneath the
-                        <code>[RAINGAGES]</code> heading.
-                    </li>
-                </ol>
-                <div class="example-box">
-                    <div class="example-heading">
-                        <i class="bi bi-code-slash"></i>
-                        Example
+
+            <div class="timeline-container">
+
+                <!-- STEP 1 -->
+                <div class="instruction-step">
+                    <div class="step-badge">1</div>
+                    <div class="step-content">
+                        <h5>Unzip the generated folder</h5>
+                        <p>Extract the downloaded archive directory directly inside your primary PCSWMM model directory.</p>
                     </div>
-                    <pre><code>[RAINGAGES]
+                </div>
+
+                <!-- STEP 2 -->
+                <div class="instruction-step">
+                    <div class="step-badge">2</div>
+                    <div class="step-content">
+                        <h5>Locate your model file</h5>
+                        <p>In your PCSWMM model directory, find your project's primary configuration <code>.INP</code> file.</p>
+                    </div>
+                </div>
+
+                <!-- STEP 3 -->
+                <div class="instruction-step">
+                    <div class="step-badge">3</div>
+                    <div class="step-content">
+                        <h5>Open the <code>.INP</code> file</h5>
+                        <p>Open the <code>.INP</code> file using a standard plain text editor like <strong>VS Code</strong>, <strong>Notepad++</strong>, or <strong>Notepad</strong>.</p>
+                    </div>
+                </div>
+
+                <!-- STEP 4-6 GROUP -->
+                <div class="instruction-group">
+                    <div class="group-heading">
+                        <span class="group-badge">4–6</span>
+                        <h5>Add the Raingages</h5>
+                    </div>
+                    <ol>
+                        <li>From the SWMM <strong>Raingages</strong> list output, copy all formatted raingage entries.</li>
+                        <li>In your opened <code>.INP</code> file, search for the section heading <code>[RAINGAGES]</code>.</li>
+                        <li>Paste the copied raingage records directly beneath the header lines.</li>
+                    </ol>
+                    <div class="example-box">
+                        <div class="example-heading">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg>
+                            Structure Example
+                        </div>
+                        <pre><code>[RAINGAGES]
 ;;Name           Format    Interval SCF      Source
 ;;-------------- --------- -------- -------- ----------</code></pre>
-                </div>
-            </div>
-            <div class="instruction-group">
-                <div class="group-heading">
-                    <span class="group-number">
-                        7–9
-                    </span>
-                    <h5>
-                        Add the Timeseries
-                    </h5>
-                </div>
-                <ol>
-                    <li>
-                        From the SWMM <strong>Timeseries</strong> list, copy all
-                        timeseries.
-                    </li>
-                    <li>
-                        In the <strong><code>.INP</code></strong> file, locate the heading
-                        <code>[TIMESERIES]</code>.
-                    </li>
-                    <li>
-                        Paste the copied timeseries underneath the
-                        <code>[TIMESERIES]</code> heading.
-                    </li>
-                </ol>
-                <div class="example-box">
-                    <div class="example-heading">
-                        <i class="bi bi-code-slash"></i>
-                        Example
                     </div>
-                    <pre><code>[TIMESERIES]
+                </div>
+
+                <!-- STEP 7-9 GROUP -->
+                <div class="instruction-group">
+                    <div class="group-heading">
+                        <span class="group-badge">7–9</span>
+                        <h5>Add the Timeseries</h5>
+                    </div>
+                    <ol>
+                        <li>From the SWMM <strong>Timeseries</strong> list output, copy all generated time-series data.</li>
+                        <li>In the <code>.INP</code> file, locate the header <code>[TIMESERIES]</code>.</li>
+                        <li>Paste the copied time-series blocks directly under the <code>[TIMESERIES]</code> section.</li>
+                    </ol>
+                    <div class="example-box">
+                        <div class="example-heading">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm"><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg>
+                            Structure Example
+                        </div>
+                        <pre><code>[TIMESERIES]
 ;;Name           Date       Time       Value
 ;;-------------- ---------- ---------- ----------</code></pre>
+                    </div>
                 </div>
-            </div>
-            <div class="instruction-step">
-                <div class="step-number">
-                    10
+
+                <!-- STEP 10 -->
+                <div class="instruction-step">
+                    <div class="step-badge">10</div>
+                    <div class="step-content">
+                        <h5>Save the <code>.INP</code> file</h5>
+                        <p>Save all changes made to the modified <code>.INP</code> text file and close the text editor.</p>
+                    </div>
                 </div>
-                <div class="step-content">
-                    <h5>Save the <strong>.INP</strong> file</h5>
-                    <p>
-                        Save the changes made to the
-                        <strong><code>.INP</code></strong> file.
-                    </p>
+
+                <!-- STEP 11 -->
+                <div class="instruction-step">
+                    <div class="step-badge">11</div>
+                    <div class="step-content">
+                        <h5>Open the model in PCSWMM</h5>
+                        <p>Launch PCSWMM and open the newly saved <code>.INP</code> model file.</p>
+                    </div>
                 </div>
-            </div>
-            <div class="instruction-step">
-                <div class="step-number">
-                    11
+
+                <!-- STEP 12-14 GROUP -->
+                <div class="instruction-group">
+                    <div class="group-heading">
+                        <span class="group-badge">12–14</span>
+                        <h5>Verify the Raingages</h5>
+                    </div>
+                    <ol>
+                        <li>Navigate to the <strong>Map</strong> tab in the main interface.</li>
+                        <li>Select <strong>Raingages</strong> from the visual layer options.</li>
+                        <li>Verify that all raingages display correctly and map coordinates match your spatial inputs.</li>
+                    </ol>
                 </div>
-                <div class="step-content">
-                    <h5>Open the model in PCSWMM</h5>
-                    <p>
-                        Open the updated
-                        <strong><code>.INP</code></strong> file in PCSWMM.
-                    </p>
-                </div>
-            </div>
-            <div class="instruction-group">
-                <div class="group-heading">
-                    <span class="group-number">
-                        12–14
-                    </span>
-                    <h5>
-                        Verify the Raingages
-                    </h5>
-                </div>
-                <ol class="mb-0">
-                    <li>
-                        Click on <strong>Map</strong>.
-                    </li>
-                    <li>
-                        Click on <strong>Raingages</strong>.
-                    </li>
-                    <li>
-                        Check that the raingages have been loaded correctly.
-                    </li>
-                </ol>
+
             </div>
         </div>
+
+        <!-- FOOTER -->
         <div class="instructions-footer">
-            <i class="bi bi-check-circle-fill"></i>
-            <span>
-                Once the raingages have been verified, your PCSWMM model is ready
-                for use with the imported rainfall data.
-            </span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-success"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+            <span>Once verified, your PCSWMM model is ready to run simulations with the imported design rainfall data.</span>
         </div>
+
     </div>
 </div>
 
 <style>
     .instructions-page {
-        color: var(--text);
-        max-width: 1100px;
+        --primary-soft: rgba(13, 110, 253, 0.08);
+        --primary-soft-strong: rgba(13, 110, 253, 0.16);
+        --success-color: #10b981;
+        --success-soft: rgba(16, 185, 129, 0.12);
+        width: 100%;
+        max-width: 960px;
         margin: 0 auto;
-        padding: 20px 15px;
+        padding: 24px 16px 60px;
+        font-family: 'Inter', sans-serif;
+        color: var(--text);
     }
 
-    .instructions-main-card {
+        .instructions-page h2,
+        .instructions-page h5,
+        .instructions-header,
+        .group-badge,
+        .step-badge {
+            font-family: 'Manrope', sans-serif;
+        }
+
+    .icon {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+        vertical-align: middle;
+    }
+
+    .icon-sm {
+        width: 16px;
+        height: 16px;
+    }
+
+    .icon-success {
+        color: var(--success-color);
+    }
+
+    /* CARD CONTAINER */
+    .instructions-card {
         background: var(--card);
-        color: var(--text);
-        border: 1px solid var(--border) !important;
-        border-radius: 18px !important;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px var(--shadow);
         overflow: hidden;
     }
 
+    /* HEADER */
     .instructions-header {
         display: flex;
-        align-items: center;
-        gap: 15px;
-        padding: 20px 24px;
+        align-items: flex-start;
+        gap: 18px;
+        padding: 32px 36px;
         background: var(--primary);
-        color: #fff;
+        color: #ffffff;
     }
 
-        .instructions-header h4 {
-            color: #fff !important;
-            font-weight: 700;
+        .instructions-header h2 {
+            margin: 0 0 6px 0;
+            color: #ffffff !important;
+            font-size: 1.45rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
         }
 
         .instructions-header p {
+            margin: 0;
             color: rgba(255, 255, 255, 0.88) !important;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
         }
 
     .instructions-header-icon {
-        width: 48px;
-        height: 48px;
+        width: 50px;
+        height: 50px;
         display: flex;
         align-items: center;
         justify-content: center;
         background: rgba(255, 255, 255, 0.15);
         border: 1px solid rgba(255, 255, 255, 0.25);
-        border-radius: 12px;
-        font-size: 1.4rem;
+        border-radius: 14px;
         flex-shrink: 0;
-        color: #fff !important;
+        color: #ffffff;
     }
 
-        .instructions-header-icon i {
-            color: #fff !important;
-        }
+    /* BODY */
+    .instructions-body {
+        padding: 36px;
+    }
 
+    /* INTRO BANNER */
     .instruction-intro {
         display: flex;
         align-items: flex-start;
-        gap: 12px;
-        padding: 15px 18px;
+        gap: 16px;
+        padding: 18px 22px;
         background: var(--card-inner);
         border: 1px solid var(--border);
         border-left: 4px solid var(--primary);
-        border-radius: 10px;
+        border-radius: 14px;
+        margin-bottom: 32px;
     }
 
         .instruction-intro strong {
+            display: block;
             color: var(--text);
             font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
         }
 
         .instruction-intro p {
+            margin: 0;
             color: var(--muted);
             font-size: 0.9rem;
+            line-height: 1.55;
         }
 
     .intro-icon {
         color: var(--primary);
-        font-size: 1.2rem;
-        margin-top: 1px;
+        margin-top: 2px;
+    }
+
+    /* TIMELINE & STEPS */
+    .timeline-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
     }
 
     .instruction-step {
         display: flex;
         align-items: flex-start;
-        gap: 15px;
-        padding: 16px 14px;
-        margin-bottom: 12px;
+        gap: 18px;
+        padding: 18px 20px;
+        border-radius: 14px;
         border: 1px solid transparent;
-        border-radius: 12px;
-        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+        transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
     }
 
         .instruction-step:hover {
-            background: var(--card-inner); 
+            background: var(--card-inner);
             border-color: var(--border);
-            transform: translateX(2px);
+            transform: translateX(3px);
         }
 
-    .step-number {
-        width: 38px;
-        height: 38px;
-        min-width: 38px;
+    .step-badge {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
         display: flex;
         align-items: center;
         justify-content: center;
         background: var(--primary);
-        color: #fff;
+        color: #ffffff;
         border-radius: 50%;
-        font-weight: 700;
-        font-size: 0.95rem;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+        font-weight: 800;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 10px var(--primary-soft-strong);
     }
 
     .step-content {
         flex: 1;
+        padding-top: 4px;
     }
 
         .step-content h5 {
-            margin-bottom: 5px;
+            margin: 0 0 6px 0;
             color: var(--text) !important;
             font-weight: 700;
             font-size: 1rem;
         }
 
         .step-content p {
-            margin-bottom: 0;
+            margin: 0;
             color: var(--muted) !important;
             font-size: 0.92rem;
             line-height: 1.6;
         }
 
+    /* STEP GROUPS */
     .instruction-group {
         background: var(--card-inner);
         border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 18px;
-        margin: 20px 0;
+        border-radius: 16px;
+        padding: 24px;
+        margin: 12px 0;
         transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
         .instruction-group:hover {
-            border-color: var(--primary);
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+            border-color: var(--primary-soft-strong);
+            box-shadow: 0 6px 20px var(--shadow);
         }
 
     .group-heading {
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin-bottom: 15px;
+        gap: 12px;
+        margin-bottom: 18px;
     }
 
         .group-heading h5 {
             margin: 0;
             color: var(--text) !important;
-            font-weight: 700;
-            font-size: 1rem;
+            font-weight: 800;
+            font-size: 1.05rem;
         }
 
-    .group-number {
+    .group-badge {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: 48px;
-        height: 30px;
-        padding: 0 10px;
+        min-width: 52px;
+        height: 32px;
+        padding: 0 12px;
         background: var(--primary);
-        color: #fff;
-        border-radius: 8px;
-        font-size: 0.8rem;
-        font-weight: 700;
+        color: #ffffff;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 800;
+        box-shadow: 0 3px 8px var(--primary-soft-strong);
     }
 
     .instruction-group ol {
         margin: 0;
-        padding-left: 25px;
-        color: var(--text);
+        padding-left: 24px;
     }
 
     .instruction-group li {
-        color: var(--text) !important;
-        padding-left: 5px;
+        color: var(--text);
+        padding-left: 4px;
         margin-bottom: 10px;
         font-size: 0.92rem;
-        line-height: 1.55;
+        line-height: 1.6;
     }
 
         .instruction-group li:last-child {
             margin-bottom: 0;
         }
 
-    .instruction-group strong {
-        color: var(--text) !important;
-    }
-
+    /* INLINE CODE & CODE BLOCKS */
     .instructions-page code {
-        background: var(--card);
+        font-family: 'JetBrains Mono', monospace;
+        background: var(--primary-soft);
         color: var(--primary) !important;
-        border: 1px solid var(--border);
-        border-radius: 5px;
-        padding: 2px 6px;
-        font-size: 0.86em;
+        border: 1px solid var(--primary-soft-strong);
+        border-radius: 6px;
+        padding: 2px 7px;
+        font-size: 0.82em;
+        font-weight: 600;
     }
 
     .example-box {
-        margin-top: 16px;
+        margin-top: 20px;
         background: var(--card);
         border: 1px solid var(--border);
-        border-radius: 10px;
+        border-radius: 12px;
         overflow: hidden;
     }
 
     .example-heading {
         display: flex;
         align-items: center;
-        gap: 7px;
-        padding: 8px 12px;
+        gap: 8px;
+        padding: 10px 16px;
         background: var(--card-inner);
         border-bottom: 1px solid var(--border);
         color: var(--muted);
-        font-size: 0.78rem;
-        font-weight: 700;
+        font-family: 'Manrope', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.4px;
+        letter-spacing: 0.05em;
     }
 
-        .example-heading i {
+        .example-heading .icon {
             color: var(--primary);
         }
 
     .example-box pre {
         margin: 0;
-        padding: 12px 14px;
+        padding: 16px;
         background: var(--card);
         overflow-x: auto;
-        border: 0;
     }
 
         .example-box pre code {
             padding: 0;
             background: transparent;
-            border: 0;
+            border: none;
             color: var(--text) !important;
-            font-family: Consolas, "Courier New", monospace;
-            font-size: 0.8rem;
+            font-size: 0.82rem;
+            line-height: 1.5;
             white-space: pre;
         }
 
+    /* FOOTER */
     .instructions-footer {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        padding: 16px 20px;
+        gap: 12px;
+        padding: 20px 36px;
         background: var(--card-inner);
         border-top: 1px solid var(--border);
-        color: var(--muted);
+        color: var(--text);
         text-align: center;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
+        font-weight: 500;
     }
 
-        .instructions-footer i {
-            color: #28a745;
-            font-size: 1.1rem;
-            flex-shrink: 0;
-        }
-
-    @@media (max-width: 767px) {
-
-        .instructions-page {
-            padding: 10px 8px;
-        }
-
+    /* RESPONSIVE STYLES */
+    @@media (max-width: 767.98px) {
         .instructions-header {
-            padding: 16px;
+            padding: 24px;
+            gap: 14px;
         }
 
         .instructions-header-icon {
             width: 42px;
             height: 42px;
+        }
+
+        .instructions-header h2 {
             font-size: 1.2rem;
         }
 
-        .instructions-header h4 {
-            font-size: 1.05rem;
-        }
-
         .instructions-header p {
-            font-size: 0.8rem;
-        }
-
-        .instruction-step {
-            gap: 11px;
-            padding: 13px 8px;
-        }
-
-        .step-number {
-            width: 34px;
-            height: 34px;
-            min-width: 34px;
             font-size: 0.85rem;
         }
 
-        .step-content h5 {
-            font-size: 0.95rem;
-        }
-
-        .step-content p,
-        .instruction-group li {
-            font-size: 0.86rem;
-        }
-
-        .instruction-group {
-            padding: 14px;
-            margin: 16px 0;
-        }
-
-        .group-heading h5 {
-            font-size: 0.95rem;
-        }
-
-        .example-box pre {
-            padding: 10px;
-        }
-
-            .example-box pre code {
-                font-size: 0.72rem;
-            }
-
-        .instructions-footer {
-            flex-direction: column;
-            gap: 6px;
-            padding: 14px;
-        }
-    }
-
-    @@media (max-width: 480px) {
-
-        .instructions-page {
-            padding: 5px;
-        }
-
-        .instructions-main-card {
-            border-radius: 13px !important;
-        }
-
-        .instructions-header {
-            gap: 10px;
-        }
-
-        .instructions-header-icon {
-            width: 38px;
-            height: 38px;
-            font-size: 1rem;
+        .instructions-body {
+            padding: 20px 16px;
         }
 
         .instruction-intro {
+            padding: 14px 16px;
+        }
+
+        .instruction-step {
+            gap: 14px;
             padding: 12px;
+        }
+
+        .step-badge {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            font-size: 0.82rem;
         }
 
         .instruction-group {
-            padding: 12px;
+            padding: 16px;
         }
 
-        .group-number {
-            min-width: 43px;
-            height: 28px;
+        .instructions-footer {
+            padding: 18px 20px;
+            flex-direction: column;
+            gap: 8px;
         }
     }
 </style>
