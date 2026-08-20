@@ -32,7 +32,7 @@
         <div class="step-label">
             <div>
                 <h3>Select a location</h3>
-                <p>Search an address, click the map, or draw a catchment boundary.</p>
+                <p>Search an address, click the map, or draw a catchment boundary, choose parameters and then press search.</p>
             </div>
         </div>
         <!-- MAP CARD -->
@@ -224,19 +224,30 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @{
+                            var previousIndex = -1;
+                            var groupNumber = 0;
+                        }
+
                         @foreach (var item in Model.Results)
                         {
-                            <tr>
+                            if (item.Index != previousIndex)
+                            {
+                                groupNumber++;
+                                previousIndex = item.Index;
+                            }
+
+                            var groupClass = groupNumber % 2 == 0
+                                ? "index-group-white"
+                                : "index-group-grey";
+
+                            <tr class="@groupClass">
                                 <td>@item.Index</td>
                                 <td>@item.Latdeg</td>
                                 <td>@item.Latmin</td>
                                 <td>@item.Longdeg</td>
                                 <td>@item.Longmin</td>
-                                <td>
-                                    <span class="return-period-badge">
-                                        @item.ReturnPeriod
-                                    </span>
-                                </td>
+                                <td>@item.ReturnPeriod</td>
 
                                 @if (!Model.SelectedDurations.Any())
                                 {
@@ -255,7 +266,6 @@
                                     foreach (var duration in Model.SelectedDurations)
                                     {
                                         <td>
-
                                             @{
                                                 var value = duration switch
                                                 {
@@ -273,13 +283,11 @@
                                             }
 
                                             @value?.ToString("0.00")
-
                                         </td>
                                     }
                                 }
-                                <td>
-                                    @item.SourceSheet
-                                </td>
+
+                                <td>@item.SourceSheet</td>
                             </tr>
                         }
                     </tbody>
@@ -343,11 +351,7 @@
                         @foreach (var item in Model.Summary)
                         {
                             <tr>
-                                <td>
-                                    <span class="return-period-badge">
-                                        @item.ReturnPeriod
-                                    </span>
-                                </td>
+                                <td>@item.ReturnPeriod</td>
                                 @if (!Model.SelectedDurations.Any())
                                 {
                                     <td>@item.Min5?.ToString("0.00")</td>
@@ -2210,17 +2214,18 @@
                 text-align: left;
             }
 
-        .modern-table tbody tr {
+       .modern-table tbody tr.index-group-grey {
+            background: var(--row-alt);
+        }
+
+        .modern-table tbody tr.index-group-white {
             background: var(--card);
         }
 
-            .modern-table tbody tr:nth-child(even) {
-                background: var(--row-alt);
-            }
-
-            .modern-table tbody tr:hover {
-                background: var(--row-hover);
-            }
+        .modern-table tbody tr.index-group-grey:hover,
+        .modern-table tbody tr.index-group-white:hover {
+            background: var(--row-hover);
+        }
 
     .summary-table thead {
         position: relative;
