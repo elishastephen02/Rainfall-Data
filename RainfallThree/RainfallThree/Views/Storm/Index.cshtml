@@ -443,10 +443,38 @@
 
                         function createChart(index) {
                             if (charts[index]) return;
+
                             const storm = storms[index];
                             const canvas = document.getElementById(`rainChart_${index}`);
+
                             if (!canvas) return;
+
                             const c = themeColors();
+
+                            const returnPeriodPlugin = {
+                                id: 'returnPeriodLabel',
+                                afterDraw(chart) {
+                                    const returnPeriod = chart.config.options.plugins.returnPeriodText;
+
+                                    if (!returnPeriod) return;
+
+                                    const { ctx, chartArea } = chart;
+
+                                    ctx.save();
+
+                                    ctx.font = '700 14px Manrope, sans-serif';
+                                    ctx.fillStyle = c.text;
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'bottom';
+                                    ctx.fillText(
+                                        returnPeriod,
+                                        (chartArea.left + chartArea.right) / 2,
+                                        chartArea.top - 10
+                                    );
+
+                                    ctx.restore();
+                                }
+                            };
 
                             charts[index] = new Chart(canvas.getContext('2d'), {
                                 type: 'bar',
@@ -462,12 +490,43 @@
                                 options: {
                                     responsive: true,
                                     maintainAspectRatio: false,
-                                    plugins: { legend: { display: false } },
+                                    layout: {
+                                        padding: {
+                                            top: 30
+                                        }
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        },
+                                        returnPeriodText: storm.returnPeriod || 'Return period unavailable',
+                                        tooltip: {
+                                            callbacks: {
+                                                label: item => `${Number(item.raw).toFixed(2)} mm`
+                                            }
+                                        }
+                                    },
                                     scales: {
-                                        x: { ticks: { color: c.muted }, grid: { color: c.border } },
-                                        y: { beginAtZero: true, ticks: { color: c.muted }, grid: { color: c.border } }
+                                        x: {
+                                            ticks: {
+                                                color: c.muted
+                                            },
+                                            grid: {
+                                                color: c.border
+                                            }
+                                        },
+                                        y: {
+                                            beginAtZero: true,
+                                            ticks: {
+                                                color: c.muted
+                                            },
+                                            grid: {
+                                                color: c.border
+                                            }
+                                        }
                                     }
-                                }
+                                },
+                                plugins: [returnPeriodPlugin]
                             });
                         }
                         createChart(0);
