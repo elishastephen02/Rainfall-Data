@@ -24,10 +24,10 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Build with dotnet
-        run: dotnet build ./RainfallThree/RainfallThree.slnx --configuration Release
+        run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish ./RainfallThree/RainfallThree.slnx -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -51,9 +51,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_1D7A51CCEA2E4C0BAB59EDF23639D475 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_E1A8BC7D742D40439D3087159454A12E }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_9EC007E2E6A64457B105F3AD201ADDE4 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
