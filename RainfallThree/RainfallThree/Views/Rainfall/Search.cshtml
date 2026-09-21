@@ -650,7 +650,6 @@
         }
 
         // UPLOAD AREA
-
         document
             .getElementById("uploadAreaBtn")
             .addEventListener(
@@ -1567,6 +1566,12 @@
                 " files completed.";
         }
     });
+
+    //download
+    function prepareDownload() {
+        var results = @Html.Raw(Json.Serialize(Model.Results));
+        document.getElementById("ResultsJson").value = JSON.stringify(results);
+    }
 </script>
 
 <style>

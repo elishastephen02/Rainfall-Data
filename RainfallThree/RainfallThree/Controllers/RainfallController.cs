@@ -166,7 +166,10 @@ public class RainfallController : Controller
             ).ToList();
         }
 
-        model.Results = dataSet.Any() ? dataSet : new List<RainfallSheet>();
+        model.Results = dataSet
+        .OrderBy(x => x.Index)
+        .ThenBy(x => x.ReturnPeriod)
+        .ToList();
 
         model.TotalRainfall = dataSet.Any()
             ? dataSet.Sum(r =>
@@ -243,58 +246,58 @@ public class RainfallController : Controller
        }
 
         model.Summary = summarySet
-    .GroupBy(r => r.ReturnPeriod)
-    .Select(g => new RainfallSummaryViewModel
-    {
-        ReturnPeriod = g.Key,
+            .GroupBy(r => r.ReturnPeriod)
+            .Select(g => new RainfallSummaryViewModel
+            {
+                ReturnPeriod = g.Key,
 
-        // 5 Min
-        Min5 = g.Where(x => x._5Min.HasValue).Select(x => x._5Min).DefaultIfEmpty().Min(),
-        Max5 = g.Where(x => x._5Min.HasValue).Select(x => x._5Min).DefaultIfEmpty().Max(),
-        Avg5 = g.Where(x => x._5Min.HasValue).Select(x => x._5Min).DefaultIfEmpty().Average(),
+                // 5 Min
+                Min5 = g.Where(x => x._5Min.HasValue).Select(x => x._5Min).DefaultIfEmpty().Min(),
+                Max5 = g.Where(x => x._5Min.HasValue).Select(x => x._5Min).DefaultIfEmpty().Max(),
+                Avg5 = g.Where(x => x._5Min.HasValue).Select(x => x._5Min).DefaultIfEmpty().Average(),
 
-        // 10 Min
-        Min10 = g.Where(x => x._10Min.HasValue).Select(x => x._10Min).DefaultIfEmpty().Min(),
-        Max10 = g.Where(x => x._10Min.HasValue).Select(x => x._10Min).DefaultIfEmpty().Max(),
-        Avg10 = g.Where(x => x._10Min.HasValue).Select(x => x._10Min).DefaultIfEmpty().Average(),
+                // 10 Min
+                Min10 = g.Where(x => x._10Min.HasValue).Select(x => x._10Min).DefaultIfEmpty().Min(),
+                Max10 = g.Where(x => x._10Min.HasValue).Select(x => x._10Min).DefaultIfEmpty().Max(),
+                Avg10 = g.Where(x => x._10Min.HasValue).Select(x => x._10Min).DefaultIfEmpty().Average(),
 
-        // 15 Min
-        Min15 = g.Where(x => x._15Min.HasValue).Select(x => x._15Min).DefaultIfEmpty().Min(),
-        Max15 = g.Where(x => x._15Min.HasValue).Select(x => x._15Min).DefaultIfEmpty().Max(),
-        Avg15 = g.Where(x => x._15Min.HasValue).Select(x => x._15Min).DefaultIfEmpty().Average(),
+                // 15 Min
+                Min15 = g.Where(x => x._15Min.HasValue).Select(x => x._15Min).DefaultIfEmpty().Min(),
+                Max15 = g.Where(x => x._15Min.HasValue).Select(x => x._15Min).DefaultIfEmpty().Max(),
+                Avg15 = g.Where(x => x._15Min.HasValue).Select(x => x._15Min).DefaultIfEmpty().Average(),
 
-        // 30 Min
-        Min30 = g.Where(x => x._30Min.HasValue).Select(x => x._30Min).DefaultIfEmpty().Min(),
-        Max30 = g.Where(x => x._30Min.HasValue).Select(x => x._30Min).DefaultIfEmpty().Max(),
-        Avg30 = g.Where(x => x._30Min.HasValue).Select(x => x._30Min).DefaultIfEmpty().Average(),
+                // 30 Min
+                Min30 = g.Where(x => x._30Min.HasValue).Select(x => x._30Min).DefaultIfEmpty().Min(),
+                Max30 = g.Where(x => x._30Min.HasValue).Select(x => x._30Min).DefaultIfEmpty().Max(),
+                Avg30 = g.Where(x => x._30Min.HasValue).Select(x => x._30Min).DefaultIfEmpty().Average(),
 
-        // 1 Hour
-        Min60 = g.Where(x => x._60Min.HasValue).Select(x => x._60Min).DefaultIfEmpty().Min(),
-        Max60 = g.Where(x => x._60Min.HasValue).Select(x => x._60Min).DefaultIfEmpty().Max(),
-        Avg60 = g.Where(x => x._60Min.HasValue).Select(x => x._60Min).DefaultIfEmpty().Average(),
+                // 1 Hour
+                Min60 = g.Where(x => x._60Min.HasValue).Select(x => x._60Min).DefaultIfEmpty().Min(),
+                Max60 = g.Where(x => x._60Min.HasValue).Select(x => x._60Min).DefaultIfEmpty().Max(),
+                Avg60 = g.Where(x => x._60Min.HasValue).Select(x => x._60Min).DefaultIfEmpty().Average(),
 
-        // 2 Hours
-        Min120 = g.Where(x => x._120Min.HasValue).Select(x => x._120Min).DefaultIfEmpty().Min(),
-        Max120 = g.Where(x => x._120Min.HasValue).Select(x => x._120Min).DefaultIfEmpty().Max(),
-        Avg120 = g.Where(x => x._120Min.HasValue).Select(x => x._120Min).DefaultIfEmpty().Average(),
+                // 2 Hours
+                Min120 = g.Where(x => x._120Min.HasValue).Select(x => x._120Min).DefaultIfEmpty().Min(),
+                Max120 = g.Where(x => x._120Min.HasValue).Select(x => x._120Min).DefaultIfEmpty().Max(),
+                Avg120 = g.Where(x => x._120Min.HasValue).Select(x => x._120Min).DefaultIfEmpty().Average(),
 
-        // 1 Day
-        Min1440 = g.Where(x => x._1440Min.HasValue).Select(x => x._1440Min).DefaultIfEmpty().Min(),
-        Max1440 = g.Where(x => x._1440Min.HasValue).Select(x => x._1440Min).DefaultIfEmpty().Max(),
-        Avg1440 = g.Where(x => x._1440Min.HasValue).Select(x => x._1440Min).DefaultIfEmpty().Average(),
+                // 1 Day
+                Min1440 = g.Where(x => x._1440Min.HasValue).Select(x => x._1440Min).DefaultIfEmpty().Min(),
+                Max1440 = g.Where(x => x._1440Min.HasValue).Select(x => x._1440Min).DefaultIfEmpty().Max(),
+                Avg1440 = g.Where(x => x._1440Min.HasValue).Select(x => x._1440Min).DefaultIfEmpty().Average(),
 
-        // 3 Days
-        Min4320 = g.Where(x => x._4320Min.HasValue).Select(x => x._4320Min).DefaultIfEmpty().Min(),
-        Max4320 = g.Where(x => x._4320Min.HasValue).Select(x => x._4320Min).DefaultIfEmpty().Max(),
-        Avg4320 = g.Where(x => x._4320Min.HasValue).Select(x => x._4320Min).DefaultIfEmpty().Average(),
+                // 3 Days
+                Min4320 = g.Where(x => x._4320Min.HasValue).Select(x => x._4320Min).DefaultIfEmpty().Min(),
+                Max4320 = g.Where(x => x._4320Min.HasValue).Select(x => x._4320Min).DefaultIfEmpty().Max(),
+                Avg4320 = g.Where(x => x._4320Min.HasValue).Select(x => x._4320Min).DefaultIfEmpty().Average(),
 
-        // 7 Days
-        Min10080 = g.Where(x => x._10080Min.HasValue).Select(x => x._10080Min).DefaultIfEmpty().Min(),
-        Max10080 = g.Where(x => x._10080Min.HasValue).Select(x => x._10080Min).DefaultIfEmpty().Max(),
-        Avg10080 = g.Where(x => x._10080Min.HasValue).Select(x => x._10080Min).DefaultIfEmpty().Average()
-    })
-    .OrderBy(x => x.ReturnPeriod)
-    .ToList();
+                // 7 Days
+                Min10080 = g.Where(x => x._10080Min.HasValue).Select(x => x._10080Min).DefaultIfEmpty().Min(),
+                Max10080 = g.Where(x => x._10080Min.HasValue).Select(x => x._10080Min).DefaultIfEmpty().Max(),
+                Avg10080 = g.Where(x => x._10080Min.HasValue).Select(x => x._10080Min).DefaultIfEmpty().Average()
+            })
+            .OrderBy(x => x.ReturnPeriod)
+            .ToList();
 
         // Preload map marker from first result if no coords entered
         if ((!model.LATDEG.HasValue || !model.LONGDEG.HasValue) && model.Results.Any())
@@ -359,7 +362,7 @@ public class RainfallController : Controller
 
 
         // Build rows
-        foreach (var item in dataSet)
+        foreach (var item in dataSet.OrderBy(x => x.Index).ThenBy(x => x.ReturnPeriod))
         {
             var row = new List<string>
             {

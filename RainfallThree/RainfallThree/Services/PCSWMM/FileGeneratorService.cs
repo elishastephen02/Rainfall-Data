@@ -15,7 +15,7 @@ namespace RainfallThree.Services.PCSWMM
             writer.WriteLine($";;Station: {rainfall.Index}");
             writer.WriteLine($";;Return Period: {rainfall.ReturnPeriod} year");
             writer.WriteLine($";;Total rainfall = {rainfallDepth:0.##} mm");
-            writer.WriteLine($";;Rain interval = {duration} minutes");
+            writer.WriteLine($";;Rain interval = 5 minutes");
             writer.WriteLine(";;Rain units = mm/hr");
 
             foreach (var point in template.Points)
