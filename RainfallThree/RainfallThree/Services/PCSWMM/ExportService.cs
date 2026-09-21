@@ -205,9 +205,7 @@ namespace RainfallThree.Services.PCSWMM
                             new GeneratedRainfallFile
                             {
                                 FileName = fileName,
-
                                 FilePath = outputPath,
-
                                 Name =
                                     Path.GetFileNameWithoutExtension(
                                         fileName)
@@ -219,9 +217,7 @@ namespace RainfallThree.Services.PCSWMM
                             new ExportProgress
                             {
                                 TotalFiles = totalFiles,
-
                                 FilesCompleted = currentFile,
-
                                 Percentage =
                                     (int)Math.Round(
                                         (double)currentFile /
@@ -258,23 +254,14 @@ namespace RainfallThree.Services.PCSWMM
             return duration switch
             {
                 "5" => rainfall._5Min,
-
                 "10" => rainfall._10Min,
-
                 "15" => rainfall._15Min,
-
                 "30" => rainfall._30Min,
-
                 "60" => rainfall._60Min,
-
                 "120" => rainfall._120Min,
-
                 "1440" => rainfall._1440Min,
-
                 "4320" => rainfall._4320Min,
-
                 "10080" => rainfall._10080Min,
-
                 _ => null
             };
         }
