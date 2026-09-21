@@ -312,7 +312,7 @@ namespace RainfallThree.Services.PCSWMM
             {
                 writer.WriteLine(
                     $"{file.Name} " +
-                    $"INTENSITY 0:05 1.0 TIMESERIES " +
+                    $"INTENSITY 0:05 0.0 TIMESERIES " +
                     $"{file.Name}");
             }
         }
